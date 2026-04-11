@@ -212,10 +212,11 @@ On `429`: response includes `Retry-After` header.
 - Temp (pre-submit): `temp/<user_id>/<uuid>.<ext>` — expires in 30 min via cron
 - Permanent (post-submit): `reports/<year>/<month>/<report_uuid>/original.<ext>`
 
-### Signed URLs
-- All photo access via signed R2 URLs, TTL 1 hour
-- Generated server-side, never cached on client beyond TTL
-- R2 key never returned to clients
+### Photo delivery
+- Public-facing photos served via **Cloudflare Images** public URLs — CDN-cached, no signing needed
+- R2 bucket is private; Cloudflare Images has internal access only
+- Signed R2 URLs (TTL 5 min) used only for internal worker access (e.g. fetching photo for Claude API)
+- Raw R2 keys never returned to any client
 
 ---
 

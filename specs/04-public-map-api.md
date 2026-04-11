@@ -84,7 +84,7 @@ Canonical `problem_type` returned to client = `COALESCE(problem_type_final, prob
       "address_raw": "ул. Абовяна, Ереван",
       "confirmation_count": 3,
       "created_at": "2026-04-10T08:00:00Z",
-      "photo_url": "https://...signed-url...",
+      "photo_url": "https://imagedelivery.net/<account>/<image_id>/display",
       "region_id": "uuid"
     }
   ],
@@ -93,7 +93,7 @@ Canonical `problem_type` returned to client = `COALESCE(problem_type_final, prob
 }
 ```
 
-**`photo_url`** — signed R2 URL (optimized variant if available, else original). TTL 1 hour. Generated per-request.
+**`photo_url`** — public Cloudflare Images URL (optimized variant). No signing, CDN-cached. Example: `https://imagedelivery.net/<account>/<image_id>/display`. R2 bucket remains private — only Cloudflare Images has internal access.
 
 **`total_in_area`** — approximate count for the full area (ignores pagination). Computed via `COUNT(*)` with the same WHERE clause, cached in Redis 60s.
 
@@ -122,8 +122,8 @@ Returns full detail for a single report.
   "address_raw": "ул. Абовяна, Ереван",
   "region_id": "uuid",
   "confirmation_count": 7,
-  "photo_url": "https://...signed-url...",
-  "photo_thumbnail_url": "https://...signed-url...",
+  "photo_url": "https://imagedelivery.net/<account>/<image_id>/display",
+  "photo_thumbnail_url": "https://imagedelivery.net/<account>/<image_id>/thumbnail",
   "status_history": [
     { "status": "approved", "changed_at": "2026-04-10T09:00:00Z" },
     { "status": "in_progress", "changed_at": "2026-04-11T14:00:00Z" }
@@ -282,7 +282,7 @@ Cloudflare WAF provides an additional IP-level layer before requests reach the A
 
 - No authentication required — these are fully public endpoints
 - `user_id`, `moderated_by`, `ai_raw_response`, `rejection_reason` — never returned
-- `photo_url` — signed R2 URL with 1h TTL. Never expose raw R2 keys.
+- `photo_url` — Cloudflare Images public URL. R2 bucket is private; only Cloudflare Images has internal access. Raw R2 keys are never exposed.
 - All query params validated with Zod before hitting DB
 - bbox/radius limits enforced to prevent expensive full-table geo scans
 - SQL parameters always via prepared statements — no string interpolation
