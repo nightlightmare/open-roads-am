@@ -13,14 +13,14 @@
 - Unit tests for business logic (services, utils, validators)
 - Integration tests for API endpoints
 - Run the full test suite before every commit — do not commit if tests fail
-- No committing with `--no-verify` unless explicitly approved by the project owner
+- No committing with `--no-verify`
 
 ## Code Quality
 
 - All inputs validated with **Zod** — no exceptions
 - No secrets or API keys in code — environment variables only
 - TypeScript strict mode — no `any` unless absolutely unavoidable
-- Every PR must pass linting (`eslint`) and type checking (`tsc --noEmit`)
+- Every PR must pass linting (`oxlint`) and type checking (`tsc --noEmit`)
 
 ## Security Principles (non-negotiable)
 

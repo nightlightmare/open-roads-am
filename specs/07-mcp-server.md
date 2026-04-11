@@ -128,26 +128,6 @@ Road problem statistics for Yerevan (last 30 days):
 
 ---
 
-#### `get_heatmap`
-
-Returns density data for a bounding box.
-
-**Input schema:**
-
-```typescript
-{
-  bbox: { west: number, south: number, east: number, north: number }
-  problem_type?: string
-  include_resolved?: boolean
-}
-```
-
-**Calls:** `GET /api/v1/public/heatmap`
-
-**Output:** Grid cells with counts. Useful for AI agents answering "where are the most problems concentrated?"
-
----
-
 ### Authenticated tools (API key required)
 
 API key passed as `X-Api-Key` header on the internal API call. The MCP server accepts the key as a tool input parameter and forwards it — it never stores or logs keys.
@@ -263,7 +243,6 @@ No internal error details forwarded to the AI agent.
 | `get_reports` | none | — |
 | `get_report` | none | — |
 | `get_stats` | none | — |
-| `get_heatmap` | none | — |
 | `create_report` | API key | `reports:write` |
 | `update_status` | API key | `status:write` |
 

@@ -8,7 +8,7 @@
 
 ## Overview
 
-This spec defines the core database schema for OpenRoad.am. All tables live in PostgreSQL with the PostGIS extension enabled. The schema is managed via Prisma migrations.
+This spec defines the core database schema for open-road.am. All tables live in PostgreSQL with the PostGIS extension enabled. The schema is managed via Prisma migrations.
 
 ---
 
@@ -184,10 +184,12 @@ No other transitions are valid. The API must enforce this state machine.
 
 ```
 pothole           — выбоина / повреждение покрытия
+damaged_barrier   — повреждение ограждения
 missing_marking   — отсутствие / повреждение разметки
 damaged_sign      — сломанный / отсутствующий знак
 hazard            — опасный участок (обрыв, подтопление и т.п.)
 broken_light      — неработающий светофор
+missing_ramp      — отсутствие пандуса
 other             — другое
 ```
 

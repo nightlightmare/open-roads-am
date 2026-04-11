@@ -97,10 +97,12 @@ Respond with this exact JSON structure:
 
 Valid values for problem_type:
 - "pothole" — damaged or broken road surface, potholes
+- "damaged_barrier" — damaged, missing or collapsed road barrier or guardrail
 - "missing_marking" — faded, missing or damaged road markings
 - "damaged_sign" — broken, missing, obscured or vandalized road signs
 - "hazard" — dangerous road condition (cliff edge, flooding, landslide, road collapse)
 - "broken_light" — non-functioning traffic light
+- "missing_ramp" — missing or inaccessible pedestrian ramp / curb cut
 - "other" — road-related problem that doesn't fit above categories
 - "not_a_road_problem" — photo does not show a road problem (use if photo is irrelevant, blurry beyond recognition, or clearly not road infrastructure)
 
@@ -141,8 +143,8 @@ Rules:
 ```typescript
 const ClassificationSchema = z.object({
   problem_type: z.enum([
-    'pothole', 'missing_marking', 'damaged_sign',
-    'hazard', 'broken_light', 'other', 'not_a_road_problem'
+    'pothole', 'damaged_barrier', 'missing_marking', 'damaged_sign',
+    'hazard', 'broken_light', 'missing_ramp', 'other', 'not_a_road_problem'
   ]),
   confidence: z.number().min(0).max(1),
   reasoning: z.string().max(500)

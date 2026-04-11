@@ -200,56 +200,6 @@ Max date range: 365 days. If exceeded, return `400 DATE_RANGE_TOO_LARGE`.
 
 ---
 
-### `GET /api/v1/public/heatmap`
-
-Returns aggregated point density data for heatmap rendering. Returns grid cells with report counts, not individual report coordinates.
-
-#### Query parameters
-
-| Param | Type | Required | Description |
-|---|---|---|---|
-| `bbox` | string | yes | `west,south,east,north`. Max 5°×5° for heatmap. |
-| `problem_type` | string | no | Filter by type |
-| `include_resolved` | boolean | no | false |
-
-#### Implementation
-
-Uses PostGIS `ST_SnapToGrid` to aggregate points into cells. Cell size varies by bbox area:
-- bbox < 0.5°×0.5° → 0.005° cells (~500m)
-- bbox < 2°×2° → 0.02° cells (~2km)
-- bbox ≥ 2°×2° → 0.05° cells (~5km)
-
-```sql
-SELECT
-  ST_X(ST_SnapToGrid(location, $cell_size)) AS cell_lng,
-  ST_Y(ST_SnapToGrid(location, $cell_size)) AS cell_lat,
-  COUNT(*) AS count
-FROM reports
-WHERE
-  deleted_at IS NULL
-  AND status IN ('approved', 'in_progress')
-  AND ST_Within(location, ST_MakeEnvelope($west, $south, $east, $north, 4326))
-GROUP BY cell_lng, cell_lat
-```
-
-#### Response `200 OK`
-
-```json
-{
-  "cell_size_deg": 0.02,
-  "cells": [
-    { "lat": 40.18, "lng": 44.52, "count": 14 },
-    { "lat": 40.20, "lng": 44.50, "count": 6 }
-  ]
-}
-```
-
-#### Caching
-
-- TTL: **2 minutes**
-
----
-
 ## Clustering
 
 Clustering is **client-side** using MapLibre GL with supercluster. The API returns individual report points (up to 500 per request); the client clusters them based on zoom level.
@@ -270,7 +220,6 @@ If the dataset grows beyond 500 visible points in a single viewport, revisit ser
 | `GET /reports` | 60 req | per minute per IP |
 | `GET /reports/:id` | 120 req | per minute per IP |
 | `GET /stats` | 30 req | per minute per IP |
-| `GET /heatmap` | 30 req | per minute per IP |
 
 On `429`: `Retry-After` header included.
 
