@@ -1,14 +1,16 @@
 # Spec 03 — AI Classification
 
 **Status:** Draft
-**Version:** 1.0
+**Version:** 1.1 (updated: classification runs before report creation)
 **Date:** April 2026
 
 ---
 
 ## Overview
 
-After a report is submitted, a BullMQ worker sends the photo to the Claude API for classification. The worker determines the `problem_type` and a confidence score, then updates the report. This process is fully asynchronous and never blocks report creation.
+AI classification runs after the user uploads a photo but **before** the report is created. The result is shown to the user as a pre-selected category in the submission form. The user confirms or changes the selection, then submits. Both the AI's choice and the user's choice are stored separately on the report.
+
+Classification operates on the `photo_classifications` table (see Spec 01). The BullMQ job is triggered by `POST /api/v1/classify` and the result is polled by the client via `GET /api/v1/classify/:job_token`.
 
 ---
 
@@ -21,9 +23,8 @@ After a report is submitted, a BullMQ worker sends the photo to the Claude API f
 
 ```typescript
 {
-  reportId: string        // UUID
-  photoR2Key: string      // R2 object key of the original photo
-  userId: string          // Clerk user ID — for audit only, not sent to Claude
+  classificationId: string   // UUID — primary key of photo_classifications row
+  photoTempKey: string       // R2 temp key of the uploaded photo
 }
 ```
 
@@ -46,18 +47,17 @@ After a report is submitted, a BullMQ worker sends the photo to the Claude API f
 ## Worker Logic
 
 ```
-1. Fetch signed R2 URL for the photo (TTL: 5 minutes — enough for Claude API call)
+1. Fetch signed R2 URL for photoTempKey (TTL: 5 minutes)
 2. Build Claude API request (see Prompt Design below)
 3. Call Claude API
 4. Parse and validate response (see Response Parsing below)
-5. UPDATE report SET
-     problem_type = <parsed type>,
-     problem_type_source = 'ai',
+5. UPDATE photo_classifications SET
+     status = 'completed',
+     problem_type_ai = <parsed type or null if confidence < 0.6>,
      ai_confidence = <parsed confidence>,
      ai_raw_response = <full Claude response as jsonb>
-   WHERE id = reportId
-6. If confidence < 0.6 → do NOT set problem_type, leave null
-   (moderator will classify manually)
+   WHERE id = classificationId
+6. Client polls and receives result (see Spec 02)
 ```
 
 ---
@@ -178,10 +178,11 @@ const ClassificationSchema = z.object({
 
 ### After 3 failed attempts
 1. Mark BullMQ job as `failed`
-2. Leave `problem_type = null`, `ai_job_id` remains set (for debugging)
+2. UPDATE `photo_classifications` SET `status = 'failed'`
 3. Send internal alert (log to stderr + Redis pub/sub event on `internal:alerts` channel)
-4. Report stays in `pending_review` — moderator classifies manually
-5. **Do not expose failure to the user** — from their perspective the report was accepted
+4. Client receives `{ status: 'failed' }` on next poll — shows all categories unselected, user picks manually
+5. **Do not show an error to the user** — framed as "couldn't classify automatically, please select manually"
+6. Report can still be created — `problem_type_ai` and `ai_confidence` will be null on the report
 
 ---
 

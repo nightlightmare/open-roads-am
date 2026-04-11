@@ -38,6 +38,11 @@ Synced from Clerk via webhook on `user.created` / `user.updated` / `user.deleted
 | `created_at` | `timestamptz` | NOT NULL, default `now()` | |
 | `updated_at` | `timestamptz` | NOT NULL, default `now()` | |
 
+**Canonical problem type resolution (in priority order):**
+1. `problem_type_final` — if set by moderator, this wins
+2. `problem_type_user` — user's confirmed selection, used until moderator acts
+3. `problem_type_ai` — never used as canonical type on its own; shown to user for pre-selection only
+
 **Critical:** `reports_today` is a soft counter — actual rate limiting enforcement is done in Redis, not here. This column is for analytics only.
 
 ---
@@ -51,23 +56,44 @@ Core entity. Represents a single road problem report submitted by a user.
 | `id` | `uuid` | PK, default `gen_random_uuid()` | |
 | `user_id` | `uuid` | FK → `users.id`, NOT NULL | Author of the report |
 | `status` | `enum` | NOT NULL, default `pending_review` | See Status Lifecycle below |
-| `problem_type` | `enum` | nullable | Set by AI or manually by moderator. See Problem Types. |
-| `problem_type_source` | `enum` | nullable | `ai`, `moderator` — who set the type |
+| `problem_type_ai` | `enum` | nullable | Classification determined by Claude API. Never changes after being set. |
+| `ai_confidence` | `float4` | nullable | 0.0–1.0 confidence score from AI |
+| `problem_type_user` | `enum` | nullable | Category selected by the user (may match AI or not). This is the working type used by moderators. |
+| `problem_type_final` | `enum` | nullable | Set by moderator if they override the user's choice. If null, `problem_type_user` is the canonical type. |
 | `description` | `text` | nullable, max 1000 chars | User-provided free text |
 | `location` | `geometry(Point, 4326)` | NOT NULL | PostGIS point, WGS84 |
 | `address_raw` | `text` | nullable | Reverse-geocoded human-readable address |
 | `region_id` | `uuid` | FK → `regions.id`, nullable | Resolved from coordinates |
 | `photo_original_key` | `text` | NOT NULL | Cloudflare R2 object key for original upload |
 | `photo_optimized_key` | `text` | nullable | R2 key after Cloudflare Images processing |
-| `ai_job_id` | `uuid` | nullable | BullMQ job ID for AI classification |
-| `ai_raw_response` | `jsonb` | nullable | Raw Claude API response — kept for audit |
-| `ai_confidence` | `float4` | nullable | 0.0–1.0 confidence score from AI |
+| `ai_classify_job_id` | `text` | nullable | BullMQ job ID for pre-submit classification |
+| `ai_raw_response` | `jsonb` | nullable | Raw Claude API response — kept for audit, never exposed |
 | `moderated_by` | `uuid` | FK → `users.id`, nullable | Moderator who reviewed |
 | `moderated_at` | `timestamptz` | nullable | |
 | `rejection_reason` | `text` | nullable | Required if status = `rejected` |
 | `deleted_at` | `timestamptz` | nullable | Soft delete |
 | `created_at` | `timestamptz` | NOT NULL, default `now()` | |
 | `updated_at` | `timestamptz` | NOT NULL, default `now()` | |
+
+---
+
+### `photo_classifications`
+
+Temporary storage for AI classification results while the user is still filling out the submission form. Decoupled from `reports` — a classification exists before a report is created.
+
+| Column | Type | Constraints | Notes |
+|---|---|---|---|
+| `id` | `uuid` | PK | Also used as the `job_token` the client polls |
+| `user_id` | `uuid` | FK → `users.id`, NOT NULL | Must match the user who will create the report |
+| `photo_temp_key` | `text` | NOT NULL | R2 key of the uploaded photo (temp prefix, moved on report creation) |
+| `status` | `enum` | NOT NULL, default `pending` | `pending`, `completed`, `failed` |
+| `problem_type_ai` | `enum` | nullable | Result from Claude API |
+| `ai_confidence` | `float4` | nullable | |
+| `ai_raw_response` | `jsonb` | nullable | |
+| `expires_at` | `timestamptz` | NOT NULL | `now() + 30 minutes` — cron deletes expired rows and their R2 objects |
+| `created_at` | `timestamptz` | NOT NULL, default `now()` | |
+
+**On report creation:** the worker moves `photo_temp_key` to the permanent prefix, copies `problem_type_ai` / `ai_confidence` / `ai_raw_response` to the `reports` row, then deletes this `photo_classifications` row.
 
 ---
 
