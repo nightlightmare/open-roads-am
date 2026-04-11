@@ -81,11 +81,12 @@ model User {
   updated_at   DateTime @updatedAt @db.Timestamptz(6)
 
   // Relations
-  reports               Report[]              @relation("AuthorReports")
-  moderated_reports     Report[]              @relation("ModeratorReports")
-  report_confirmations  ReportConfirmation[]
-  report_status_changes ReportStatusHistory[]
-  api_keys              ApiKey[]
+  reports                Report[]              @relation("AuthorReports")
+  moderated_reports      Report[]              @relation("ModeratorReports")
+  report_confirmations   ReportConfirmation[]
+  report_status_changes  ReportStatusHistory[]
+  api_keys               ApiKey[]
+  photo_classifications  PhotoClassification[]
 
   @@map("users")
 }
@@ -186,6 +187,8 @@ model PhotoClassification {
   ai_raw_response Json?
   expires_at      DateTime                  @db.Timestamptz(6)
   created_at      DateTime                  @default(now()) @db.Timestamptz(6)
+
+  user User @relation(fields: [user_id], references: [id])
 
   @@index([user_id])
   @@index([expires_at])
