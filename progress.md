@@ -19,7 +19,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 
 ## Specs
 
-### ✅ Spec 01 — Data Model (v1.1)
+### ⬜ Spec 01 — Data Model (v1.1)
 
 - ✅ Schema designed (PostgreSQL + PostGIS)
 - ⬜ Prisma schema file (`schema.prisma`)
@@ -45,42 +45,40 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 
 #### Backend (`apps/api`)
 
-- ⬜ Install: `@clerk/fastify`, `@clerk/backend`, `ioredis`, `bcrypt`
-- ⬜ `fastify.decorateRequest('auth', null)` declared at server startup (Fastify v5)
-- ⬜ `verifyAuth` preHandler hook:
-  - ⬜ `createClerkClient().authenticateRequest(request, { authorizedParties })`
-  - ⬜ Returns `401 UNAUTHORIZED` if not authenticated
-  - ⬜ Sets `request.auth = { clerkId, role }` from `sessionClaims`
-  - ⬜ Never manually decodes JWT
-- ⬜ `requireRole(...roles)` helper
-- ⬜ `verifyApiKey` preHandler hook:
-  - ⬜ Reads `X-Api-Key` header
-  - ⬜ Looks up `key_prefix` in DB
-  - ⬜ `bcrypt.compare(key, record.key_hash)`
-  - ⬜ Caches successful lookup in Redis (`cache:apikey:<prefix>`, TTL 5min)
-  - ⬜ Sets `request.auth = { clerkId, role: 'gov_agency', scopes }`
-- ⬜ Clerk Webhook: `POST /api/v1/internal/clerk-webhook`
-  - ⬜ `verifyWebhook(request)` from `@clerk/fastify/webhooks`
-  - ⬜ `user.created` → INSERT into `users`, role defaults to `user`
-  - ⬜ `user.updated` → UPDATE `display_name`, `role`
-  - ⬜ `user.deleted` → soft-delete (`is_banned = true`)
-- ⬜ Role escalation: `POST /api/v1/admin/users/:clerk_id/role` (admin only)
-  - ⬜ Calls Clerk Admin API to update `publicMetadata`
-  - ⬜ Updates local `users.role`
-- ⬜ API key creation: `POST /api/v1/admin/api-keys` (admin only)
-  - ⬜ Generates `oak_live_` + 32 random bytes base58
-  - ⬜ Stores `bcrypt.hash(key, 12)` in DB
-  - ⬜ Returns plaintext key once, never again
-- ⬜ Rate limiting (Redis-based, runs before route handlers):
-  - ⬜ `POST /api/v1/classify` — 20 req/hour per user
-  - ⬜ `POST /api/v1/reports` — 10 req/24h per user
-  - ⬜ `POST /api/v1/moderation/*` — 200 req/min per user
-  - ⬜ `POST /api/v1/reports/:id/confirm` — 50 req/hour per user
-  - ⬜ `GET /api/v1/public/*` — 60 req/min per IP
-  - ⬜ `Retry-After` header on 429 responses
-- ⬜ Banned user check after JWT verification (cached in Redis, TTL 5min)
-- ⬜ `.env.example` with all required env vars
-- ⬜ Unit tests: `verifyAuth`, `requireRole`, `verifyApiKey`, rate limiter
+- ✅ Install: `@clerk/fastify`, `bcryptjs`, `bs58`
+- ✅ Shared types: `Role`, `ProblemType`, `ReportStatus`, `AuthPayload` in `@open-road/types`
+- ✅ `fastify.decorateRequest('auth', null)` declared at server startup (Fastify v5)
+- ✅ `verifyAuth` preHandler hook:
+  - ✅ Uses `clerkPlugin` + `getAuth(request)` from `@clerk/fastify`
+  - ✅ Returns `401 UNAUTHORIZED` if not authenticated
+  - ✅ Sets `request.auth = { clerkId, role }` from `sessionClaims`
+  - ✅ Never manually decodes JWT
+- ✅ `requireRole(...roles)` helper
+- ✅ `verifyApiKey` preHandler hook:
+  - ✅ Reads `X-Api-Key` header
+  - ✅ Looks up `key_prefix` in DB (via `ApiKeyRepository` interface — connects to Prisma in Spec 01)
+  - ✅ `bcrypt.compare(key, record.keyHash)`
+  - ✅ Caches successful lookup in Redis (`cache:apikey:<prefix>`, TTL 5min)
+  - ✅ Sets `request.auth = { clerkId, role, scopes }`
+- ✅ Clerk Webhook: `POST /api/v1/internal/clerk-webhook`
+  - ✅ `verifyWebhook(request)` from `@clerk/fastify/webhooks`
+  - ✅ `user.created` → INSERT into `users` (via `WebhookUserRepository` interface)
+  - ✅ `user.updated` → UPDATE `display_name`, `role`
+  - ✅ `user.deleted` → soft-delete (`is_banned = true`)
+- ✅ Role escalation: `POST /api/v1/admin/users/:clerk_id/role` (admin only)
+  - ✅ Calls Clerk Admin API to update `publicMetadata`
+  - ✅ Updates local `users.role` (via `UserRoleRepository` interface)
+- ✅ API key creation: `POST /api/v1/admin/api-keys` (admin only)
+  - ✅ Generates `oak_live_` + 32 random bytes base58
+  - ✅ Stores `bcrypt.hash(key, 12)` in DB
+  - ✅ Returns plaintext key once, never again
+- ✅ Rate limiting middleware (`rateLimit` util — Redis incr + expire)
+- ✅ Banned user check with Redis cache (TTL 5min) — via `createBannedCheck`
+- ✅ `.env.example` with all required env vars
+- ✅ Unit tests: `verifyAuth` (3), `requireRole` (4), `rateLimit` (5) — 12 tests passing
+- ⬜ Rate limiting wired to actual endpoints (done per-route in Specs 02–08)
+- ⬜ `Retry-After` header on 429 responses (done per-route)
+- ⬜ Repository interfaces connected to Prisma (done in Spec 01)
 
 ---
 
