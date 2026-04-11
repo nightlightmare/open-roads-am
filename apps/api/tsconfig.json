@@ -1,0 +1,10 @@
+{
+  "extends": "@open-road/config/tsconfig/node.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}

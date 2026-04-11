@@ -1,0 +1,33 @@
+{
+  "name": "@open-road/mobile",
+  "version": "0.0.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "dev": "expo start",
+    "build:ios": "eas build --platform ios",
+    "build:android": "eas build --platform android",
+    "lint": "oxlint ./app ./src",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@open-road/types": "workspace:*",
+    "expo": "~53.0.0",
+    "expo-router": "~4.0.0",
+    "expo-camera": "~16.0.0",
+    "expo-location": "~18.0.0",
+    "react": "^19.0.0",
+    "react-native": "0.79.0",
+    "react-native-maps": "^1.20.0",
+    "zod": "^3.24.0",
+    "zustand": "latest"
+  },
+  "devDependencies": {
+    "@open-road/config": "workspace:*",
+    "@types/react": "^19.0.0",
+    "typescript": "^5.7.0",
+    "oxlint": "^0.16.0",
+    "vitest": "^3.0.0"
+  }
+}

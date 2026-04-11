@@ -14,6 +14,9 @@ importers:
       lint-staged:
         specifier: ^15.3.0
         version: 15.5.2
+      oxlint:
+        specifier: ^0.16.0
+        version: 0.16.12
       turbo:
         specifier: ^2.5.0
         version: 2.9.6

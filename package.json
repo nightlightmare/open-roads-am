@@ -18,13 +18,13 @@
   "devDependencies": {
     "turbo": "^2.5.0",
     "husky": "^9.1.0",
-    "lint-staged": "^15.3.0"
+    "lint-staged": "^15.3.0",
+    "oxlint": "^0.16.0"
   },
   "packageManager": "pnpm@9.15.0",
   "lint-staged": {
     "*.{ts,tsx}": [
-      "oxlint --fix",
-      "bash -c 'tsc --noEmit'"
+      "pnpm exec oxlint --fix"
     ]
   }
 }

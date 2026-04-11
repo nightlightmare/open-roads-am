@@ -1,0 +1,27 @@
+{
+  "name": "@open-road/mcp-server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc --project tsconfig.build.json",
+    "start": "node dist/index.js",
+    "lint": "oxlint ./src",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@open-road/types": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@open-road/config": "workspace:*",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0",
+    "tsx": "^4.19.0",
+    "oxlint": "^0.16.0",
+    "vitest": "^3.0.0"
+  }
+}
