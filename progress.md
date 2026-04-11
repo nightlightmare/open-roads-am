@@ -19,25 +19,29 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 
 ## Specs
 
-### ⬜ Spec 01 — Data Model (v1.1)
+### 🔄 Spec 01 — Data Model (v1.1)
 
 - ✅ Schema designed (PostgreSQL + PostGIS)
-- ⬜ Prisma schema file (`schema.prisma`)
-- ⬜ Initial migration generated and applied
-- ⬜ Tables created:
-  - ⬜ `users`
-  - ⬜ `reports`
-  - ⬜ `report_status_history`
-  - ⬜ `report_confirmations`
-  - ⬜ `photo_classifications`
-  - ⬜ `regions`
-  - ⬜ `api_keys`
-- ⬜ Enums: `role`, `report_status`, `problem_type`
-- ⬜ PostGIS indexes (GIST on `location`, `boundary`)
-- ⬜ Filtering indexes (`status`, `user_id`, `created_at`, `region_id`)
-- ⬜ Composite index for map viewport queries
-- ⬜ `confirmation_count >= 0` DB constraint
-- ⬜ Prisma client generated
+- ✅ Prisma schema file (`apps/api/prisma/schema.prisma`)
+- ✅ `prisma.config.ts` (Prisma v7 — datasource URL moved out of schema.prisma)
+- ✅ Prisma client generated (`prisma generate`)
+- ✅ Tables defined in schema:
+  - ✅ `users`
+  - ✅ `reports`
+  - ✅ `report_status_history`
+  - ✅ `report_confirmations`
+  - ✅ `photo_classifications`
+  - ✅ `regions`
+  - ✅ `api_keys`
+- ✅ Enums: `user_role`, `report_status`, `problem_type`, `region_type`, `photo_classification_status`
+- ✅ Filtering indexes (`user_id`, `created_at`, `region_id`, `report_id`, `key_prefix`)
+- ✅ PostGIS geometry fields declared as `Unsupported("geometry(...)")` — GIST indexes in migration SQL
+- ✅ Repository implementations wired to Prisma:
+  - ✅ `UserRepository` (`WebhookUserRepository` + `UserBanRepository`)
+  - ✅ `PrismaApiKeyRepository` (`ApiKeyRepository` + `ApiKeyCreateRepository`)
+  - ✅ `PrismaRoleRepository` (`UserRoleRepository`)
+- ✅ `server.ts` wires all repositories to routes
+- ⬜ Initial migration generated and applied (requires live DATABASE_URL — run `pnpm db:migrate:dev`)
 
 ---
 

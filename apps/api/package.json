@@ -4,8 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:migrate:dev": "prisma migrate dev",
     "dev": "tsx watch src/index.ts",
-    "build": "tsc --project tsconfig.build.json",
+    "build": "prisma generate && tsc --project tsconfig.build.json",
     "start": "node dist/index.js",
     "lint": "oxlint ./src",
     "typecheck": "tsc --noEmit",

@@ -1,0 +1,214 @@
+// Prisma v7 schema — uses @prisma/adapter-ppg (no bundled query engine binary)
+// PostGIS types (geometry) are mapped to Unsupported("geometry(...)") and
+// handled via raw SQL for spatial queries.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [postgis]
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  user
+  moderator
+  gov_agency
+  admin
+
+  @@map("user_role")
+}
+
+enum ReportStatus {
+  pending_review
+  under_review
+  approved
+  in_progress
+  resolved
+  rejected
+  archived
+
+  @@map("report_status")
+}
+
+enum ProblemType {
+  pothole
+  damaged_barrier
+  missing_marking
+  damaged_sign
+  hazard
+  broken_light
+  missing_ramp
+  other
+
+  @@map("problem_type")
+}
+
+enum RegionType {
+  marz
+  city
+  district
+
+  @@map("region_type")
+}
+
+enum PhotoClassificationStatus {
+  pending
+  completed
+  failed
+
+  @@map("photo_classification_status")
+}
+
+// ---------------------------------------------------------------------------
+// Tables
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clerk_id     String   @unique
+  role         UserRole @default(user)
+  display_name String?
+  reports_today Int     @default(0)
+  is_banned    Boolean  @default(false)
+  created_at   DateTime @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  reports                Report[]              @relation("AuthorReports")
+  moderated_reports      Report[]              @relation("ModeratorReports")
+  report_confirmations   ReportConfirmation[]
+  report_status_changes  ReportStatusHistory[]
+  api_keys               ApiKey[]
+  photo_classifications  PhotoClassification[]
+
+  @@map("users")
+}
+
+model Region {
+  id        String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name_hy   String
+  name_ru   String
+  name_en   String
+  // geometry(MultiPolygon, 4326) — managed via raw SQL / migrations
+  boundary  Unsupported("geometry(MultiPolygon, 4326)")
+  type      RegionType
+  parent_id String?    @db.Uuid
+
+  parent   Region?  @relation("RegionHierarchy", fields: [parent_id], references: [id])
+  children Region[] @relation("RegionHierarchy")
+  reports  Report[]
+
+  @@map("regions")
+}
+
+model Report {
+  id                  String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id             String       @db.Uuid
+  status              ReportStatus @default(pending_review)
+  problem_type_ai     ProblemType?
+  ai_confidence       Float?       @db.Real
+  problem_type_user   ProblemType?
+  problem_type_final  ProblemType?
+  description         String?
+  // geometry(Point, 4326) — managed via raw SQL / migrations
+  location            Unsupported("geometry(Point, 4326)")
+  address_raw         String?
+  region_id           String?      @db.Uuid
+  photo_original_key  String
+  photo_optimized_key String?
+  ai_classify_job_id  String?
+  ai_raw_response     Json?
+  moderated_by        String?      @db.Uuid
+  moderated_at        DateTime?    @db.Timestamptz(6)
+  rejection_reason    String?
+  confirmation_count  Int          @default(0)
+  deleted_at          DateTime?    @db.Timestamptz(6)
+  created_at          DateTime     @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime     @updatedAt @db.Timestamptz(6)
+
+  // Relations
+  author        User                  @relation("AuthorReports", fields: [user_id], references: [id])
+  moderator     User?                 @relation("ModeratorReports", fields: [moderated_by], references: [id])
+  region        Region?               @relation(fields: [region_id], references: [id])
+  status_history ReportStatusHistory[]
+  confirmations  ReportConfirmation[]
+
+  @@index([user_id])
+  @@index([region_id])
+  @@index([created_at(sort: Desc)])
+  @@map("reports")
+}
+
+model ReportStatusHistory {
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  report_id       String       @db.Uuid
+  from_status     ReportStatus?
+  to_status       ReportStatus
+  changed_by      String?      @db.Uuid
+  changed_by_role UserRole?
+  note            String?
+  created_at      DateTime     @default(now()) @db.Timestamptz(6)
+
+  report     Report @relation(fields: [report_id], references: [id])
+  actor      User?  @relation(fields: [changed_by], references: [id])
+
+  @@index([report_id])
+  @@map("report_status_history")
+}
+
+model ReportConfirmation {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  report_id String   @db.Uuid
+  user_id   String   @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+
+  report Report @relation(fields: [report_id], references: [id])
+  user   User   @relation(fields: [user_id], references: [id])
+
+  @@unique([report_id, user_id])
+  @@index([report_id])
+  @@map("report_confirmations")
+}
+
+model PhotoClassification {
+  id              String                    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id         String                    @db.Uuid
+  photo_temp_key  String
+  status          PhotoClassificationStatus @default(pending)
+  problem_type_ai ProblemType?
+  ai_confidence   Float?                    @db.Real
+  ai_raw_response Json?
+  expires_at      DateTime                  @db.Timestamptz(6)
+  created_at      DateTime                  @default(now()) @db.Timestamptz(6)
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+  @@index([expires_at])
+  @@map("photo_classifications")
+}
+
+model ApiKey {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id      String    @db.Uuid
+  key_hash     String    @unique
+  key_prefix   String
+  label        String
+  scopes       String[]
+  last_used_at DateTime? @db.Timestamptz(6)
+  expires_at   DateTime? @db.Timestamptz(6)
+  revoked_at   DateTime? @db.Timestamptz(6)
+  created_at   DateTime  @default(now()) @db.Timestamptz(6)
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@index([key_prefix])
+  @@map("api_keys")
+}
