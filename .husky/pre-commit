@@ -1,0 +1,2 @@
+export PATH="/Users/daramaslova/Library/pnpm:$PATH"
+pnpm lint-staged
