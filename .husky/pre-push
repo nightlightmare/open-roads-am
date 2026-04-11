@@ -1,3 +1,4 @@
-export PATH="/Users/daramaslova/Library/pnpm:$PATH"
-pnpm typecheck
-pnpm test
+# Add common pnpm install locations to PATH (portable across developers)
+export PATH="$HOME/Library/pnpm:$HOME/.local/share/pnpm:/opt/homebrew/bin:/usr/local/bin:$PATH"
+./node_modules/.bin/turbo typecheck
+./node_modules/.bin/turbo test
