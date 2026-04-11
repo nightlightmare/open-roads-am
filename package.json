@@ -1,0 +1,30 @@
+{
+  "name": "open-road-am",
+  "private": true,
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=9"
+  },
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "format": "turbo format",
+    "clean": "turbo clean && rm -rf node_modules",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0",
+    "husky": "^9.1.0",
+    "lint-staged": "^15.3.0"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "oxlint --fix",
+      "bash -c 'tsc --noEmit'"
+    ]
+  }
+}
