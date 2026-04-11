@@ -18,7 +18,7 @@
     },
     "test": {
       "dependsOn": ["^build"],
-      "outputs": ["coverage/**"],
+      "cache": false,
       "env": ["NODE_ENV"]
     },
     "clean": {
