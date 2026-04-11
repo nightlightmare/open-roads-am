@@ -1,5 +1,5 @@
 {
-  "extends": "@open-road/config/tsconfig/nextjs.json",
+  "extends": "../config/tsconfig/nextjs.json",
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
 }
