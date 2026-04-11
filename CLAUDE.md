@@ -50,3 +50,9 @@
 - Every feature starts with a spec file in `/specs/<feature-name>.md`
 - Spec must be reviewed and approved before implementation begins
 - Implementation must match the spec — deviations require spec update first
+
+## Progress Tracking
+
+- **Update `progress.md` on every commit** — mark completed items with ✅
+- Progress must reflect the actual state of the code, not plans
+- When a spec section is fully done, mark the spec header as ✅
