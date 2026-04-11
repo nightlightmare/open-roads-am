@@ -1,7 +1,7 @@
 # Spec 01 — Data Model
 
 **Status:** Draft
-**Version:** 1.0
+**Version:** 1.1 (updated: Prisma v7 + @prisma/adapter-ppg)
 **Date:** April 2026
 
 ---
@@ -9,6 +9,8 @@
 ## Overview
 
 This spec defines the core database schema for open-road.am. All tables live in PostgreSQL with the PostGIS extension enabled. The schema is managed via Prisma migrations.
+
+**Prisma version:** v7 (latest). Use `@prisma/adapter-ppg` (the official `pg`-based driver adapter) for the PostgreSQL connection — required in Prisma v7 which no longer bundles its own query engine binary by default. Install both `prisma` and `@prisma/client` at `^7.0.0`.
 
 ---
 
