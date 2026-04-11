@@ -19,7 +19,7 @@
     "react-dom": "^19.0.0",
     "maplibre-gl": "latest",
     "zustand": "latest",
-    "zod": "^3.24.0"
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@open-road/config": "workspace:*",
