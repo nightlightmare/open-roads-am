@@ -9,7 +9,7 @@
     "build:android": "eas build --platform android",
     "lint": "oxlint ./app ./src",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@open-road/types": "workspace:*",

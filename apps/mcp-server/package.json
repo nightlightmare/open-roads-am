@@ -9,7 +9,7 @@
     "start": "node dist/index.js",
     "lint": "oxlint ./src",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
     "@open-road/types": "workspace:*",
