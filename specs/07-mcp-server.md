@@ -1,14 +1,14 @@
 # Spec 07 — MCP Server
 
 **Status:** Draft
-**Version:** 1.0
+**Version:** 1.1 (updated: MCP SDK tool registration API, removed non-existent sensitive field)
 **Date:** April 2026
 
 ---
 
 ## Overview
 
-The MCP server exposes OpenRoad.am data to external AI agents (Claude, GPT, Cursor, etc.) via the Model Context Protocol. It is a separate app (`apps/mcp-server/`) that talks to the Fastify API — it does not connect to the database directly.
+The MCP server exposes open-road.am data to external AI agents (Claude, GPT, Cursor, etc.) via the Model Context Protocol. It is a separate app (`apps/mcp-server/`) that talks to the Fastify API — it does not connect to the database directly.
 
 Read-only tools are public (no key). Write tools require an API key with the appropriate scope.
 
@@ -31,6 +31,40 @@ The MCP server is a thin adapter. All business logic and authorization lives in 
 - Formats API responses into MCP-compatible output
 - Handles its own input validation before forwarding to the API
 - Never connects to DB or Redis directly
+
+---
+
+## SDK
+
+Package: `@modelcontextprotocol/sdk`
+
+Server is created with `McpServer` and tools are registered via `server.registerTool(name, config, handler)`:
+
+```typescript
+import { McpServer, StdioServerTransport } from '@modelcontextprotocol/sdk/server'
+import { z } from 'zod'
+
+const server = new McpServer({ name: 'open-road-mcp', version: '1.0.0' })
+
+server.registerTool(
+  'get_reports',
+  {
+    description: 'Get road problem reports by bounding box or radius',
+    inputSchema: z.object({
+      bbox: z.object({ west: z.number(), south: z.number(), east: z.number(), north: z.number() }).optional(),
+      lat: z.number().optional(),
+      lng: z.number().optional(),
+      radius_km: z.number().max(50).optional(),
+    }),
+  },
+  async (input) => {
+    // ... call internal API
+    return { content: [{ type: 'text', text: '...' }] }
+  }
+)
+```
+
+Tool handler returns `{ content: [{ type: 'text', text: '...' }] }` on success, or `{ isError: true, content: [...] }` on failure.
 
 ---
 
@@ -231,7 +265,7 @@ No internal error details forwarded to the AI agent.
 - API keys passed as tool input are forwarded in the `X-Api-Key` header and **never logged**
 - MCP server does not store any state — fully stateless
 - Rate limiting is enforced by the API, not the MCP server
-- `api_key` field is marked as `sensitive: true` in the MCP tool schema — compliant MCP clients will not display it in logs
+- `api_key` is passed as a regular tool input field — instruct users to treat it as a secret; the MCP SDK does not have a native `sensitive` field type
 - The MCP server runs on a separate port and is not exposed via Cloudflare WAF directly — access goes through the same Fastify API server's trust boundary
 
 ---

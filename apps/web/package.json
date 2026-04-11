@@ -1,0 +1,33 @@
+{
+  "name": "@open-road/web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "oxlint ./src",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@open-road/types": "workspace:*",
+    "@open-road/ui": "workspace:*",
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "maplibre-gl": "latest",
+    "zustand": "latest",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@open-road/config": "workspace:*",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.7.0",
+    "oxlint": "^0.16.0",
+    "vitest": "^3.0.0",
+    "@vitejs/plugin-react": "^4.0.0"
+  }
+}

@@ -1,7 +1,7 @@
 # Spec 06 — Auth & Roles
 
 **Status:** Draft
-**Version:** 1.0
+**Version:** 1.1 (updated: Clerk API corrections, Fastify v5 decorateRequest)
 **Date:** April 2026
 
 **Development priority: HIGH — implement before any protected endpoint.**
@@ -55,32 +55,54 @@ The `role` field is set in Clerk's `publicMetadata` — only the backend (via Cl
 
 All protected routes go through a `verifyAuth` Fastify preHandler hook.
 
+**Package:** `@clerk/fastify` — Clerk's official Fastify integration.
+
+### Fastify v5 setup
+
+In Fastify v5, `request` cannot be decorated with reference types (objects) without declaring the decorator first. Declare `auth` before the server starts:
+
+```typescript
+// Declare decorator once at server startup
+fastify.decorateRequest('auth', null)
+```
+
 ### Hook logic
 
 ```typescript
-async function verifyAuth(request, reply) {
-  const header = request.headers.authorization
-  if (!header?.startsWith('Bearer ')) {
+import { createClerkClient } from '@clerk/backend'
+
+const clerk = createClerkClient({
+  secretKey: process.env.CLERK_SECRET_KEY,
+  publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
+})
+
+async function verifyAuth(request: FastifyRequest, reply: FastifyReply) {
+  const { isAuthenticated, toAuth } = await clerk.authenticateRequest(request, {
+    // Prevent CSRF — list all domains that may send requests
+    authorizedParties: [process.env.WEB_URL, process.env.MOBILE_SCHEME],
+  })
+
+  if (!isAuthenticated) {
     return reply.code(401).send({ code: 'UNAUTHORIZED' })
   }
 
-  const token = header.slice(7)
+  const auth = toAuth()
 
-  // Verify with Clerk SDK — checks signature, expiry, issuer
-  const payload = await clerkClient.verifyToken(token)
-  // Never manually decode JWT — always use Clerk SDK verification
-
+  // role is a custom claim added via Clerk JWT template from publicMetadata
+  // toAuth() exposes sessionClaims which includes custom template fields
   request.auth = {
-    clerkId: payload.sub,
-    role: payload.role ?? 'user'
+    clerkId: auth.userId,
+    role: (auth.sessionClaims?.role as Role) ?? 'user',
   }
 }
 ```
 
 **Critical rules:**
-- Never manually `jwt.decode()` without verification — always use `clerkClient.verifyToken()`
-- Never trust `role` from the request body — always read from verified JWT payload
-- Never cache verified tokens server-side — Clerk handles token validity; revoked tokens must fail immediately
+- Never manually `jwt.decode()` — always use `clerk.authenticateRequest()`
+- Never trust `role` from the request body — always read from verified `sessionClaims`
+- Never cache verified tokens server-side — revoked tokens must fail immediately
+- `authorizedParties` is required — prevents CSRF attacks from unauthorized origins
+- `fastify.decorateRequest('auth', null)` must be called before any route registration (Fastify v5 requirement)
 
 ### Route registration pattern
 
@@ -150,11 +172,24 @@ Calls Clerk Admin API to update `publicMetadata`. Also updates the local `users.
 
 ### `POST /api/v1/internal/clerk-webhook`
 
-**Auth:** Webhook signature verification (Svix) — NOT a JWT endpoint.
+**Auth:** Webhook signature verification — NOT a JWT endpoint.
 
-Verifies the `svix-id`, `svix-timestamp`, `svix-signature` headers against the webhook secret before processing. Reject all requests that fail signature verification with `400`.
+Use Clerk's official `verifyWebhook` helper from `@clerk/fastify/webhooks`. It handles Svix signature verification internally — no manual header parsing needed.
 
-Replay attack protection: reject events with `svix-timestamp` older than 5 minutes.
+```typescript
+import { verifyWebhook } from '@clerk/fastify/webhooks'
+
+fastify.post('/api/v1/internal/clerk-webhook', async (request, reply) => {
+  try {
+    const evt = await verifyWebhook(request)
+    // evt.type, evt.data available here
+  } catch (err) {
+    return reply.code(400).send('Webhook verification failed')
+  }
+})
+```
+
+`verifyWebhook` validates `svix-id`, `svix-timestamp`, `svix-signature` headers and rejects replayed events automatically. Signing secret read from `CLERK_WEBHOOK_SIGNING_SECRET` env var.
 
 #### `user.created`
 
@@ -286,10 +321,11 @@ Only cache after bcrypt verification succeeds. Invalidate on key revocation.
 
 ## Security Checklist
 
-- [ ] JWT verified via Clerk SDK on every protected request — no manual decode
-- [ ] `role` read from verified JWT payload only — never from request body
-- [ ] Webhook signature verified via Svix before processing
-- [ ] Webhook replay protection: reject events older than 5 minutes
+- [ ] JWT verified via `clerk.authenticateRequest()` — no manual decode, no manual `verifyToken()`
+- [ ] `role` read from `sessionClaims` in verified auth object only — never from request body
+- [ ] `authorizedParties` set in `authenticateRequest()` — prevents CSRF
+- [ ] `fastify.decorateRequest('auth', null)` declared before route registration (Fastify v5)
+- [ ] Webhook signature verified via `verifyWebhook()` from `@clerk/fastify/webhooks`
 - [ ] `user.created` webhook: role always defaults to `user` regardless of payload
 - [ ] API key stored as bcrypt hash — plaintext shown once on creation only
 - [ ] API key lookup cached in Redis after successful bcrypt verify

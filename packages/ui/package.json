@@ -1,0 +1,21 @@
+{
+  "name": "@open-road/ui",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint ./src"
+  },
+  "devDependencies": {
+    "@open-road/config": "workspace:*",
+    "typescript": "^5.7.0",
+    "oxlint": "^0.16.0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  }
+}
