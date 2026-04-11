@@ -78,7 +78,9 @@ Returns reports awaiting review, ordered by `created_at ASC` (oldest first).
 
 Transitions report from `pending_review` → `under_review`. Signals to other moderators that this report is being handled.
 
-- If report is already `under_review` by another moderator: returns `409 CONFLICT` with `{ "moderator_display_name": "..." }` so the current moderator can skip it.
+- Acquires a **Redis lease** on the report (key: `moderation:lock:<report_id>`, TTL: 15 minutes, value: `<clerk_id>`).
+- If the lease already exists and belongs to another moderator: returns `409 CONFLICT` with `{ "locked_by_display_name": "...", "lock_expires_at": "..." }` — current moderator skips to next.
+- If the lease exists and belongs to the current moderator (reconnect after page refresh): refreshes TTL, proceeds.
 - If report is in any other status: returns `400 INVALID_TRANSITION`.
 
 Records entry in `report_status_history`.
@@ -300,6 +302,58 @@ No other transitions allowed for this role.
 
 ---
 
+## Lease Management
+
+### Lease lifecycle
+
+```
+POST /moderation/reports/:id/open
+  → SET moderation:lock:<id> <clerk_id> EX 900 NX
+  → report status: pending_review → under_review
+
+[moderator acts within 15 min]
+  → approve or reject
+  → DEL moderation:lock:<id>
+
+[moderator closes browser / goes idle]
+  → lease expires after 15 min (Redis TTL)
+  → cron reverts report: under_review → pending_review
+```
+
+### `DELETE /api/v1/moderation/reports/:id/lock`
+
+**Auth:** Clerk JWT, role `moderator` or `admin`
+
+Explicitly releases the lease early (e.g. moderator clicks "skip" or "back"). Only the moderator who holds the lease can release it. Admin can release any lock.
+
+- DELETE Redis key `moderation:lock:<report_id>`
+- Revert report `status` back to `pending_review`
+- INSERT `report_status_history` row
+
+#### Response `200 OK`
+
+```json
+{ "id": "uuid", "status": "pending_review" }
+```
+
+### Lease Expiry Cron
+
+Runs every **2 minutes**:
+
+```sql
+UPDATE reports
+SET status = 'pending_review', updated_at = now()
+WHERE status = 'under_review'
+  AND id NOT IN (
+    -- reports with an active Redis lease
+    -- checked via application-level scan of moderation:lock:* keys
+  )
+```
+
+Implementation note: the cron fetches all active lease keys from Redis (`SCAN moderation:lock:*`), then reverts any `under_review` report whose ID is not in that set. Also inserts a `report_status_history` row for each reverted report with `note = 'lease_expired'`.
+
+---
+
 ## Automated Archiving (Cron)
 
 Two archiving rules run daily at 03:00 AM Yerevan time:
@@ -319,7 +373,8 @@ Archived reports are excluded from the moderation queue and map by default but r
 - `moderated_by` is set server-side from the JWT, never from the request body
 - `rejection_reason` stored in DB but never returned via public API
 - `problem_type_ai`, `ai_confidence`, `ai_raw_response` visible in moderation API only
-- Moderator cannot approve/reject a report they didn't open (must be in `under_review` by them) — **soft check in v1**: warn if opened by another moderator, but don't hard-block (avoids deadlock if moderator closes browser without releasing)
+- Approve/reject requires the caller to hold the Redis lease for that report — if lease is missing or belongs to another moderator, return `409 CONFLICT`. This prevents race conditions between concurrent moderators.
+- Lease TTL is 15 minutes. If a moderator closes the browser without acting, the lease expires automatically and the report returns to `pending_review` status via a cron job (see Lease Expiry below).
 - All state transitions validated server-side against the allowed state machine from Spec 01
 
 ---
