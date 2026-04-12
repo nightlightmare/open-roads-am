@@ -64,7 +64,7 @@ Classification operates on the `photo_classifications` table (see Spec 01). The 
 
 ## Claude API Request
 
-**Model:** `claude-sonnet-4-5`
+**Model:** `claude-haiku-4-5-20251001`
 **Method:** Messages API with vision (base64 image)
 
 ### Image preparation
@@ -117,7 +117,7 @@ Rules:
 
 ```typescript
 {
-  model: 'claude-sonnet-4-5',
+  model: 'claude-haiku-4-5-20251001',
   max_tokens: 256,
   temperature: 0,       // deterministic output for classification tasks
   messages: [
