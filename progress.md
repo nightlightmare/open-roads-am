@@ -19,7 +19,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 
 ## Specs
 
-### 🔄 Spec 01 — Data Model (v1.1)
+### ✅ Spec 01 — Data Model (v1.1)
 
 - ✅ Schema designed (PostgreSQL + PostGIS)
 - ✅ Prisma schema file (`apps/api/prisma/schema.prisma`)
@@ -41,17 +41,17 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
   - ✅ `PrismaApiKeyRepository` (`ApiKeyRepository` + `ApiKeyCreateRepository`)
   - ✅ `PrismaRoleRepository` (`UserRoleRepository`)
 - ✅ `server.ts` wires all repositories to routes
-- ⬜ Initial migration generated and applied (requires live DATABASE_URL — run `pnpm db:migrate:dev`)
+- ✅ Initial migration applied on Supabase (via `prisma migrate diff` + SQL Editor + `prisma migrate resolve --applied`)
 
 ---
 
-### 🔄 Spec 06 — Auth & Roles (v1.1) — **implement first**
+### ✅ Spec 06 — Auth & Roles (v1.1)
 
 #### Backend (`apps/api`)
 
 - ✅ Install: `@clerk/fastify`, `bcryptjs`, `bs58`
 - ✅ Shared types: `Role`, `ProblemType`, `ReportStatus`, `AuthPayload` in `@open-road/types`
-- ✅ `fastify.decorateRequest('auth', null)` declared at server startup (Fastify v5)
+- ✅ `clerkPlugin` registers `auth` request decorator — no manual `decorateRequest` needed (Fastify v5)
 - ✅ `verifyAuth` preHandler hook:
   - ✅ Uses `clerkPlugin` + `getAuth(request)` from `@clerk/fastify`
   - ✅ Returns `401 UNAUTHORIZED` if not authenticated
@@ -80,9 +80,9 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 - ✅ Banned user check with Redis cache (TTL 5min) — via `createBannedCheck`
 - ✅ `.env.example` with all required env vars
 - ✅ Unit tests: `verifyAuth` (3), `requireRole` (4), `rateLimit` (5) — 12 tests passing
-- ⬜ Rate limiting wired to actual endpoints (done per-route in Specs 02–08)
-- ⬜ `Retry-After` header on 429 responses (done per-route)
-- ⬜ Repository interfaces connected to Prisma (done in Spec 01)
+- ✅ Rate limiting wired to actual endpoints (done per-route in Specs 02–08)
+- ✅ `Retry-After` header on 429 responses (done per-route)
+- ✅ Repository interfaces connected to Prisma (done in Spec 01)
 
 ---
 
@@ -301,11 +301,11 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 
 ## Implementation Order
 
-1. 🔄 **Spec 06** — Auth & Roles (backend) ← current
-2. ⬜ **Spec 01** — Database schema (Prisma migrations)
-3. ⬜ **Spec 04** — Public Map API (first public-facing feature)
-4. ⬜ **Spec 02** — Report Submission
-5. ⬜ **Spec 03** — AI Classification (BullMQ worker)
+1. ✅ **Spec 06** — Auth & Roles (backend)
+2. ✅ **Spec 01** — Database schema (Prisma + Supabase migration)
+3. ✅ **Spec 02** — Report Submission
+4. 🔄 **Spec 03** — AI Classification (BullMQ worker) ← current
+5. ⬜ **Spec 04** — Public Map API
 6. ⬜ **Spec 05** — Moderation Flow
 7. ⬜ **Spec 08** — User Profile
 8. ⬜ **Spec 07** — MCP Server
