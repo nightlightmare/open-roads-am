@@ -102,13 +102,14 @@ export function applyConfidenceThreshold(result: ClassificationResult): string |
 }
 
 export function startClassifyWorker(opts: {
-  redis: Redis
+  redis: Redis        // shared client for metrics/alerts
+  workerRedis: Redis  // dedicated client for BullMQ (maxRetriesPerRequest: null)
   s3: S3Client
   r2Bucket: string
   claudeApiKey: string
   classificationRepo: ClassificationRepository
 }): Worker<ClassifyJobData> {
-  const { redis, s3, r2Bucket, claudeApiKey, classificationRepo } = opts
+  const { redis, workerRedis, s3, r2Bucket, claudeApiKey, classificationRepo } = opts
   const anthropic = new Anthropic({ apiKey: claudeApiKey })
 
   const worker = new Worker<ClassifyJobData>(
@@ -172,7 +173,7 @@ export function startClassifyWorker(opts: {
       )
     },
     {
-      connection: redis,
+      connection: workerRedis,
       concurrency: 2,
     },
   )
