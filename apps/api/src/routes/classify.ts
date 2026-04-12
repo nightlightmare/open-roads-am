@@ -102,7 +102,7 @@ export async function classifyRoutes(
       })
 
       // Enqueue BullMQ job
-      await queue.add(JOB_CLASSIFY, { classificationId }, {
+      await queue.add(JOB_CLASSIFY, { classificationId, photoTempKey }, {
         attempts: 3,
         backoff: { type: 'exponential', delay: 60_000 },
         removeOnComplete: { age: 86400 },

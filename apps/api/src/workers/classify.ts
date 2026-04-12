@@ -116,19 +116,13 @@ export function startClassifyWorker(opts: {
     async (job) => {
       if (job.name !== JOB_CLASSIFY) return
 
-      const { classificationId } = job.data
+      const { classificationId, photoTempKey } = job.data
       const startedAt = Date.now()
 
       console.log(JSON.stringify({ jobId: job.id, classificationId, status: 'started', attempt: job.attemptsMade + 1 }))
 
-      // Fetch classification record
-      const record = await classificationRepo.findById(classificationId)
-      if (!record) {
-        throw new Error(`Classification ${classificationId} not found`)
-      }
-
       // Prepare image
-      const { data, mediaType } = await fetchAndPrepareImage(s3, r2Bucket, record.photoTempKey)
+      const { data, mediaType } = await fetchAndPrepareImage(s3, r2Bucket, photoTempKey)
 
       // Call Claude API
       const message = await anthropic.messages.create({
