@@ -5,7 +5,7 @@ import fastifyMultipart from '@fastify/multipart'
 import { clerkPlugin } from '@clerk/fastify'
 import type { Env } from './env.js'
 import { getPrisma } from './lib/prisma.js'
-import { getRedis } from './lib/redis.js'
+import { getRedis, getBullMQRedis } from './lib/redis.js'
 import { getR2 } from './lib/r2.js'
 import { UserRepository } from './repositories/user.repository.js'
 import { PrismaApiKeyRepository } from './repositories/api-key.repository.js'
@@ -77,6 +77,7 @@ export async function buildServer(env: Env) {
     startCleanupCron(classificationRepo, s3, env.R2_BUCKET)
     startClassifyWorker({
       redis,
+      workerRedis: getBullMQRedis(env.REDIS_URL),
       s3,
       r2Bucket: env.R2_BUCKET,
       claudeApiKey: env.CLAUDE_API_KEY,
