@@ -1,4 +1,6 @@
 import Fastify from 'fastify'
+import fastifyHelmet from '@fastify/helmet'
+import fastifyCors from '@fastify/cors'
 import fastifyMultipart from '@fastify/multipart'
 import { clerkPlugin } from '@clerk/fastify'
 import type { Env } from './env.js'
@@ -39,6 +41,11 @@ export async function buildServer(env: Env) {
   const reportRepo = new PrismaReportRepository(db)
 
   // Plugins
+  await fastify.register(fastifyHelmet)
+  await fastify.register(fastifyCors, {
+    origin: env.NODE_ENV === 'production' ? [env.WEB_URL] : true,
+    credentials: true,
+  })
   await fastify.register(clerkPlugin)
   await fastify.register(fastifyMultipart, {
     limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB — hard backstop
@@ -47,8 +54,8 @@ export async function buildServer(env: Env) {
 
   // Routes
   await fastify.register(clerkWebhookRoutes, { db: userRepo })
-  await fastify.register(adminApiKeyRoutes, { db: apiKeyRepo })
-  await fastify.register(adminRoleRoutes, { db: roleRepo })
+  await fastify.register(adminApiKeyRoutes, { db: apiKeyRepo, redis })
+  await fastify.register(adminRoleRoutes, { db: roleRepo, redis })
   await fastify.register(classifyRoutes, {
     db: classificationRepo,
     banDb: userRepo,
