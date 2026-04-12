@@ -13,7 +13,7 @@
     "test": "turbo test",
     "format": "turbo format",
     "clean": "turbo clean && rm -rf node_modules",
-    "prepare": "husky"
+    "prepare": "node -e \"if(process.env.NODE_ENV!=='production'){require('child_process').execSync('husky',{stdio:'inherit'})}\""
   },
   "devDependencies": {
     "turbo": "^2.5.0",
