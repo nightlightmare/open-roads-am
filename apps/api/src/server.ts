@@ -43,7 +43,8 @@ export async function buildServer(env: Env) {
   // Plugins
   await fastify.register(clerkPlugin)
   await fastify.register(fastifyMultipart, {
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB — hard limit at multipart level
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB — hard backstop
+    throwFileSizeLimit: false, // we return 400 ourselves; plugin just truncates the stream
   })
 
   // Routes

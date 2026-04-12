@@ -57,15 +57,10 @@ describe('POST /api/v1/classify', () => {
 
   it('returns 400 INVALID_PHOTO for unknown magic bytes', async () => {
     const app = await buildApp()
-    const form = new FormData()
-    // Not a valid JPEG/PNG
-    form.append('photo', new Blob([Buffer.from([0x00, 0x01, 0x02, 0x03])], { type: 'image/jpeg' }), 'photo.jpg')
-
     const res = await app.inject({
       method: 'POST',
       url: '/api/v1/classify',
-      headers: { 'content-type': 'multipart/form-data; boundary=----boundary' },
-      // Inject raw multipart manually via payload
+      headers: { 'content-type': 'multipart/form-data; boundary=----testboundary' },
       payload: buildMultipart([0x00, 0x01, 0x02, 0x03]),
     })
     expect(res.statusCode).toBe(400)
