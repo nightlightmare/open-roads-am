@@ -101,7 +101,9 @@ export async function reportRoutes(
       await classificationDb.delete(job_token)
 
       // Async: resolve region + address (fire and forget — non-blocking per spec)
-      resolveGeoAsync(reportDb, id, latitude, longitude).catch(() => undefined)
+      resolveGeoAsync(reportDb, id, latitude, longitude).catch((err: unknown) => {
+        fastify.log.error({ err, reportId: id }, 'geo resolution failed')
+      })
 
       // Notify moderators via Redis pub/sub
       await redis.publish(

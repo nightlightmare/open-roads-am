@@ -3,8 +3,10 @@ import { randomBytes } from 'node:crypto'
 import bcrypt from 'bcryptjs'
 import bs58 from 'bs58'
 import { z } from 'zod'
+import type { Redis } from 'ioredis'
 import { verifyAuth } from '../../middleware/verify-auth.js'
 import { requireRole } from '../../middleware/require-role.js'
+import { rateLimit, RateLimitError } from '../../middleware/rate-limit.js'
 
 const CreateApiKeySchema = z.object({
   userId: z.string().min(1),
@@ -24,12 +26,21 @@ export interface ApiKeyCreateRepository {
 
 export async function adminApiKeyRoutes(
   fastify: FastifyInstance,
-  options: { db: ApiKeyCreateRepository },
+  options: { db: ApiKeyCreateRepository; redis: Redis },
 ): Promise<void> {
   fastify.post(
     '/api/v1/admin/api-keys',
     { preHandler: [verifyAuth, requireRole('admin')] },
     async (request, reply) => {
+      try {
+        await rateLimit(options.redis, `rate:admin:api-keys:${request.auth!.clerkId}`, 5, 3600)
+      } catch (err) {
+        if (err instanceof RateLimitError) {
+          return reply.code(429).header('Retry-After', '3600').send({ code: 'RATE_LIMIT_EXCEEDED' })
+        }
+        throw err
+      }
+
       const parsed = CreateApiKeySchema.safeParse(request.body)
       if (!parsed.success) {
         return reply.code(400).send({ code: 'VALIDATION_ERROR', errors: parsed.error.flatten() })

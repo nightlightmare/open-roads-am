@@ -1,4 +1,6 @@
 import Fastify from 'fastify'
+import fastifyHelmet from '@fastify/helmet'
+import fastifyCors from '@fastify/cors'
 import fastifyMultipart from '@fastify/multipart'
 import { clerkPlugin } from '@clerk/fastify'
 import type { Env } from './env.js'
@@ -16,6 +18,7 @@ import { adminRoleRoutes } from './routes/admin/roles.js'
 import { classifyRoutes } from './routes/classify.js'
 import { reportRoutes } from './routes/reports.js'
 import { startCleanupCron } from './workers/cleanup.js'
+import { startClassifyWorker } from './workers/classify.js'
 
 export async function buildServer(env: Env) {
   const fastify = Fastify({
@@ -38,6 +41,11 @@ export async function buildServer(env: Env) {
   const reportRepo = new PrismaReportRepository(db)
 
   // Plugins
+  await fastify.register(fastifyHelmet)
+  await fastify.register(fastifyCors, {
+    origin: env.NODE_ENV === 'production' ? [env.WEB_URL] : true,
+    credentials: true,
+  })
   await fastify.register(clerkPlugin)
   await fastify.register(fastifyMultipart, {
     limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB — hard backstop
@@ -46,8 +54,8 @@ export async function buildServer(env: Env) {
 
   // Routes
   await fastify.register(clerkWebhookRoutes, { db: userRepo })
-  await fastify.register(adminApiKeyRoutes, { db: apiKeyRepo })
-  await fastify.register(adminRoleRoutes, { db: roleRepo })
+  await fastify.register(adminApiKeyRoutes, { db: apiKeyRepo, redis })
+  await fastify.register(adminRoleRoutes, { db: roleRepo, redis })
   await fastify.register(classifyRoutes, {
     db: classificationRepo,
     banDb: userRepo,
@@ -64,9 +72,16 @@ export async function buildServer(env: Env) {
     redis,
   })
 
-  // Background cron (only in non-test envs)
+  // Background workers (only in non-test envs)
   if (env.NODE_ENV !== 'test') {
     startCleanupCron(classificationRepo, s3, env.R2_BUCKET)
+    startClassifyWorker({
+      redis,
+      s3,
+      r2Bucket: env.R2_BUCKET,
+      claudeApiKey: env.CLAUDE_API_KEY,
+      classificationRepo,
+    })
   }
 
   return { fastify, redis }

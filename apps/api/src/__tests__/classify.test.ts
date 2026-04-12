@@ -33,7 +33,9 @@ vi.mock('sharp', () => ({
 
 const mockDb = {
   create: vi.fn(async () => ({ id: 'cls_uuid_1' })),
+  findById: vi.fn(),
   findByIdAndUser: vi.fn(),
+  update: vi.fn(async () => undefined),
   delete: vi.fn(async () => undefined),
   findExpired: vi.fn(async () => []),
 }

@@ -20,7 +20,9 @@ vi.mock('../lib/r2.js', () => ({
 
 const mockClassificationDb = {
   create: vi.fn(),
+  findById: vi.fn(),
   findByIdAndUser: vi.fn(),
+  update: vi.fn(async () => undefined),
   delete: vi.fn(async () => undefined),
   findExpired: vi.fn(async () => []),
 }

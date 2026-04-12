@@ -6,6 +6,7 @@ export const JOB_CLASSIFY = 'classify-report-photo'
 
 export interface ClassifyJobData {
   classificationId: string
+  photoTempKey: string
 }
 
 let classifyQueue: Queue<ClassifyJobData> | undefined
