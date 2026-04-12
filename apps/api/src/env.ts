@@ -10,6 +10,10 @@ const EnvSchema = z.object({
   DATABASE_URL: z.string().min(1),
   WEB_URL: z.string().min(1),
   MOBILE_SCHEME: z.string().min(1),
+  R2_BUCKET: z.string().min(1),
+  R2_ACCESS_KEY_ID: z.string().min(1),
+  R2_SECRET_ACCESS_KEY: z.string().min(1),
+  R2_ENDPOINT: z.string().url(),
 })
 
 export type Env = z.infer<typeof EnvSchema>

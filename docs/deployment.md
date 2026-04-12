@@ -8,7 +8,7 @@
 | [Supabase](https://supabase.com) | PostgreSQL + PostGIS | Free (500MB) |
 | [Upstash](https://upstash.com) | Redis (rate limiting, cache, queues) | Free (10K req/day) |
 | [Cloudflare R2](https://cloudflare.com) | Хранилище фото (private bucket) | Free (10GB) |
-| [Cloudflare Images](https://cloudflare.com) | CDN для публичных фото | ~$5/мес |
+| [Cloudflare Images](https://cloudflare.com) | CDN для публичных фото (оптимизация + ресайз) | ~$5/мес — **нужен только на бете, не сейчас** |
 | [Render](https://render.com) | Fastify API | Free (засыпает) / $7/мес |
 | [Vercel](https://vercel.com) | Next.js web | Free |
 | [EAS](https://expo.dev) | Сборка мобильного приложения | Free |
@@ -63,7 +63,7 @@
 
 ---
 
-## 4. Cloudflare R2 + Images (сейчас)
+## 4. Cloudflare R2 (сейчас)
 
 1. Dashboard → **R2** → создай bucket `open-road-photos` (доступ: **private**)
 2. **R2 → Manage API Tokens** → создай токен с правами `Object Read & Write` на этот bucket
@@ -72,9 +72,10 @@
    - `R2_ACCESS_KEY_ID`
    - `R2_SECRET_ACCESS_KEY`
    - `R2_ENDPOINT` (формат `https://<account_id>.r2.cloudflarestorage.com`)
-4. Dashboard → **Images** → включи сервис, скопируй:
-   - `CF_ACCOUNT_ID`
-   - `CF_IMAGES_TOKEN`
+
+> **Cloudflare Images** сейчас не нужен. Поле `photo_optimized_key` в БД будет `null`,
+> фото раздаются напрямую через signed URL из R2. Подключишь Images на бете —
+> тогда добавишь `CF_ACCOUNT_ID` и `CF_IMAGES_TOKEN`.
 
 ---
 

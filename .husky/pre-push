@@ -1,4 +1,10 @@
 # Add common pnpm install locations to PATH (portable across developers)
 export PATH="$HOME/Library/pnpm:$HOME/.local/share/pnpm:/opt/homebrew/bin:/usr/local/bin:$PATH"
-./node_modules/.bin/turbo typecheck
-./node_modules/.bin/turbo test
+
+# Determine base: upstream tracking branch if set, otherwise origin/main
+BASE=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || echo "origin/main")
+
+# Run typecheck + tests only for packages affected by this push.
+# Turbo resolves the dependency graph — if packages/types changed,
+# all consumers (api, web, mobile, etc.) are included automatically.
+./node_modules/.bin/turbo typecheck test --filter="[$BASE...HEAD]"

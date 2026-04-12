@@ -86,38 +86,39 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 
 ---
 
-### ⬜ Spec 02 — Report Submission (v1.1)
+### ✅ Spec 02 — Report Submission (v1.1)
 
 #### Backend (`apps/api`)
 
-- ⬜ `POST /api/v1/classify` — photo upload
-  - ⬜ Multipart form parsing (`@fastify/multipart`)
-  - ⬜ File size validation (max 10 MB)
-  - ⬜ Magic bytes validation (JPEG: `FF D8 FF`, PNG: `89 50 4E 47`)
-  - ⬜ EXIF stripping before R2 upload
-  - ⬜ Upload to R2: `temp/<user_id>/<uuid>.<ext>`
-  - ⬜ INSERT `photo_classifications` (`status: pending`, `expires_at: now + 30min`)
-  - ⬜ Enqueue BullMQ job `classify-report-photo`
-  - ⬜ Return `202 { job_token }`
-- ⬜ `GET /api/v1/classify/:job_token` — poll classification result
-  - ⬜ Ownership check (user must own the classification)
-  - ⬜ Returns `pending` / `completed` / `failed`
-  - ⬜ On `completed`: returns `problem_type_ai` (null if confidence < 0.6)
-- ⬜ `POST /api/v1/reports` — create report
-  - ⬜ Zod validation (all fields)
-  - ⬜ `job_token` lookup: must exist, not expired, owned by user
-  - ⬜ Rate limit: 10 reports/24h
-  - ⬜ Move photo from temp to permanent R2 key: `reports/<year>/<month>/<uuid>/original.<ext>`
-  - ⬜ Resolve `region_id` via PostGIS (async)
-  - ⬜ Reverse-geocode `address_raw` via Nominatim (async)
-  - ⬜ INSERT report (`status: pending_review`)
-  - ⬜ DELETE `photo_classifications` row
-  - ⬜ Publish Redis event → SSE notification to moderators
-  - ⬜ Return `201 { id, status, created_at }`
-- ⬜ Cron: cleanup expired `photo_classifications` every 10 min
-  - ⬜ Delete R2 temp objects
-  - ⬜ Delete DB rows
-- ⬜ Integration tests for all three endpoints
+- ✅ `POST /api/v1/classify` — photo upload
+  - ✅ Multipart form parsing (`@fastify/multipart`)
+  - ✅ File size validation (max 10 MB — at multipart plugin level)
+  - ✅ Magic bytes validation (JPEG: `FF D8 FF`, PNG: `89 50 4E 47`)
+  - ✅ EXIF stripping via `sharp` before R2 upload
+  - ✅ Upload to R2: `temp/<user_id>/<uuid>.<ext>`
+  - ✅ INSERT `photo_classifications` (`status: pending`, `expires_at: now + 30min`)
+  - ✅ Enqueue BullMQ job `classify-report-photo`
+  - ✅ Return `202 { job_token }`
+  - ✅ Rate limit: 20 uploads/hour, `Retry-After` header on 429
+- ✅ `GET /api/v1/classify/:job_token` — poll classification result
+  - ✅ Ownership check (user must own the classification)
+  - ✅ Returns `pending` / `completed` / `failed`
+  - ✅ On `completed`: returns `problem_type_ai` (null if confidence < 0.6)
+- ✅ `POST /api/v1/reports` — create report
+  - ✅ Zod validation (all fields + Armenia bounding box)
+  - ✅ `job_token` lookup: must exist, not expired, owned by user
+  - ✅ Rate limit: 10 reports/24h, `Retry-After` header on 429
+  - ✅ Move photo from temp to permanent R2 key: `reports/<year>/<month>/<uuid>/original.<ext>`
+  - ✅ Resolve `region_id` via PostGIS (async, non-blocking)
+  - ✅ Reverse-geocode `address_raw` via Nominatim (async, non-blocking)
+  - ✅ INSERT report via raw SQL (`ST_MakePoint` for PostGIS geometry)
+  - ✅ DELETE `photo_classifications` row
+  - ✅ Publish Redis event `events:moderation` → SSE notification to moderators
+  - ✅ Return `201 { id, status, created_at }`
+- ✅ Cron: cleanup expired `photo_classifications` every 10 min
+  - ✅ Delete R2 temp objects
+  - ✅ Delete DB rows
+- ✅ Tests: 8 classify + 6 reports = 14 new tests (26 total passing)
 
 ---
 
