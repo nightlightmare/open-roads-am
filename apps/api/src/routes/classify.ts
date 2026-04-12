@@ -101,8 +101,13 @@ export async function classifyRoutes(
         expiresAt,
       })
 
-      // Enqueue BullMQ job (worker implemented in Spec 03)
-      await queue.add(JOB_CLASSIFY, { classificationId })
+      // Enqueue BullMQ job
+      await queue.add(JOB_CLASSIFY, { classificationId }, {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 60_000 },
+        removeOnComplete: { age: 86400 },
+        removeOnFail: { age: 604_800 },
+      })
 
       return reply.code(202).send({ job_token: classificationId })
     },
