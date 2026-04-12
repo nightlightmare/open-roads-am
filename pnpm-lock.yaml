@@ -68,6 +68,9 @@ importers:
       ioredis:
         specifier: ^5.4.0
         version: 5.10.1
+      prisma:
+        specifier: ^7.0.0
+        version: 7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3)
       sharp:
         specifier: ^0.33.0
         version: 0.33.5
@@ -87,12 +90,12 @@ importers:
       '@types/sharp':
         specifier: ^0.31.0
         version: 0.31.1
+      dotenv:
+        specifier: ^16.0.0
+        version: 16.6.1
       oxlint:
         specifier: ^0.16.0
         version: 0.16.12
-      prisma:
-        specifier: ^7.0.0
-        version: 7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3)
       tsx:
         specifier: ^4.19.0
         version: 4.21.0
@@ -9167,7 +9170,7 @@ snapshots:
 
   dotenv-expand@11.0.7:
     dependencies:
-      dotenv: 16.4.7
+      dotenv: 16.6.1
 
   dotenv@16.4.7: {}
 
