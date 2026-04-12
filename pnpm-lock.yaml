@@ -56,6 +56,9 @@ importers:
       '@types/bcryptjs':
         specifier: ^2.4.6
         version: 2.4.6
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.17
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
@@ -84,12 +87,6 @@ importers:
       '@open-road/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@types/node':
-        specifier: ^22.0.0
-        version: 22.19.17
-      '@types/sharp':
-        specifier: ^0.31.0
-        version: 0.31.1
       dotenv:
         specifier: ^16.0.0
         version: 16.6.1
@@ -2482,9 +2479,6 @@ packages:
 
   '@types/react@19.2.14':
     resolution: {integrity: sha512-ilcTH/UniCkMdtexkoCN0bI7pMcJDvmQFPvuPvmEaYA/NSfFTAgdUSLAoVjaRJm7+6PvcM+q1zYOwS4wTYMF9w==}
-
-  '@types/sharp@0.31.1':
-    resolution: {integrity: sha512-5nWwamN9ZFHXaYEincMSuza8nNfOof8nmO+mcI+Agx1uMUk4/pQnNIcix+9rLPXzKrm1pS34+6WRDbDV0Jn7ag==}
 
   '@types/stack-utils@2.0.3':
     resolution: {integrity: sha512-9aEbYZ3TbYMznPdcdr3SmIrLXwC/AKZXQeCf9Pgao5CKb8CyHuEX5jzWPTkvregvhRJHcpRO6BFoGW9ycaOkYw==}
@@ -8480,10 +8474,6 @@ snapshots:
   '@types/react@19.2.14':
     dependencies:
       csstype: 3.2.3
-
-  '@types/sharp@0.31.1':
-    dependencies:
-      '@types/node': 22.19.17
 
   '@types/stack-utils@2.0.3': {}
 

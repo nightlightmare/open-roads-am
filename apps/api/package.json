@@ -34,16 +34,15 @@
     "@clerk/fastify": "^3.0.0",
     "bcryptjs": "^2.4.3",
     "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.0.0",
     "bs58": "^5.0.0"
   },
   "devDependencies": {
     "@open-road/config": "workspace:*",
-    "@types/node": "^22.0.0",
     "typescript": "^5.7.0",
     "tsx": "^4.19.0",
     "dotenv": "^16.0.0",
     "oxlint": "^0.16.0",
-    "vitest": "^3.0.0",
-    "@types/sharp": "^0.31.0"
+    "vitest": "^3.0.0"
   }
 }
