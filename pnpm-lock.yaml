@@ -53,6 +53,9 @@ importers:
       '@prisma/client':
         specifier: ^7.0.0
         version: 7.7.0(prisma@7.7.0(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(typescript@5.9.3))(typescript@5.9.3)
+      '@types/bcryptjs':
+        specifier: ^2.4.6
+        version: 2.4.6
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
@@ -81,9 +84,6 @@ importers:
       '@open-road/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@types/bcryptjs':
-        specifier: ^2.4.6
-        version: 2.4.6
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.17
