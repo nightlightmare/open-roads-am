@@ -16,6 +16,7 @@ import { adminRoleRoutes } from './routes/admin/roles.js'
 import { classifyRoutes } from './routes/classify.js'
 import { reportRoutes } from './routes/reports.js'
 import { startCleanupCron } from './workers/cleanup.js'
+import { startClassifyWorker } from './workers/classify.js'
 
 export async function buildServer(env: Env) {
   const fastify = Fastify({
@@ -64,9 +65,16 @@ export async function buildServer(env: Env) {
     redis,
   })
 
-  // Background cron (only in non-test envs)
+  // Background workers (only in non-test envs)
   if (env.NODE_ENV !== 'test') {
     startCleanupCron(classificationRepo, s3, env.R2_BUCKET)
+    startClassifyWorker({
+      redis,
+      s3,
+      r2Bucket: env.R2_BUCKET,
+      claudeApiKey: env.CLAUDE_API_KEY,
+      classificationRepo,
+    })
   }
 
   return { fastify, redis }
