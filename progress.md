@@ -122,23 +122,24 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 
 ---
 
-### ⬜ Spec 03 — AI Classification (v1.1)
+### ✅ Spec 03 — AI Classification (v1.1)
 
-- ⬜ BullMQ worker: queue `report-photo-processing`, job `classify-report-photo`
-  - ⬜ Job options: 3 attempts, exponential backoff (1min → 5min → 15min)
-  - ⬜ Fetch signed R2 URL for photo (TTL 5min)
-  - ⬜ Resize photo if > 5 MB (max 1600px)
-  - ⬜ Call Claude API (`claude-sonnet-4-5`, vision, `temperature: 0`, `max_tokens: 256`)
-  - ⬜ Parse and validate response with Zod (`ClassificationSchema`)
-  - ⬜ Confidence threshold: if < 0.6 → `problem_type_ai = null`
-  - ⬜ UPDATE `photo_classifications`: `status`, `problem_type_ai`, `ai_confidence`, `ai_raw_response`
-- ⬜ Failure handling:
-  - ⬜ After 3 failed attempts → `status = 'failed'`, internal alert to `internal:alerts` Redis channel
-  - ⬜ Client receives `{ status: 'failed' }` on next poll
-- ⬜ Observability:
-  - ⬜ Structured JSON logs per job (no PII)
-  - ⬜ Redis daily counters: `metrics:ai:total`, `metrics:ai:failed`, `metrics:ai:low_confidence`
-- ⬜ Unit tests: response parsing, Zod validation, confidence threshold logic
+- ✅ BullMQ worker: queue `report-photo-processing`, job `classify-report-photo`
+  - ✅ Job options: 3 attempts, exponential backoff (1min → 5min → 15min)
+  - ✅ Fetch signed R2 URL for photo (TTL 5min)
+  - ✅ Resize photo if > 5 MB (max 1600px via sharp)
+  - ✅ Call Claude API (`claude-sonnet-4-5`, vision, `temperature: 0`, `max_tokens: 256`)
+  - ✅ Parse and validate response with Zod (`ClassificationSchema`)
+  - ✅ Confidence threshold: if < 0.6 → `problem_type_ai = null`
+  - ✅ `not_a_road_problem` → `problem_type_ai = null` (no auto-reject)
+  - ✅ UPDATE `photo_classifications`: `status`, `problem_type_ai`, `ai_confidence`, `ai_raw_response`
+- ✅ Failure handling:
+  - ✅ After 3 failed attempts → `status = 'failed'`, internal alert to `internal:alerts` Redis channel
+  - ✅ Client receives `{ status: 'failed' }` on next poll
+- ✅ Observability:
+  - ✅ Structured JSON logs per job (no PII)
+  - ✅ Redis daily counters: `metrics:ai:total`, `metrics:ai:failed`, `metrics:ai:low_confidence`
+- ✅ Unit tests: response parsing, Zod validation, confidence threshold logic (11 tests, 37 total)
 
 ---
 
@@ -304,7 +305,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 1. ✅ **Spec 06** — Auth & Roles (backend)
 2. ✅ **Spec 01** — Database schema (Prisma + Supabase migration)
 3. ✅ **Spec 02** — Report Submission
-4. 🔄 **Spec 03** — AI Classification (BullMQ worker) ← current
+4. ✅ **Spec 03** — AI Classification (BullMQ worker)
 5. ⬜ **Spec 04** — Public Map API
 6. ⬜ **Spec 05** — Moderation Flow
 7. ⬜ **Spec 08** — User Profile
