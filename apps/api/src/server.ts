@@ -37,9 +37,6 @@ export async function buildServer(env: Env) {
   const classificationRepo = new PrismaClassificationRepository(db)
   const reportRepo = new PrismaReportRepository(db)
 
-  // Fastify v5: must declare before route registration
-  fastify.decorateRequest('auth', null)
-
   // Plugins
   await fastify.register(clerkPlugin)
   await fastify.register(fastifyMultipart, {
