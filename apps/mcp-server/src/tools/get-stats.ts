@@ -1,10 +1,13 @@
 import { z } from 'zod'
+import { PROBLEM_TYPES } from '@open-road/types'
 import { apiFetch, apiErrorToMcp } from '../api-client.js'
+
+const DEFAULT_STATS_DAYS = 30
 
 export const getStatsInputSchema = {
   region_id: z.string().uuid().optional().describe('Filter by region UUID'),
   problem_type: z
-    .enum(['pothole', 'damaged_barrier', 'missing_marking', 'damaged_sign', 'hazard', 'broken_light', 'missing_ramp', 'other'])
+    .enum(PROBLEM_TYPES)
     .optional()
     .describe('Filter by problem type'),
   from: z.string().optional().describe('Start date ISO (default: 30 days ago)'),
@@ -35,7 +38,7 @@ export async function getStatsHandler(
 ): Promise<{ content: Array<{ type: 'text'; text: string }>; isError?: boolean }> {
   // Default date range: last 30 days
   const to = input.to ?? new Date().toISOString().slice(0, 10)
-  const from = input.from ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+  const from = input.from ?? new Date(Date.now() - DEFAULT_STATS_DAYS * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
 
   try {
     const params: Record<string, string | undefined> = { from, to }
