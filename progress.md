@@ -234,13 +234,8 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 - ⬜ Tool: `get_stats`
   - ⬜ Calls `GET /api/v1/public/stats`
   - ⬜ Human-readable summary output
-- ⬜ Tool: `create_report` (API key required)
-  - ⬜ Calls `POST /api/v1/reports`
-  - ⬜ `api_key` forwarded as `X-Api-Key` header, never logged
-  - ⬜ Handles `photo_url` (server fetches + uploads to R2)
-- ⬜ Tool: `update_status` (API key required)
-  - ⬜ Calls `POST /api/v1/reports/:id/status`
-  - ⬜ `api_key` forwarded, never logged
+- ⏸ Tool: `create_report` — deferred post-frontend (needs API-key UI + direct report creation without job token)
+- ⏸ Tool: `update_status` — deferred alongside `create_report`
 - ⬜ Error mapping: API errors → MCP `isError: true` responses
 - ⬜ Input validation with Zod before hitting API
 - ⬜ Armenia bounds validation on coordinates
