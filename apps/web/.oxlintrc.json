@@ -1,5 +1,16 @@
 {
+  "jsPlugins": [
+    {
+      "name": "react-js",
+      "specifier": "eslint-plugin-react"
+    }
+  ],
+  "settings": {
+    "react": {
+      "version": "19"
+    }
+  },
   "rules": {
-    "react/no-multi-comp": "error"
+    "react-js/no-multi-comp": ["error", { "ignoreStateless": false }]
   }
 }

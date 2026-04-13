@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
 import { ApiError } from '@/lib/api'
+import { connectSSE } from '@/lib/moderation-sse'
 import { ReportCard } from '@/components/moderation/report-card'
 import { useModerationStore } from '@/stores/moderation-store'
 
@@ -51,49 +52,14 @@ export default function ModerationPage() {
   useEffect(() => {
     let cancelled = false
 
-    const connectSSE = async () => {
-      const token = await getToken()
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/moderation/feed`,
-        { headers: { Authorization: `Bearer ${token ?? ''}` } },
-      )
-      if (!res.ok || !res.body) return
-      if (cancelled) return
+    void connectSSE({
+      getToken,
+      refetchPending,
+      setPendingCount,
+      onReader: (reader) => { readerRef.current = reader },
+      isCancelled: () => cancelled,
+    })
 
-      const reader = res.body.getReader()
-      readerRef.current = reader
-      const decoder = new TextDecoder()
-      let buffer = ''
-
-      while (!cancelled) {
-        const { value, done } = await reader.read()
-        if (done) break
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
-        buffer = lines.pop() ?? ''
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const event = JSON.parse(line.slice(6)) as {
-                event: string
-                total_pending?: number
-              }
-              if (event.event === 'new_report') {
-                const tk = await getToken()
-                void refetchPending(tk ?? '')
-              }
-              if (event.event === 'queue_count' && event.total_pending !== undefined) {
-                setPendingCount(event.total_pending)
-              }
-            } catch {
-              // ignore parse errors
-            }
-          }
-        }
-      }
-    }
-
-    void connectSSE()
     return () => {
       cancelled = true
       readerRef.current?.cancel().catch(() => undefined)

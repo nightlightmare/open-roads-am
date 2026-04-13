@@ -4,6 +4,7 @@ import { Link } from '@/i18n/navigation'
 import { apiFetch } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { StatCard } from '@/components/profile/stat-card'
 
 interface MeResponse {
   clerk_id: string
@@ -67,11 +68,3 @@ export default async function ProfilePage({
   )
 }
 
-function StatCard({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-lg border bg-card p-4 text-center">
-      <div className="text-3xl font-bold">{value}</div>
-      <div className="mt-1 text-sm text-muted-foreground">{label}</div>
-    </div>
-  )
-}
