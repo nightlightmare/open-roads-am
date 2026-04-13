@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { apiFetch } from '@/lib/api'
+import { apiFetch, ApiError } from '@/lib/api'
 
 export interface QueueItem {
   id: string
@@ -23,21 +23,47 @@ interface QueueResponse {
   total_pending: number
 }
 
+interface LockConflict {
+  locked_by_display_name: string
+  lock_expires_at: string
+}
+
 type ErrFmt = (err: unknown) => string
+type GetToken = () => Promise<string | null>
+
+// Heartbeat interval lives outside the store — one instance, module-level
+let heartbeatId: ReturnType<typeof setInterval> | null = null
 
 interface ModerationState {
+  // Queue page
   pendingReports: QueueItem[]
   underReviewReports: QueueItem[]
   pendingCount: number
   loading: boolean
   error: string | null
   activeTab: 'pending' | 'under_review'
+  // Review page
+  currentReport: QueueItem | null
+  reportLoading: boolean
+  reportError: string | null
+  reportLocked: LockConflict | null
+  // Shared action state
   actionLoading: boolean
   actionError: string | null
+  // Queue actions
   setActiveTab: (tab: 'pending' | 'under_review') => void
   setPendingCount: (count: number) => void
   loadQueue: (token: string, fmt: { error: ErrFmt }) => Promise<void>
   refetchPending: (token: string) => Promise<void>
+  // Review actions
+  openReport: (
+    getToken: GetToken,
+    reportId: string,
+    fmt: { locked: string; error: string },
+  ) => Promise<void>
+  stopHeartbeat: () => void
+  releaseLock: (token: string, reportId: string) => Promise<void>
+  // Moderation actions
   approveReport: (
     token: string,
     reportId: string,
@@ -60,6 +86,10 @@ export const useModerationStore = create<ModerationState>((set) => ({
   loading: true,
   error: null,
   activeTab: 'pending',
+  currentReport: null,
+  reportLoading: true,
+  reportError: null,
+  reportLocked: null,
   actionLoading: false,
   actionError: null,
 
@@ -102,6 +132,67 @@ export const useModerationStore = create<ModerationState>((set) => ({
       set({ pendingReports: data.reports })
     } catch {
       // silent background refetch — leave existing state intact
+    }
+  },
+
+  openReport: async (getToken, reportId, fmt) => {
+    set({ reportLoading: true, reportError: null, reportLocked: null, currentReport: null })
+    try {
+      const token = await getToken()
+      await apiFetch<unknown>(
+        `/api/v1/moderation/reports/${reportId}/open`,
+        { method: 'POST' },
+        token ?? undefined,
+      )
+      const data = await apiFetch<QueueResponse>(
+        '/api/v1/moderation/queue',
+        { params: { status: 'under_review', limit: 100 } },
+        token ?? undefined,
+      )
+      set({
+        reportLoading: false,
+        currentReport: data.reports.find((r) => r.id === reportId) ?? null,
+      })
+
+      // Start heartbeat — refreshes the lock every 5 minutes
+      if (heartbeatId !== null) clearInterval(heartbeatId)
+      heartbeatId = setInterval(async () => {
+        const tk = await getToken()
+        try {
+          await apiFetch<unknown>(
+            `/api/v1/moderation/reports/${reportId}/open`,
+            { method: 'POST' },
+            tk ?? undefined,
+          )
+        } catch {
+          // ignore heartbeat errors
+        }
+      }, 5 * 60 * 1000)
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        set({ reportLoading: false, reportLocked: { locked_by_display_name: fmt.locked, lock_expires_at: '' } })
+      } else {
+        set({ reportLoading: false, reportError: fmt.error })
+      }
+    }
+  },
+
+  stopHeartbeat: () => {
+    if (heartbeatId !== null) {
+      clearInterval(heartbeatId)
+      heartbeatId = null
+    }
+  },
+
+  releaseLock: async (token, reportId) => {
+    try {
+      await apiFetch<unknown>(
+        `/api/v1/moderation/reports/${reportId}/lock`,
+        { method: 'DELETE' },
+        token,
+      )
+    } catch {
+      // ignore lock release errors
     }
   },
 

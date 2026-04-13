@@ -5,24 +5,12 @@ import { useAuth } from '@clerk/nextjs'
 import { useParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
-import { apiFetch, ApiError } from '@/lib/api'
+import { ApiError } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { PROBLEM_TYPES } from '@/lib/constants'
 import type { ProblemType } from '@/lib/constants'
 import { useModerationStore } from '@/stores/moderation-store'
-import type { QueueItem } from '@/stores/moderation-store'
-
-interface QueueResponse {
-  reports: QueueItem[]
-  cursor: string | null
-  total_pending: number
-}
-
-interface LockConflict {
-  locked_by_display_name: string
-  lock_expires_at: string
-}
 
 function confidenceVariant(confidence: number | null): 'success' | 'warning' | 'destructive' {
   if (confidence === null) return 'warning'
@@ -43,76 +31,36 @@ export default function ReportDetailPage() {
   const tReport = useTranslations('report')
   const tType = useTranslations('report.problemType')
 
-  const typeLabel = (type: string | null) => {
-    if (!type) return '—'
-    return tType(type as Parameters<typeof tType>[0])
-  }
+  const typeLabel = (type: string | null) => (type ? tType(type as Parameters<typeof tType>[0]) : '—')
 
-  const [report, setReport] = useState<QueueItem | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [locked, setLocked] = useState<LockConflict | null>(null)
-  const [error, setError] = useState<string | null>(null)
   const [overrideType, setOverrideType] = useState<ProblemType | ''>('')
   const [rejectionReason, setRejectionReason] = useState('')
-
-  const { actionLoading, actionError, approveReport, rejectReport, clearActionError } =
-    useModerationStore()
-
   const actionTakenRef = useRef(false)
 
+  const {
+    currentReport,
+    reportLoading,
+    reportError,
+    reportLocked,
+    actionLoading,
+    actionError,
+    openReport,
+    stopHeartbeat,
+    releaseLock,
+    approveReport,
+    rejectReport,
+  } = useModerationStore()
+
   useEffect(() => {
-    let heartbeatId: ReturnType<typeof setInterval> | null = null
-
-    const openReport = async () => {
-      const token = await getToken()
-      try {
-        await apiFetch<unknown>(
-          `/api/v1/moderation/reports/${reportId}/open`,
-          { method: 'POST' },
-          token ?? undefined,
-        )
-        const data = await apiFetch<QueueResponse>(
-          '/api/v1/moderation/queue',
-          { params: { status: 'under_review', limit: 100 } },
-          token ?? undefined,
-        )
-        setReport(data.reports.find((r) => r.id === reportId) ?? null)
-
-        heartbeatId = setInterval(async () => {
-          const tk = await getToken()
-          try {
-            await apiFetch<unknown>(
-              `/api/v1/moderation/reports/${reportId}/open`,
-              { method: 'POST' },
-              tk ?? undefined,
-            )
-          } catch {
-            // ignore heartbeat errors
-          }
-        }, 5 * 60 * 1000)
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 409) {
-          setLocked({ locked_by_display_name: t('unknownModerator'), lock_expires_at: '' })
-        } else {
-          setError(tErrors('failedToOpenReport'))
-        }
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    void openReport()
+    void openReport(getToken, reportId, {
+      locked: t('unknownModerator'),
+      error: tErrors('failedToOpenReport'),
+    })
 
     return () => {
-      if (heartbeatId !== null) clearInterval(heartbeatId)
+      stopHeartbeat()
       if (!actionTakenRef.current) {
-        void getToken().then((tk) => {
-          void apiFetch<unknown>(
-            `/api/v1/moderation/reports/${reportId}/lock`,
-            { method: 'DELETE' },
-            tk ?? undefined,
-          ).catch(() => undefined)
-        })
+        void getToken().then((tk) => void releaseLock(tk ?? '', reportId))
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -133,10 +81,7 @@ export default function ReportDetailPage() {
   }
 
   const handleReject = async () => {
-    if (!rejectionReason.trim()) {
-      clearActionError()
-      return
-    }
+    if (!rejectionReason.trim()) return
     const token = await getToken()
     const ok = await rejectReport(token ?? '', reportId, rejectionReason, {
       error: (err) =>
@@ -150,7 +95,7 @@ export default function ReportDetailPage() {
     }
   }
 
-  if (loading) {
+  if (reportLoading) {
     return (
       <div className="flex items-center justify-center py-20 text-muted-foreground">
         {tMap('loading')}
@@ -158,14 +103,14 @@ export default function ReportDetailPage() {
     )
   }
 
-  if (locked) {
+  if (reportLocked) {
     return (
       <div className="space-y-4">
         <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-yellow-800">
           {t('lockedBy', {
-            name: locked.locked_by_display_name,
-            time: locked.lock_expires_at
-              ? new Date(locked.lock_expires_at).toLocaleTimeString()
+            name: reportLocked.locked_by_display_name,
+            time: reportLocked.lock_expires_at
+              ? new Date(reportLocked.lock_expires_at).toLocaleTimeString()
               : '',
           })}
         </div>
@@ -176,10 +121,10 @@ export default function ReportDetailPage() {
     )
   }
 
-  if (error) {
+  if (reportError) {
     return (
       <div className="space-y-4">
-        <p className="text-destructive">{error}</p>
+        <p className="text-destructive">{reportError}</p>
         <Button variant="outline" onClick={() => router.push(`/${locale}/moderation`)}>
           {t('backToQueue')}
         </Button>
@@ -187,7 +132,7 @@ export default function ReportDetailPage() {
     )
   }
 
-  if (!report) {
+  if (!currentReport) {
     return (
       <div className="space-y-4">
         <p className="text-muted-foreground">{tErrors('reportNotFound')}</p>
@@ -204,13 +149,15 @@ export default function ReportDetailPage() {
         <Button variant="outline" size="sm" onClick={() => router.push(`/${locale}/moderation`)}>
           {t('backToQueue')}
         </Button>
-        <h1 className="text-xl font-bold">{t('reportTitle', { id: report.id.slice(0, 8) })}</h1>
+        <h1 className="text-xl font-bold">
+          {t('reportTitle', { id: currentReport.id.slice(0, 8) })}
+        </h1>
       </div>
 
-      {report.photo_url && (
+      {currentReport.photo_url && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={report.photo_url}
+          src={currentReport.photo_url}
           alt={tReport('photo')}
           className="max-h-80 w-full rounded-lg object-cover"
         />
@@ -218,22 +165,24 @@ export default function ReportDetailPage() {
 
       <div className="space-y-3 rounded-lg border bg-white p-4">
         <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary">{typeLabel(report.problem_type_user)}</Badge>
-          {report.problem_type_ai && (
-            <Badge variant="info">{tReport('aiPrefix')}: {typeLabel(report.problem_type_ai)}</Badge>
+          <Badge variant="secondary">{typeLabel(currentReport.problem_type_user)}</Badge>
+          {currentReport.problem_type_ai && (
+            <Badge variant="info">
+              {tReport('aiPrefix')}: {typeLabel(currentReport.problem_type_ai)}
+            </Badge>
           )}
-          {report.ai_confidence !== null && (
-            <Badge variant={confidenceVariant(report.ai_confidence)}>
-              {t('aiConfidence')}: {Math.round(report.ai_confidence * 100)}%
+          {currentReport.ai_confidence !== null && (
+            <Badge variant={confidenceVariant(currentReport.ai_confidence)}>
+              {t('aiConfidence')}: {Math.round(currentReport.ai_confidence * 100)}%
             </Badge>
           )}
         </div>
-        {report.description && <p className="text-sm">{report.description}</p>}
-        {report.address_raw && (
-          <p className="text-sm text-muted-foreground">{report.address_raw}</p>
+        {currentReport.description && <p className="text-sm">{currentReport.description}</p>}
+        {currentReport.address_raw && (
+          <p className="text-sm text-muted-foreground">{currentReport.address_raw}</p>
         )}
         <p className="text-xs text-gray-400">
-          {new Date(report.created_at).toLocaleString('ru-RU')}
+          {new Date(currentReport.created_at).toLocaleString('ru-RU')}
         </p>
       </div>
 
