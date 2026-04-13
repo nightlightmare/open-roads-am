@@ -35,10 +35,16 @@ if (TRANSPORT === 'http') {
     const transport = new StreamableHTTPServerTransport(
       { sessionIdGenerator: undefined } as unknown as ConstructorParameters<typeof StreamableHTTPServerTransport>[0],
     )
-    const server = createMcpServer(API_BASE_URL)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await server.connect(transport as any)
-    await transport.handleRequest(req, res, parsedBody)
+    const mcpServer = createMcpServer(API_BASE_URL)
+    try {
+      await mcpServer.connect(transport as Parameters<typeof mcpServer.connect>[0])
+      await transport.handleRequest(req, res, parsedBody)
+    } catch (err) {
+      console.error(JSON.stringify({ event: 'mcp_request_error', error: String(err) }))
+      if (!res.headersSent) res.writeHead(500).end('Internal Server Error')
+    } finally {
+      await mcpServer.close()
+    }
   })
 
   httpServer.listen(PORT, () => {
