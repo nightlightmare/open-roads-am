@@ -3,14 +3,9 @@
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useAuth } from '@clerk/nextjs'
-import { apiFetch, ApiError } from '@/lib/api'
+import { ApiError } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { useAdminStore } from '@/stores/admin-store'
-
-interface ApiKeyResponse {
-  key: string
-  prefix: string
-}
 
 export function ApiKeysSection() {
   const t = useTranslations('admin')
@@ -18,34 +13,20 @@ export function ApiKeysSection() {
   const [description, setDescription] = useState('')
   const [copied, setCopied] = useState(false)
   const [showForm, setShowForm] = useState(false)
-  const { keyLoading, keyError, createdKey, setKeyLoading, setKeyError, setCreatedKey } =
-    useAdminStore()
+  const { keyLoading, keyError, createdKey, createApiKey, clearCreatedKey } = useAdminStore()
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
-    setKeyLoading(true)
-    setKeyError(null)
     const token = await getToken()
-    try {
-      const data = await apiFetch<ApiKeyResponse>(
-        '/api/v1/admin/api-keys',
-        {
-          method: 'POST',
-          body: JSON.stringify({ description: description.trim() || undefined }),
-        },
-        token ?? undefined,
-      )
-      setCreatedKey(data)
+    const ok = await createApiKey(token ?? '', description, {
+      error: (err) =>
+        err instanceof ApiError
+          ? t('errorWithCode', { status: err.status, code: err.code })
+          : t('createKeyError'),
+    })
+    if (ok) {
       setDescription('')
       setShowForm(false)
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setKeyError(t('errorWithCode', { status: err.status, code: err.code }))
-      } else {
-        setKeyError(t('createKeyError'))
-      }
-    } finally {
-      setKeyLoading(false)
     }
   }
 
@@ -75,7 +56,7 @@ export function ApiKeysSection() {
             </Button>
           </div>
           <p className="text-xs text-gray-500">{t('keyPrefix', { prefix: createdKey.prefix })}</p>
-          <Button size="sm" variant="ghost" onClick={() => setCreatedKey(null)}>
+          <Button size="sm" variant="ghost" onClick={clearCreatedKey}>
             {t('close')}
           </Button>
         </div>
@@ -106,7 +87,7 @@ export function ApiKeysSection() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => { setShowForm(false); setKeyError(null) }}
+              onClick={() => setShowForm(false)}
             >
               {t('cancel')}
             </Button>

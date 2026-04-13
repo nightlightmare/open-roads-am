@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useAuth } from '@clerk/nextjs'
-import { apiFetch, ApiError } from '@/lib/api'
+import { ApiError } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { ROLES } from '@/lib/constants'
 import type { Role } from '@/lib/constants'
@@ -14,33 +14,20 @@ export function UsersSection() {
   const { getToken } = useAuth()
   const [clerkId, setClerkId] = useState('')
   const [selectedRole, setSelectedRole] = useState<Role>('user')
-  const { roleLoading, roleSuccess, roleError, setRoleLoading, setRoleSuccess, setRoleError } =
-    useAdminStore()
+  const { roleLoading, roleSuccess, roleError, changeRole } = useAdminStore()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!clerkId.trim()) return
-    setRoleLoading(true)
-    setRoleSuccess(null)
-    setRoleError(null)
     const token = await getToken()
-    try {
-      await apiFetch<unknown>(
-        `/api/v1/admin/users/${clerkId.trim()}/role`,
-        { method: 'POST', body: JSON.stringify({ role: selectedRole }) },
-        token ?? undefined,
-      )
-      setRoleSuccess(t('changeRoleSuccess', { role: selectedRole, clerkId: clerkId.trim() }))
-      setClerkId('')
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setRoleError(t('errorWithCode', { status: err.status, code: err.code }))
-      } else {
-        setRoleError(t('changeRoleError'))
-      }
-    } finally {
-      setRoleLoading(false)
-    }
+    const ok = await changeRole(token ?? '', clerkId.trim(), selectedRole, {
+      success: t('changeRoleSuccess', { role: selectedRole, clerkId: clerkId.trim() }),
+      error: (err) =>
+        err instanceof ApiError
+          ? t('errorWithCode', { status: err.status, code: err.code })
+          : t('changeRoleError'),
+    })
+    if (ok) setClerkId('')
   }
 
   return (

@@ -5,16 +5,9 @@ import { useAuth } from '@clerk/nextjs'
 import { useParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
-import { apiFetch, ApiError } from '@/lib/api'
+import { ApiError } from '@/lib/api'
 import { ReportCard } from '@/components/moderation/report-card'
 import { useModerationStore } from '@/stores/moderation-store'
-import type { QueueItem } from '@/stores/moderation-store'
-
-interface QueueResponse {
-  reports: QueueItem[]
-  cursor: string | null
-  total_pending: number
-}
 
 export default function ModerationPage() {
   const { getToken } = useAuth()
@@ -35,71 +28,26 @@ export default function ModerationPage() {
     loading,
     error,
     setActiveTab,
-    setPendingReports,
-    setUnderReviewReports,
     setPendingCount,
-    setLoading,
-    setError,
+    loadQueue,
+    refetchPending,
   } = useModerationStore()
 
-  const fetchQueue = useCallback(
-    async (status: 'pending_review' | 'under_review'): Promise<QueueItem[]> => {
-      const token = await getToken()
-      const data = await apiFetch<QueueResponse>(
-        '/api/v1/moderation/queue',
-        { params: { status, limit: 20 } },
-        token ?? undefined,
-      )
-      return data.reports
-    },
-    [getToken],
-  )
-
-  const refetchPending = useCallback(async () => {
-    try {
-      const reports = await fetchQueue('pending_review')
-      setPendingReports(reports)
-    } catch {
-      // ignore background refetch errors
-    }
-  }, [fetchQueue, setPendingReports])
-
-  const loadAll = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const token = await getToken()
-      const [pendingData, underReviewData] = await Promise.all([
-        apiFetch<QueueResponse>(
-          '/api/v1/moderation/queue',
-          { params: { status: 'pending_review', limit: 20 } },
-          token ?? undefined,
-        ),
-        apiFetch<QueueResponse>(
-          '/api/v1/moderation/queue',
-          { params: { status: 'under_review', limit: 20 } },
-          token ?? undefined,
-        ),
-      ])
-      setPendingReports(pendingData.reports)
-      setPendingCount(pendingData.total_pending)
-      setUnderReviewReports(underReviewData.reports)
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setError(tErrors('errorWithCode', { status: err.status, code: err.code }))
-      } else {
-        setError(tErrors('failedToLoad'))
-      }
-    } finally {
-      setLoading(false)
-    }
-  }, [getToken, tErrors, setPendingReports, setPendingCount, setUnderReviewReports, setLoading, setError])
+  const load = useCallback(async () => {
+    const token = await getToken()
+    await loadQueue(token ?? '', {
+      error: (err) =>
+        err instanceof ApiError
+          ? tErrors('errorWithCode', { status: err.status, code: err.code })
+          : tErrors('failedToLoad'),
+    })
+  }, [getToken, loadQueue, tErrors])
 
   useEffect(() => {
-    void loadAll()
-  }, [loadAll])
+    void load()
+  }, [load])
 
-  // SSE connection
+  // SSE connection for live queue updates
   useEffect(() => {
     let cancelled = false
 
@@ -109,15 +57,14 @@ export default function ModerationPage() {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/moderation/feed`,
         { headers: { Authorization: `Bearer ${token ?? ''}` } },
       )
-      if (!res.ok || !res.body) {
-        console.error('SSE connection failed:', res.status)
-        return
-      }
+      if (!res.ok || !res.body) return
       if (cancelled) return
+
       const reader = res.body.getReader()
       readerRef.current = reader
       const decoder = new TextDecoder()
       let buffer = ''
+
       while (!cancelled) {
         const { value, done } = await reader.read()
         if (done) break
@@ -132,7 +79,8 @@ export default function ModerationPage() {
                 total_pending?: number
               }
               if (event.event === 'new_report') {
-                void refetchPending()
+                const tk = await getToken()
+                void refetchPending(tk ?? '')
               }
               if (event.event === 'queue_count' && event.total_pending !== undefined) {
                 setPendingCount(event.total_pending)
@@ -152,10 +100,6 @@ export default function ModerationPage() {
     }
   }, [getToken, refetchPending, setPendingCount])
 
-  const handleCardClick = (reportId: string) => {
-    router.push(`/${locale}/moderation/reports/${reportId}`)
-  }
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20 text-muted-foreground">
@@ -168,10 +112,7 @@ export default function ModerationPage() {
     return (
       <div className="flex flex-col items-center gap-4 py-20">
         <p className="text-destructive">{error}</p>
-        <button
-          className="text-sm text-primary underline"
-          onClick={() => void loadAll()}
-        >
+        <button className="text-sm text-primary underline" onClick={() => void load()}>
           {tErrors('retry')}
         </button>
       </div>
@@ -184,7 +125,6 @@ export default function ModerationPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{t('title')}</h1>
 
-      {/* Tabs */}
       <div className="flex gap-1 rounded-lg border bg-gray-50 p-1">
         <button
           className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${
@@ -208,7 +148,6 @@ export default function ModerationPage() {
         </button>
       </div>
 
-      {/* Report list */}
       {displayReports.length === 0 ? (
         <div className="py-16 text-center text-muted-foreground">
           {activeTab === 'pending' ? t('noPending') : t('noUnderReview')}
@@ -219,7 +158,7 @@ export default function ModerationPage() {
             <ReportCard
               key={report.id}
               report={report}
-              onClick={() => handleCardClick(report.id)}
+              onClick={() => router.push(`/${locale}/moderation/reports/${report.id}`)}
             />
           ))}
         </div>

@@ -52,24 +52,13 @@ export default function ReportDetailPage() {
   const [loading, setLoading] = useState(true)
   const [locked, setLocked] = useState<LockConflict | null>(null)
   const [error, setError] = useState<string | null>(null)
-
-  // Action state from store
   const [overrideType, setOverrideType] = useState<ProblemType | ''>('')
   const [rejectionReason, setRejectionReason] = useState('')
-  const { actionLoading, actionError, setActionLoading, setActionError } = useModerationStore()
 
-  // Track if action was taken (to skip lock release on unmount)
+  const { actionLoading, actionError, approveReport, rejectReport, clearActionError } =
+    useModerationStore()
+
   const actionTakenRef = useRef(false)
-
-  // Fetch report detail after opening
-  const fetchReport = async (token: string | null): Promise<QueueItem | null> => {
-    const data = await apiFetch<QueueResponse>(
-      '/api/v1/moderation/queue',
-      { params: { status: 'under_review', limit: 100 } },
-      token ?? undefined,
-    )
-    return data.reports.find((r) => r.id === reportId) ?? null
-  }
 
   useEffect(() => {
     let heartbeatId: ReturnType<typeof setInterval> | null = null
@@ -82,11 +71,13 @@ export default function ReportDetailPage() {
           { method: 'POST' },
           token ?? undefined,
         )
+        const data = await apiFetch<QueueResponse>(
+          '/api/v1/moderation/queue',
+          { params: { status: 'under_review', limit: 100 } },
+          token ?? undefined,
+        )
+        setReport(data.reports.find((r) => r.id === reportId) ?? null)
 
-        const found = await fetchReport(token)
-        setReport(found)
-
-        // Heartbeat every 5 minutes
         heartbeatId = setInterval(async () => {
           const tk = await getToken()
           try {
@@ -101,23 +92,7 @@ export default function ReportDetailPage() {
         }, 5 * 60 * 1000)
       } catch (err) {
         if (err instanceof ApiError && err.status === 409) {
-          // Parse lock conflict details – re-open to get the body via apiFetch
-          try {
-            await apiFetch<LockConflict>(
-              `/api/v1/moderation/reports/${reportId}/open`,
-              { method: 'POST' },
-              token ?? undefined,
-            )
-            // Should not reach here (always 409), use fallback
-            setLocked({ locked_by_display_name: t('unknownModerator'), lock_expires_at: '' })
-          } catch (innerErr) {
-            if (innerErr instanceof ApiError && innerErr.status === 409) {
-              // ApiError doesn't carry body; use fallback with error code info
-              setLocked({ locked_by_display_name: t('unknownModerator'), lock_expires_at: '' })
-            } else {
-              setLocked({ locked_by_display_name: t('unknownModerator'), lock_expires_at: '' })
-            }
-          }
+          setLocked({ locked_by_display_name: t('unknownModerator'), lock_expires_at: '' })
         } else {
           setError(tErrors('failedToOpenReport'))
         }
@@ -130,8 +105,6 @@ export default function ReportDetailPage() {
 
     return () => {
       if (heartbeatId !== null) clearInterval(heartbeatId)
-
-      // Release lock on unmount if no action taken
       if (!actionTakenRef.current) {
         void getToken().then((tk) => {
           void apiFetch<unknown>(
@@ -146,60 +119,34 @@ export default function ReportDetailPage() {
   }, [reportId])
 
   const handleApprove = async () => {
-    setActionLoading(true)
-    setActionError(null)
     const token = await getToken()
-    try {
-      const body: { problem_type_final?: string } = {}
-      if (overrideType) body.problem_type_final = overrideType
-      await apiFetch<unknown>(
-        `/api/v1/moderation/reports/${reportId}/approve`,
-        {
-          method: 'POST',
-          body: JSON.stringify(body),
-        },
-        token ?? undefined,
-      )
+    const ok = await approveReport(token ?? '', reportId, overrideType || null, {
+      error: (err) =>
+        err instanceof ApiError
+          ? tErrors('errorWithCode', { status: err.status, code: err.code })
+          : tErrors('failedToApprove'),
+    })
+    if (ok) {
       actionTakenRef.current = true
       router.push(`/${locale}/moderation`)
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setActionError(tErrors('errorWithCode', { status: err.status, code: err.code }))
-      } else {
-        setActionError(tErrors('failedToApprove'))
-      }
-    } finally {
-      setActionLoading(false)
     }
   }
 
   const handleReject = async () => {
     if (!rejectionReason.trim()) {
-      setActionError(t('reasonRequired'))
+      clearActionError()
       return
     }
-    setActionLoading(true)
-    setActionError(null)
     const token = await getToken()
-    try {
-      await apiFetch<unknown>(
-        `/api/v1/moderation/reports/${reportId}/reject`,
-        {
-          method: 'POST',
-          body: JSON.stringify({ rejection_reason: rejectionReason }),
-        },
-        token ?? undefined,
-      )
+    const ok = await rejectReport(token ?? '', reportId, rejectionReason, {
+      error: (err) =>
+        err instanceof ApiError
+          ? tErrors('errorWithCode', { status: err.status, code: err.code })
+          : tErrors('failedToReject'),
+    })
+    if (ok) {
       actionTakenRef.current = true
       router.push(`/${locale}/moderation`)
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setActionError(tErrors('errorWithCode', { status: err.status, code: err.code }))
-      } else {
-        setActionError(tErrors('failedToReject'))
-      }
-    } finally {
-      setActionLoading(false)
     }
   }
 
@@ -260,7 +207,6 @@ export default function ReportDetailPage() {
         <h1 className="text-xl font-bold">{t('reportTitle', { id: report.id.slice(0, 8) })}</h1>
       </div>
 
-      {/* Photo */}
       {report.photo_url && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -270,7 +216,6 @@ export default function ReportDetailPage() {
         />
       )}
 
-      {/* Details */}
       <div className="space-y-3 rounded-lg border bg-white p-4">
         <div className="flex flex-wrap gap-2">
           <Badge variant="secondary">{typeLabel(report.problem_type_user)}</Badge>
@@ -283,27 +228,18 @@ export default function ReportDetailPage() {
             </Badge>
           )}
         </div>
-
-        {report.description && (
-          <p className="text-sm">{report.description}</p>
-        )}
-
+        {report.description && <p className="text-sm">{report.description}</p>}
         {report.address_raw && (
           <p className="text-sm text-muted-foreground">{report.address_raw}</p>
         )}
-
         <p className="text-xs text-gray-400">
           {new Date(report.created_at).toLocaleString('ru-RU')}
         </p>
       </div>
 
-      {/* Actions */}
       <div className="space-y-4 rounded-lg border bg-white p-4">
-        {actionError && (
-          <p className="text-sm text-destructive">{actionError}</p>
-        )}
+        {actionError && <p className="text-sm text-destructive">{actionError}</p>}
 
-        {/* Approve section */}
         <div className="space-y-3">
           <h2 className="font-semibold">{t('approve')}</h2>
           <div>
@@ -331,7 +267,6 @@ export default function ReportDetailPage() {
 
         <hr />
 
-        {/* Reject section */}
         <div className="space-y-3">
           <h2 className="font-semibold">{t('reject')}</h2>
           <div>
