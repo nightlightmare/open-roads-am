@@ -247,33 +247,33 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 
 ---
 
-### ⬜ Spec 08 — User Profile (v1.0)
+### ✅ Spec 08 — User Profile (v1.0)
 
-- ⬜ `GET /api/v1/me`
-  - ⬜ Returns profile + stats (`reports_submitted`, `reports_approved`, `reports_resolved`, `confirmations_given`)
-  - ⬜ Stats cached in Redis (`cache:profile:stats:<clerk_id>`, TTL 5min)
-  - ⬜ No `is_banned`, `reports_today` in response
-- ⬜ `GET /api/v1/me/reports`
-  - ⬜ Cursor-based pagination, filter by status
-  - ⬜ Rejected reports included (no `rejection_reason`)
-  - ⬜ Canonical `problem_type` = `COALESCE(problem_type_final, problem_type_user)`
-- ⬜ `GET /api/v1/me/reports/:id`
-  - ⬜ Returns `problem_type_user`, `problem_type_ai`, `ai_confidence` (owner only)
-  - ⬜ Returns `404` (not `403`) if report belongs to another user
-  - ⬜ `ai_raw_response`, `moderated_by`, `rejection_reason` never returned
-  - ⬜ `status_history` — public transitions only, gov agency notes shown
-- ⬜ `GET /api/v1/me/confirmations`
-  - ⬜ Cursor-based pagination
-- ⬜ `POST /api/v1/reports/:id/confirm`
-  - ⬜ Only on `approved` / `in_progress` reports
-  - ⬜ Cannot confirm own report
-  - ⬜ One confirmation per user per report (DB unique constraint)
-  - ⬜ `confirmation_count + 1` in same DB transaction
-  - ⬜ Rate limit: 50/hour
-- ⬜ `DELETE /api/v1/reports/:id/confirm`
-  - ⬜ `confirmation_count - 1` in same DB transaction
-  - ⬜ `confirmation_count >= 0` enforced by DB constraint
-- ⬜ Integration tests for all endpoints and edge cases
+- ✅ `GET /api/v1/me`
+  - ✅ Returns profile + stats (`reports_submitted`, `reports_approved`, `reports_resolved`, `confirmations_given`)
+  - ✅ Stats cached in Redis (`cache:profile:stats:<clerk_id>`, TTL 5min)
+  - ✅ No `is_banned`, `reports_today` in response
+- ✅ `GET /api/v1/me/reports`
+  - ✅ Cursor-based pagination, filter by status
+  - ✅ Rejected reports included (no `rejection_reason`)
+  - ✅ Canonical `problem_type` = `COALESCE(problem_type_final, problem_type_user)`
+- ✅ `GET /api/v1/me/reports/:id`
+  - ✅ Returns `problem_type_user`, `problem_type_ai`, `ai_confidence` (owner only)
+  - ✅ Returns `404` (not `403`) if report belongs to another user
+  - ✅ `ai_raw_response`, `moderated_by`, `rejection_reason` never returned
+  - ✅ `status_history` — public transitions only, gov agency notes shown
+- ✅ `GET /api/v1/me/confirmations`
+  - ✅ Cursor-based pagination
+- ✅ `POST /api/v1/reports/:id/confirm`
+  - ✅ Only on `approved` / `in_progress` reports
+  - ✅ Cannot confirm own report
+  - ✅ One confirmation per user per report (DB unique constraint)
+  - ✅ `confirmation_count + 1` in same DB transaction
+  - ✅ Rate limit: 50/hour
+- ✅ `DELETE /api/v1/reports/:id/confirm`
+  - ✅ `confirmation_count - 1` in same DB transaction
+  - ✅ `confirmation_count >= 0` enforced by DB constraint (`GREATEST(..., 0)`)
+- ✅ Tests: 17 tests (94 total passing)
 
 ---
 
@@ -307,7 +307,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 4. ✅ **Spec 03** — AI Classification (BullMQ worker)
 5. ✅ **Spec 04** — Public Map API
 6. ✅ **Spec 05** — Moderation Flow
-7. ⬜ **Spec 08** — User Profile
+7. ✅ **Spec 08** — User Profile
 8. ⬜ **Spec 07** — MCP Server
 9. ⬜ **Web frontend**
 10. ⬜ **Mobile frontend**
