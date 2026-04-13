@@ -5,19 +5,14 @@ import { useAuth } from '@clerk/nextjs'
 import { useParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
+import Image from 'next/image'
 import { ApiError } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { PROBLEM_TYPES } from '@/lib/constants'
 import type { ProblemType } from '@/lib/constants'
+import { confidenceVariant } from '@/lib/utils'
 import { useModerationStore } from '@/stores/moderation-store'
-
-function confidenceVariant(confidence: number | null): 'success' | 'warning' | 'destructive' {
-  if (confidence === null) return 'warning'
-  if (confidence >= 0.8) return 'success'
-  if (confidence >= 0.5) return 'warning'
-  return 'destructive'
-}
 
 export default function ReportDetailPage() {
   const { getToken } = useAuth()
@@ -63,8 +58,7 @@ export default function ReportDetailPage() {
         void getToken().then((tk) => void releaseLock(tk ?? '', reportId))
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reportId])
+  }, [reportId, openReport, stopHeartbeat, releaseLock, getToken, t, tErrors])
 
   const handleApprove = async () => {
     const token = await getToken()
@@ -155,10 +149,12 @@ export default function ReportDetailPage() {
       </div>
 
       {currentReport.photo_url && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
           src={currentReport.photo_url}
           alt={tReport('photo')}
+          width={0}
+          height={0}
+          sizes="100vw"
           className="max-h-80 w-full rounded-lg object-cover"
         />
       )}

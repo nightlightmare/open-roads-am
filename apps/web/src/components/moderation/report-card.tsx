@@ -1,15 +1,10 @@
 'use client'
 
+import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { Badge } from '@/components/ui/badge'
+import { confidenceVariant } from '@/lib/utils'
 import type { QueueItem } from '@/stores/moderation-store'
-
-function confidenceVariant(confidence: number | null): 'success' | 'warning' | 'destructive' {
-  if (confidence === null) return 'warning'
-  if (confidence >= 0.8) return 'success'
-  if (confidence >= 0.5) return 'warning'
-  return 'destructive'
-}
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('ru-RU', {
@@ -44,11 +39,12 @@ export function ReportCard({ report, onClick }: ReportCardProps) {
       }}
     >
       {report.photo_thumbnail_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
           src={report.photo_thumbnail_url}
           alt={t('report.photo')}
-          className="h-20 w-20 flex-shrink-0 rounded object-cover"
+          width={80}
+          height={80}
+          className="flex-shrink-0 rounded object-cover"
         />
       ) : (
         <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded bg-gray-100 text-xs text-gray-400">

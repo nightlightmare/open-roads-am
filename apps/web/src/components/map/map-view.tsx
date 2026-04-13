@@ -51,6 +51,11 @@ export function MapView() {
   const map = useRef<maplibregl.Map | null>(null)
   const markersRef = useRef<maplibregl.Marker[]>([])
   const { zoom, center, filters, setViewport } = useMapStore()
+  // Capture initial values — map is created once; subsequent changes handled separately
+  const initialCenter = useRef(center)
+  const initialZoom = useRef(zoom)
+  // Always-current ref so the init effect closure doesn't capture a stale loadReports
+  const loadReportsRef = useRef<() => Promise<void>>(async () => undefined)
   const [selectedReport, setSelectedReport] = useState<ReportItem | null>(null)
   const [loading, setLoading] = useState(false)
   const tMap = useTranslations('map')
@@ -121,14 +126,17 @@ export function MapView() {
     }
   }, [filters, clearMarkers])
 
+  // Keep the ref current so the map init closure always calls the latest version
+  useEffect(() => { loadReportsRef.current = loadReports }, [loadReports])
+
   useEffect(() => {
     if (!mapContainer.current || map.current) return
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
       style: MAP_STYLE,
-      center,
-      zoom,
+      center: initialCenter.current,
+      zoom: initialZoom.current,
     })
 
     map.current.addControl(new maplibregl.NavigationControl(), 'top-right')
@@ -146,18 +154,17 @@ export function MapView() {
       const z = map.current.getZoom()
       const b = map.current.getBounds()
       setViewport(z, [c.lng, c.lat], [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()])
-      void loadReports()
+      void loadReportsRef.current()
     }
 
     map.current.on('moveend', onMoveEnd)
-    map.current.on('load', () => void loadReports())
+    map.current.on('load', () => void loadReportsRef.current())
 
     return () => {
       map.current?.remove()
       map.current = null
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [setViewport])
 
   // Reload when filters change
   useEffect(() => {

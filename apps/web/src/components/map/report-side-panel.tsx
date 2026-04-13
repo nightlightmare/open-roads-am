@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/navigation'
 import { X } from 'lucide-react'
@@ -60,10 +61,12 @@ export function ReportSidePanel({
 
       {report.photo_url && (
         <div className="px-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={report.photo_url}
             alt={t('report.photo')}
+            width={0}
+            height={0}
+            sizes="100vw"
             className="h-40 w-full rounded-lg object-cover"
           />
         </div>

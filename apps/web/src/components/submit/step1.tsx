@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl'
 import useSWR from 'swr'
 import { useSubmitStore } from '@/stores/submit-store'
 import { apiFetch } from '@/lib/api'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils'
@@ -113,8 +114,7 @@ export function Step1({ onNext }: Step1Props) {
         )}
       >
         {preview ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={preview} alt="Preview" className="max-h-64 rounded object-contain" />
+          <Image src={preview} alt="Preview" width={0} height={0} sizes="100vw" className="max-h-64 w-auto rounded object-contain" />
         ) : (
           <span className="text-sm">{tSubmit1('dropzone')}</span>
         )}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { useAuth } from '@clerk/nextjs'
 import { useTranslations } from 'next-intl'
@@ -40,21 +40,16 @@ export function Step2({ onBack }: Step2Props) {
   const mapLat = lat ?? YEREVAN_LAT
   const mapLng = lng ?? YEREVAN_LNG
 
-  // Try to get user's geolocation on mount
+  // Run once on mount — check initial store value so we don't overwrite a location
+  // the user already set; setLocation is a stable Zustand action
+  const hasInitialLocation = useRef(lat !== null && lng !== null)
   useEffect(() => {
-    if (lat !== null && lng !== null) return
-    if (!navigator.geolocation) return
+    if (hasInitialLocation.current || !navigator.geolocation) return
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLocation(pos.coords.latitude, pos.coords.longitude)
-      },
-      () => {
-        // Fall back to Yerevan
-        setLocation(YEREVAN_LAT, YEREVAN_LNG)
-      },
+      (pos) => setLocation(pos.coords.latitude, pos.coords.longitude),
+      () => setLocation(YEREVAN_LAT, YEREVAN_LNG),
     )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [setLocation])
 
   const handleMarkerChange = (newLat: number, newLng: number) => {
     setLocation(newLat, newLng)

@@ -20,11 +20,11 @@ export function LocationPicker({
   const mapRef = useRef<maplibregl.Map | null>(null)
   const markerRef = useRef<maplibregl.Marker | null>(null)
 
-  // Keep a ref to onChange so the effect closure doesn't stale
+  // Stable refs — init effect closes over them so it has no deps other than itself
   const onChangeRef = useRef(onChange)
-  useEffect(() => {
-    onChangeRef.current = onChange
-  }, [onChange])
+  useEffect(() => { onChangeRef.current = onChange }, [onChange])
+  const initialLat = useRef(lat)
+  const initialLng = useRef(lng)
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
@@ -32,7 +32,7 @@ export function LocationPicker({
     mapRef.current = new maplibregl.Map({
       container: containerRef.current,
       style: MAP_STYLE,
-      center: [lng, lat],
+      center: [initialLng.current, initialLat.current],
       zoom: 14,
     })
 
@@ -54,7 +54,6 @@ export function LocationPicker({
       mapRef.current = null
       markerRef.current = null
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Update marker position if lat/lng props change externally
