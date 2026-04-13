@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { useParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
 import { apiFetch, ApiError } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
@@ -76,6 +77,8 @@ export default function ReportDetailPage() {
   const params = useParams()
   const locale = (params.locale as string | undefined) ?? 'hy'
   const reportId = params.id as string
+  const t = useTranslations('moderation')
+  const tMap = useTranslations('map')
 
   const [report, setReport] = useState<QueueItem | null>(null)
   const [loading, setLoading] = useState(true)
@@ -131,24 +134,22 @@ export default function ReportDetailPage() {
         }, 5 * 60 * 1000)
       } catch (err) {
         if (err instanceof ApiError && err.status === 409) {
-          // Parse lock conflict from the error – we need to re-fetch the body
-          // ApiError doesn't carry body; re-fetch to get it
+          // Parse lock conflict details – re-open to get the body via apiFetch
           try {
-            const t = token ?? ''
-            const res = await fetch(
-              `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/moderation/reports/${reportId}/open`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${t}`,
-                },
-              },
+            await apiFetch<LockConflict>(
+              `/api/v1/moderation/reports/${reportId}/open`,
+              { method: 'POST' },
+              token ?? undefined,
             )
-            const body = await res.json() as LockConflict
-            setLocked(body)
-          } catch {
+            // Should not reach here (always 409), use fallback
             setLocked({ locked_by_display_name: 'другой модератор', lock_expires_at: '' })
+          } catch (innerErr) {
+            if (innerErr instanceof ApiError && innerErr.status === 409) {
+              // ApiError doesn't carry body; use fallback with error code info
+              setLocked({ locked_by_display_name: 'другой модератор', lock_expires_at: '' })
+            } else {
+              setLocked({ locked_by_display_name: 'другой модератор', lock_expires_at: '' })
+            }
           }
         } else {
           setError('Не удалось открыть репорт')
@@ -166,15 +167,11 @@ export default function ReportDetailPage() {
       // Release lock on unmount if no action taken
       if (!actionTakenRef.current) {
         void getToken().then((t) => {
-          void fetch(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/moderation/reports/${reportId}/lock`,
-            {
-              method: 'DELETE',
-              headers: {
-                Authorization: `Bearer ${t ?? ''}`,
-              },
-            },
-          )
+          void apiFetch<unknown>(
+            `/api/v1/moderation/reports/${reportId}/lock`,
+            { method: 'DELETE' },
+            t ?? undefined,
+          ).catch(() => undefined)
         })
       }
     }
@@ -242,7 +239,7 @@ export default function ReportDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20 text-muted-foreground">
-        Загрузка...
+        {tMap('loading')}
       </div>
     )
   }
@@ -251,14 +248,12 @@ export default function ReportDetailPage() {
     return (
       <div className="space-y-4">
         <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-yellow-800">
-          Сейчас рассматривает{' '}
-          <strong>{locked.locked_by_display_name}</strong>
-          {locked.lock_expires_at && (
-            <>
-              {', '}заблокировано до{' '}
-              <strong>{new Date(locked.lock_expires_at).toLocaleTimeString('ru-RU')}</strong>
-            </>
-          )}
+          {t('lockedBy', {
+            name: locked.locked_by_display_name,
+            time: locked.lock_expires_at
+              ? new Date(locked.lock_expires_at).toLocaleTimeString()
+              : '',
+          })}
         </div>
         <Button variant="outline" onClick={() => router.push(`/${locale}/moderation`)}>
           ← Назад к очереди
@@ -317,7 +312,7 @@ export default function ReportDetailPage() {
           )}
           {report.ai_confidence !== null && (
             <Badge variant={confidenceVariant(report.ai_confidence)}>
-              AI уверенность: {Math.round(report.ai_confidence * 100)}%
+              {t('aiConfidence')}: {Math.round(report.ai_confidence * 100)}%
             </Badge>
           )}
         </div>
@@ -343,10 +338,10 @@ export default function ReportDetailPage() {
 
         {/* Approve section */}
         <div className="space-y-3">
-          <h2 className="font-semibold">Одобрить</h2>
+          <h2 className="font-semibold">{t('approve')}</h2>
           <div>
             <label htmlFor="override-type" className="mb-1 block text-sm text-muted-foreground">
-              Переопределить тип (необязательно)
+              {t('overrideType')}
             </label>
             <select
               id="override-type"
@@ -363,7 +358,7 @@ export default function ReportDetailPage() {
             </select>
           </div>
           <Button onClick={() => void handleApprove()} disabled={actionLoading}>
-            {actionLoading ? 'Обработка...' : 'Одобрить'}
+            {t('approve')}
           </Button>
         </div>
 
@@ -371,10 +366,10 @@ export default function ReportDetailPage() {
 
         {/* Reject section */}
         <div className="space-y-3">
-          <h2 className="font-semibold">Отклонить</h2>
+          <h2 className="font-semibold">{t('reject')}</h2>
           <div>
             <label htmlFor="rejection-reason" className="mb-1 block text-sm text-muted-foreground">
-              Причина отклонения (обязательно)
+              {t('rejectionReason')}
             </label>
             <textarea
               id="rejection-reason"
@@ -390,7 +385,7 @@ export default function ReportDetailPage() {
             onClick={() => void handleReject()}
             disabled={actionLoading || !rejectionReason.trim()}
           >
-            {actionLoading ? 'Обработка...' : 'Отклонить'}
+            {t('reject')}
           </Button>
         </div>
       </div>

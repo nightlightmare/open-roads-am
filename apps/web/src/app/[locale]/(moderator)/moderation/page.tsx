@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { useParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
 import { apiFetch, ApiError } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
@@ -118,6 +119,10 @@ export default function ModerationPage() {
   const router = useRouter()
   const params = useParams()
   const locale = (params.locale as string | undefined) ?? 'hy'
+  const t = useTranslations('moderation')
+  const tMap = useTranslations('map')
+
+  const readerRef = useRef<ReadableStreamDefaultReader<Uint8Array> | null>(null)
 
   const [activeTab, setActiveTab] = useState<'pending' | 'under_review'>('pending')
   const [pendingReports, setPendingReports] = useState<QueueItem[]>([])
@@ -193,8 +198,13 @@ export default function ModerationPage() {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/moderation/feed`,
         { headers: { Authorization: `Bearer ${token ?? ''}` } },
       )
-      if (!res.body || cancelled) return
+      if (!res.ok || !res.body) {
+        console.error('SSE connection failed:', res.status)
+        return
+      }
+      if (cancelled) return
       const reader = res.body.getReader()
+      readerRef.current = reader
       const decoder = new TextDecoder()
       let buffer = ''
       while (!cancelled) {
@@ -227,6 +237,7 @@ export default function ModerationPage() {
     void connectSSE()
     return () => {
       cancelled = true
+      readerRef.current?.cancel().catch(() => undefined)
     }
   }, [getToken, refetchPending])
 
@@ -237,7 +248,7 @@ export default function ModerationPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20 text-muted-foreground">
-        Загрузка...
+        {tMap('loading')}
       </div>
     )
   }
@@ -260,7 +271,7 @@ export default function ModerationPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Модерация</h1>
+      <h1 className="text-2xl font-bold">{t('title')}</h1>
 
       {/* Tabs */}
       <div className="flex gap-1 rounded-lg border bg-gray-50 p-1">
@@ -272,7 +283,7 @@ export default function ModerationPage() {
           }`}
           onClick={() => setActiveTab('pending')}
         >
-          Ожидают ({pendingCount})
+          {t('tabs.pending')} ({pendingCount})
         </button>
         <button
           className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition ${
@@ -282,7 +293,7 @@ export default function ModerationPage() {
           }`}
           onClick={() => setActiveTab('under_review')}
         >
-          На рассмотрении
+          {t('tabs.underReview')}
         </button>
       </div>
 

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { useAuth } from '@clerk/nextjs'
 import Image from 'next/image'
-import { Link } from '@/i18n/navigation'
+import { Link, useRouter } from '@/i18n/navigation'
 import { apiFetch, ApiError } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -89,6 +89,7 @@ interface ConfirmButtonProps {
 
 function ConfirmButton({ reportId, initialCount, reportStatus }: ConfirmButtonProps) {
   const { getToken, isSignedIn } = useAuth()
+  const router = useRouter()
   const [confirmed, setConfirmed] = useState(false)
   const [count, setCount] = useState(initialCount)
   const [loading, setLoading] = useState(false)
@@ -98,7 +99,7 @@ function ConfirmButton({ reportId, initialCount, reportStatus }: ConfirmButtonPr
 
   const handleToggle = async () => {
     if (!isSignedIn) {
-      window.location.href = '/sign-in'
+      router.push('/sign-in')
       return
     }
 
@@ -166,7 +167,6 @@ function ConfirmButton({ reportId, initialCount, reportStatus }: ConfirmButtonPr
 
 export default function ReportDetailPage() {
   const params = useParams()
-  const locale = (params.locale as string) ?? 'hy'
   const id = params.id as string
 
   const [report, setReport] = useState<PublicReport | null>(null)
@@ -221,7 +221,7 @@ export default function ReportDetailPage() {
     <div className="mx-auto max-w-2xl px-4 py-6">
       {/* Back link */}
       <Link
-        href={`/${locale}` as Parameters<typeof Link>[0]['href']}
+        href="/"
         className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
       >
         ← На карту

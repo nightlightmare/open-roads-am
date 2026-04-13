@@ -61,6 +61,7 @@ function statusVariant(status: ReportStatus): BadgeProps['variant'] {
 
 export default function ProfileReportsPage() {
   const t = useTranslations('profile')
+  const tMap = useTranslations('map')
   const tStatus = useTranslations('report.status')
   const tType = useTranslations('report.problemType')
   const { getToken } = useAuth()
@@ -143,7 +144,7 @@ export default function ProfileReportsPage() {
       </div>
 
       {loading ? (
-        <div className="py-12 text-center text-muted-foreground">Loading...</div>
+        <div className="py-12 text-center text-muted-foreground">{tMap('loading')}</div>
       ) : reports.length === 0 ? (
         <div className="py-12 text-center text-muted-foreground">{t('noReports')}</div>
       ) : (

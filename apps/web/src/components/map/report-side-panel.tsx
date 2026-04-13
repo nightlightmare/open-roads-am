@@ -1,8 +1,7 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
-import { useParams } from 'next/navigation'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -31,8 +30,6 @@ export function ReportSidePanel({
   onClose: () => void
 }) {
   const t = useTranslations()
-  const params = useParams()
-  const locale = (params.locale as string | undefined) ?? 'hy'
 
   const statusLabel = t(`report.status.${report.status}` as never)
   const typeLabel = report.problem_type
@@ -73,7 +70,7 @@ export function ReportSidePanel({
       )}
 
       <div className="p-4">
-        <Link href={`/${locale}/reports/${report.id}`}>
+        <Link href={`/reports/${report.id}`}>
           <Button className="w-full" size="sm">
             {t('report.viewDetails')}
           </Button>

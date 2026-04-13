@@ -2,7 +2,6 @@
 
 import { useRef, useState, useCallback, useEffect } from 'react'
 import dynamic from 'next/dynamic'
-import { useParams } from 'next/navigation'
 import { useAuth } from '@clerk/nextjs'
 import useSWR from 'swr'
 import { useSubmitStore } from '@/stores/submit-store'
@@ -125,7 +124,6 @@ function Step1({ onNext }: Step1Props) {
       const url = URL.createObjectURL(file)
       setPreview(url)
       setPhoto(file)
-      setJobToken('')
 
       setUploading(true)
       try {
@@ -278,8 +276,6 @@ interface Step2Props {
 function Step2({ onBack }: Step2Props) {
   const { getToken } = useAuth()
   const router = useRouter()
-  const params = useParams()
-  const locale = (params.locale as string) ?? 'hy'
 
   const { jobToken, selectedType, lat, lng, description, setLocation, setDescription, reset } =
     useSubmitStore()
@@ -341,7 +337,7 @@ function Step2({ onBack }: Step2Props) {
         token ?? undefined,
       )
       reset()
-      router.push(`/${locale}/profile/reports/${result.id}` as Parameters<typeof router.push>[0])
+      router.push(`/profile/reports/${result.id}`)
     } catch (err) {
       if (err instanceof ApiError) {
         setSubmitError(`Ошибка: ${err.code}`)

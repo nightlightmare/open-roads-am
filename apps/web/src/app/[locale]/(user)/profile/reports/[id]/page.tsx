@@ -61,6 +61,8 @@ function statusVariant(status: ReportStatus): BadgeProps['variant'] {
 export default function ProfileReportDetailPage() {
   const tStatus = useTranslations('report.status')
   const tType = useTranslations('report.problemType')
+  const tMap = useTranslations('map')
+  const tSubmit = useTranslations('submit.step2')
   const { getToken } = useAuth()
   const params = useParams()
   const locale = (params['locale'] as string | undefined) ?? 'hy'
@@ -94,7 +96,7 @@ export default function ProfileReportDetailPage() {
     new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(dateStr))
 
   if (loading) {
-    return <div className="py-12 text-center text-muted-foreground">Loading...</div>
+    return <div className="py-12 text-center text-muted-foreground">{tMap('loading')}</div>
   }
 
   if (error || !report) {
@@ -107,7 +109,7 @@ export default function ProfileReportDetailPage() {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="sm" onClick={() => router.back()}>
-          ← Back
+          {tSubmit('back')}
         </Button>
       </div>
 

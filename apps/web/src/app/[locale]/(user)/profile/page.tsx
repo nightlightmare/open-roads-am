@@ -1,6 +1,6 @@
 import { auth } from '@clerk/nextjs/server'
 import { getTranslations } from 'next-intl/server'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 import { apiFetch } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -56,10 +56,10 @@ export default async function ProfilePage({
       </div>
 
       <div className="flex gap-4">
-        <Link href={`/${locale}/profile/reports`}>
+        <Link href="/profile/reports">
           <Button variant="outline">{t('tabs.reports')}</Button>
         </Link>
-        <Link href={`/${locale}/profile/confirmations`}>
+        <Link href="/profile/confirmations">
           <Button variant="outline">{t('tabs.confirmations')}</Button>
         </Link>
       </div>

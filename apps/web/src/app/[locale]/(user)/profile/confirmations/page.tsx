@@ -50,6 +50,7 @@ function statusVariant(status: ReportStatus): BadgeProps['variant'] {
 
 export default function ProfileConfirmationsPage() {
   const t = useTranslations('profile')
+  const tMap = useTranslations('map')
   const tStatus = useTranslations('report.status')
   const tType = useTranslations('report.problemType')
   const { getToken } = useAuth()
@@ -108,7 +109,7 @@ export default function ProfileConfirmationsPage() {
       <h1 className="text-2xl font-bold">{t('tabs.confirmations')}</h1>
 
       {loading ? (
-        <div className="py-12 text-center text-muted-foreground">Loading...</div>
+        <div className="py-12 text-center text-muted-foreground">{tMap('loading')}</div>
       ) : confirmations.length === 0 ? (
         <div className="py-12 text-center text-muted-foreground">{t('noConfirmations')}</div>
       ) : (
