@@ -36,12 +36,14 @@ export interface ModerationReportDetail {
 
 export interface ApproveData {
   moderatedBy: string
+  moderatedByRole: string
   problemTypeFinal: string | null
   note: string | null
 }
 
 export interface RejectData {
   moderatedBy: string
+  moderatedByRole: string
   rejectionReason: string
 }
 
@@ -210,7 +212,7 @@ export class PrismaModerationRepository implements ModerationRepository {
   }
 
   async approve(id: string, data: ApproveData): Promise<void> {
-    const { moderatedBy, problemTypeFinal, note } = data
+    const { moderatedBy, moderatedByRole, problemTypeFinal, note } = data
     await this.db.$transaction(async (tx) => {
       await tx.$queryRaw`
         UPDATE reports
@@ -232,7 +234,7 @@ export class PrismaModerationRepository implements ModerationRepository {
           'under_review'::"report_status",
           'approved'::"report_status",
           ${moderatedBy}::uuid,
-          'moderator'::"user_role",
+          ${moderatedByRole}::"user_role",
           ${note}
         )
       `
@@ -240,7 +242,7 @@ export class PrismaModerationRepository implements ModerationRepository {
   }
 
   async reject(id: string, data: RejectData): Promise<void> {
-    const { moderatedBy, rejectionReason } = data
+    const { moderatedBy, moderatedByRole, rejectionReason } = data
     await this.db.$transaction(async (tx) => {
       await tx.$queryRaw`
         UPDATE reports
@@ -262,7 +264,7 @@ export class PrismaModerationRepository implements ModerationRepository {
           'under_review'::"report_status",
           'rejected'::"report_status",
           ${moderatedBy}::uuid,
-          'moderator'::"user_role",
+          ${moderatedByRole}::"user_role",
           NULL
         )
       `

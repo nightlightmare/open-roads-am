@@ -115,6 +115,7 @@ export async function moderationActionsRoutes(
 
       await db.approve(id, {
         moderatedBy: auth.clerkId,
+        moderatedByRole: auth.role,
         problemTypeFinal: parsed.data.problem_type_final ?? null,
         note: parsed.data.note ?? null,
       })
@@ -156,6 +157,7 @@ export async function moderationActionsRoutes(
 
       await db.reject(id, {
         moderatedBy: auth.clerkId,
+        moderatedByRole: auth.role,
         rejectionReason: parsed.data.rejection_reason,
       })
 

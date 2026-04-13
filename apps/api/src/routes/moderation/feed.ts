@@ -54,11 +54,11 @@ export async function moderationFeedRoutes(
       const queueCount = setInterval(async () => {
         try {
           const result = await db.getQueue({ status: 'pending_review', problemType: null, cursor: null, limit: 1 })
-          const underReview = await db.getQueue({ status: 'under_review', problemType: null, cursor: null, limit: 1 })
+          const underReviewIds = await db.findUnderReview()
           const event = JSON.stringify({
             event: 'queue_count',
-            pending: result.total_pending,
-            under_review: underReview.reports.length,
+            pending: result.total_pending - underReviewIds.length,
+            under_review: underReviewIds.length,
           })
           raw.write(`data: ${event}\n\n`)
         } catch {
@@ -66,7 +66,10 @@ export async function moderationFeedRoutes(
         }
       }, QUEUE_COUNT_INTERVAL_MS)
 
+      let cleaned = false
       const cleanup = () => {
+        if (cleaned) return
+        cleaned = true
         activeConnections--
         clearInterval(heartbeat)
         clearInterval(queueCount)
