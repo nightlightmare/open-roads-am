@@ -7,17 +7,9 @@ import Image from 'next/image'
 import { Link } from '@/i18n/navigation'
 import { Badge } from '@/components/ui/badge'
 import { TIMELINE_STATUSES } from '@/lib/constants'
+import { statusVariant } from '@/lib/utils'
 import { usePublicReportStore } from '@/stores/report-store'
 import { ConfirmButton } from '@/components/report/confirm-button'
-
-function statusBadgeVariant(
-  status: string,
-): 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info' {
-  if (status === 'resolved') return 'success'
-  if (status === 'rejected' || status === 'archived') return 'destructive'
-  if (status === 'approved' || status === 'in_progress') return 'info'
-  return 'secondary'
-}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString('ru-RU', {
@@ -91,7 +83,7 @@ export default function ReportDetailPage() {
 
       {/* Status + Type */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <Badge variant={statusBadgeVariant(report.status)}>
+        <Badge variant={statusVariant(report.status)}>
           {t(`report.status.${report.status}` as Parameters<typeof t>[0])}
         </Badge>
         {report.problem_type && (

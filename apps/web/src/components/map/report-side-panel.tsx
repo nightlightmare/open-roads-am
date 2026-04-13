@@ -6,6 +6,7 @@ import { Link } from '@/i18n/navigation'
 import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { statusVariant } from '@/lib/utils'
 
 interface ReportItem {
   id: string
@@ -15,12 +16,6 @@ interface ReportItem {
   confirmation_count: number
   photo_url: string | null
   created_at: string
-}
-
-const STATUS_VARIANT: Record<string, 'success' | 'info' | 'warning' | 'outline' | 'secondary'> = {
-  approved: 'success',
-  in_progress: 'info',
-  resolved: 'secondary',
 }
 
 export function ReportSidePanel({
@@ -42,7 +37,7 @@ export function ReportSidePanel({
       <div className="flex items-start justify-between p-4">
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <Badge variant={STATUS_VARIANT[report.status] ?? 'outline'}>{statusLabel}</Badge>
+            <Badge variant={statusVariant(report.status)}>{statusLabel}</Badge>
             <span className="text-sm text-muted-foreground">{typeLabel}</span>
           </div>
           <p className="mt-1 text-sm font-medium">{report.address_raw ?? '—'}</p>

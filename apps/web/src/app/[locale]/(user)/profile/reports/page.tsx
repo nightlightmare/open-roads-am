@@ -7,8 +7,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import type { BadgeProps } from '@/components/ui/badge'
-import type { ReportStatus } from '@/lib/constants'
+import { statusVariant } from '@/lib/utils'
 import { useProfileStore } from '@/stores/profile-store'
 import type { StatusFilter } from '@/stores/profile-store'
 
@@ -20,21 +19,6 @@ const STATUS_TABS: StatusFilter[] = [
   'resolved',
   'rejected',
 ]
-
-function statusVariant(status: ReportStatus): BadgeProps['variant'] {
-  switch (status) {
-    case 'approved':
-      return 'success'
-    case 'in_progress':
-      return 'info'
-    case 'resolved':
-      return 'secondary'
-    case 'rejected':
-      return 'destructive'
-    default:
-      return 'outline'
-  }
-}
 
 export default function ProfileReportsPage() {
   const t = useTranslations('profile')
