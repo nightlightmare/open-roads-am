@@ -14,6 +14,7 @@ import { PrismaClassificationRepository } from './repositories/classification.re
 import { PrismaReportRepository } from './repositories/report.repository.js'
 import { PrismaPublicReportRepository } from './repositories/public-report.repository.js'
 import { PrismaModerationRepository } from './repositories/moderation.repository.js'
+import { PrismaUserProfileRepository } from './repositories/user-profile.repository.js'
 import { clerkWebhookRoutes } from './routes/internal/clerk-webhook.js'
 import { adminApiKeyRoutes } from './routes/admin/api-keys.js'
 import { adminRoleRoutes } from './routes/admin/roles.js'
@@ -24,6 +25,8 @@ import { publicStatsRoutes } from './routes/public/stats.js'
 import { moderationQueueRoutes } from './routes/moderation/queue.js'
 import { moderationActionsRoutes } from './routes/moderation/actions.js'
 import { moderationFeedRoutes } from './routes/moderation/feed.js'
+import { meRoutes } from './routes/me.js'
+import { confirmationRoutes } from './routes/confirmations.js'
 import { startCleanupCron, startArchiveCron } from './workers/cleanup.js'
 import { startClassifyWorker } from './workers/classify.js'
 import { startLeaseExpiryWorker } from './workers/lease-expiry.js'
@@ -49,6 +52,7 @@ export async function buildServer(env: Env) {
   const reportRepo = new PrismaReportRepository(db)
   const publicReportRepo = new PrismaPublicReportRepository(db)
   const moderationRepo = new PrismaModerationRepository(db)
+  const userProfileRepo = new PrismaUserProfileRepository(db)
 
   // Plugins
   await fastify.register(fastifyHelmet)
@@ -103,6 +107,16 @@ export async function buildServer(env: Env) {
   })
   await fastify.register(moderationFeedRoutes, {
     db: moderationRepo,
+    redis,
+  })
+  await fastify.register(meRoutes, {
+    db: userProfileRepo,
+    redis,
+    cfImagesBaseUrl: env.CF_IMAGES_BASE_URL,
+  })
+  await fastify.register(confirmationRoutes, {
+    db: userProfileRepo,
+    banDb: userRepo,
     redis,
   })
 
