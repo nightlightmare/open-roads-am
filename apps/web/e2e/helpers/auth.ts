@@ -15,4 +15,8 @@ export async function signInAs(page: Page, role: 'user' | 'moderator' | 'admin')
     page,
     emailAddress: emails[role],
   })
+
+  // Reload to ensure fresh session token with updated publicMetadata
+  await page.reload()
+  await page.waitForLoadState('networkidle')
 }
