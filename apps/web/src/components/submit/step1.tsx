@@ -169,6 +169,7 @@ export function Step1({ onNext }: Step1Props) {
               <button
                 key={type}
                 type="button"
+                data-selected={selectedType === type}
                 onClick={() => setSelectedType(type)}
                 className={cn(
                   'rounded-md border px-3 py-2 text-sm transition-colors',

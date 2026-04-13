@@ -21,7 +21,7 @@ test.describe('Report Submission', () => {
     await fileInput.setInputFiles(path.join(__dirname, '../helpers/test-photo.jpg'))
 
     // Should show analyzing state
-    await expect(page.getByText(/analyz|վերլusage/i)).toBeVisible({ timeout: 10_000 })
+    await expect(page.getByText(/Analyz|Վերլուծվում|Анализируем/i)).toBeVisible({ timeout: 10_000 })
 
     // Should eventually show category grid
     await expect(page.getByTestId('category-grid')).toBeVisible({ timeout: 65_000 })
