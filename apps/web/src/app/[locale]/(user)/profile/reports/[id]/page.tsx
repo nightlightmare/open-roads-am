@@ -63,6 +63,8 @@ export default function ProfileReportDetailPage() {
   const tType = useTranslations('report.problemType')
   const tMap = useTranslations('map')
   const tSubmit = useTranslations('submit.step2')
+  const tReport = useTranslations('report')
+  const tErrors = useTranslations('errors')
   const { getToken } = useAuth()
   const params = useParams()
   const locale = (params['locale'] as string | undefined) ?? 'hy'
@@ -84,7 +86,7 @@ export default function ProfileReportDetailPage() {
         )
         setReport(data)
       } catch {
-        setError('Failed to load report')
+        setError(tErrors('failedToLoad'))
       } finally {
         setLoading(false)
       }
@@ -101,7 +103,7 @@ export default function ProfileReportDetailPage() {
 
   if (error || !report) {
     return (
-      <div className="py-12 text-center text-muted-foreground">{error ?? 'Report not found'}</div>
+      <div className="py-12 text-center text-muted-foreground">{error ?? tErrors('reportNotFound')}</div>
     )
   }
 
@@ -142,21 +144,21 @@ export default function ProfileReportDetailPage() {
 
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <span className="font-medium">Coordinates: </span>
+            <span className="font-medium">{tReport('coordinates')}: </span>
             <span className="text-muted-foreground">
               {report.latitude.toFixed(5)}, {report.longitude.toFixed(5)}
             </span>
           </div>
           <div>
-            <span className="font-medium">Confirmations: </span>
+            <span className="font-medium">{tReport('confirmationsCount')}: </span>
             <span className="text-muted-foreground">{report.confirmation_count}</span>
           </div>
           <div>
-            <span className="font-medium">Created: </span>
+            <span className="font-medium">{tReport('createdAt')}: </span>
             <span className="text-muted-foreground">{fmt(report.created_at)}</span>
           </div>
           <div>
-            <span className="font-medium">Updated: </span>
+            <span className="font-medium">{tReport('updatedAt')}: </span>
             <span className="text-muted-foreground">{fmt(report.updated_at)}</span>
           </div>
         </div>
@@ -165,7 +167,7 @@ export default function ProfileReportDetailPage() {
           <div className="border-t pt-4 space-y-2">
             {report.problem_type_user !== null && (
               <div className="text-sm">
-                <span className="font-medium">User classification: </span>
+                <span className="font-medium">{tReport('userClassification')}: </span>
                 <span className="text-muted-foreground">
                   {tType(report.problem_type_user as Parameters<typeof tType>[0])}
                 </span>
@@ -173,7 +175,7 @@ export default function ProfileReportDetailPage() {
             )}
             {report.problem_type_ai !== null && (
               <div className="text-sm">
-                <span className="font-medium">AI classification: </span>
+                <span className="font-medium">{tReport('aiClassification')}: </span>
                 <span className="text-muted-foreground">
                   {tType(report.problem_type_ai as Parameters<typeof tType>[0])}
                   {report.ai_confidence !== null && (
@@ -188,7 +190,7 @@ export default function ProfileReportDetailPage() {
 
       {report.status_history.length > 0 && (
         <div className="rounded-lg border bg-card p-6">
-          <h2 className="mb-4 font-semibold">Status History</h2>
+          <h2 className="mb-4 font-semibold">{tReport('statusHistory')}</h2>
           <ol className="space-y-3">
             {report.status_history.map((entry, i) => (
               <li key={i} className="flex items-start gap-3">

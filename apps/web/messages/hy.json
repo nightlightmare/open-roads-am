@@ -41,7 +41,18 @@
     "confirm": "Հաստատել",
     "unconfirm": "Հեռացնել հաստատումը",
     "viewDetails": "Մանրամասներ",
-    "backToMap": "← Քարտեզ"
+    "backToMap": "← Քարտեզ",
+    "photo": "Հաղորդման լուսանկար",
+    "govAgencyNote": "Գերատեսչության նշում",
+    "statusHistory": "Կարգավիճակի պատմություն",
+    "createdAt": "Ստեղծված",
+    "updatedAt": "Թարմացված",
+    "coordinates": "Կոորդինատներ",
+    "confirmationsCount": "Հաստատումներ",
+    "userClassification": "Կատեգորիա (օգտատեր)",
+    "aiClassification": "Կատեգորիա (AI)",
+    "aiPrefix": "AI",
+    "titleWithId": "Հաղորդում #{id}"
   },
   "submit": {
     "title": "Հայտնել խնդրի մասին",
@@ -61,13 +72,16 @@
       "descriptionPlaceholder": "Ավելի մանրամասն...",
       "back": "← Հետ",
       "submit": "Ուղարկել",
-      "submitting": "Ուղարկվում է..."
+      "submitting": "Ուղարկվում է...",
+      "charCount": "{current}/{max}"
     },
     "success": "Հայտը ընդունված է",
     "errors": {
       "photoRequired": "Ընտրեք լուսանկար",
       "typeRequired": "Ընտրեք կատեգորիա",
-      "locationRequired": "Նշեք վայրը"
+      "locationRequired": "Նշեք վայրը",
+      "uploadFailed": "Լուսանկարի բեռնումը ձախողվեց: Կրկին փորձեք:",
+      "submitFailed": "Ուղարկման սխալ: Կրկին փորձեք:"
     }
   },
   "profile": {
@@ -100,7 +114,16 @@
     "rejectionReason": "Մերժման պատճառ",
     "overrideType": "Կատեգորիայի փոփոխություն",
     "aiConfidence": "AI վստահություն",
-    "note": "Նշում"
+    "note": "Նշում",
+    "backToQueue": "← Հետ հերթ",
+    "noPending": "Սպասող հաղորդումներ չկան",
+    "noUnderReview": "Ուսումնասիրվող հաղորդումներ չկան",
+    "noChanges": "— առանց փոփոխությունների —",
+    "reasonRequired": "Նշեք մերժման պատճառը",
+    "reasonPlaceholder": "Նշեք պատճառը...",
+    "unknownModerator": "այլ մոդератոր",
+    "reportTitle": "Հաղորդում #{id}",
+    "noPhoto": "Լուսանկար չկա"
   },
   "admin": {
     "title": "Ադմինիստրատորի վահանակ",
@@ -137,6 +160,16 @@
     "forbidden": "Անբավարար իրավունքներ",
     "tooManyRequests": "Չափազանց շատ հարցումներ, կրկին փորձեք {seconds} վ.-ից",
     "serverError": "Ինչ-որ բան սխալ է",
-    "retry": "Կրկնել"
+    "retry": "Կրկնել",
+    "failedToLoad": "Չհաջողվեց բեռնել",
+    "reportNotFound": "Հաղորդումը չի գտնվել",
+    "ownReport": "Հնարավոր չէ հաստատել սեփական հաղորդումը",
+    "alreadyConfirmed": "Դուք արդեն հաստատել եք այս հաղորդումը",
+    "photoUploadFailed": "Լուսանկարի բեռնումը ձախողվեց: Կրկին փորձեք:",
+    "submitFailed": "Ուղարկման սխալ: Կրկին փորձեք:",
+    "failedToOpenReport": "Չհաջողվեց բացել հաղորդումը",
+    "failedToApprove": "Չհաջողվեց հաստատել հաղորդումը",
+    "failedToReject": "Չհաջողվեց մերժել հաղորդումը",
+    "errorWithCode": "Սխալ {status}: {code}"
   }
 }

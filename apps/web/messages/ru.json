@@ -41,7 +41,18 @@
     "confirm": "Подтвердить",
     "unconfirm": "Убрать подтверждение",
     "viewDetails": "Подробнее",
-    "backToMap": "← На карту"
+    "backToMap": "← На карту",
+    "photo": "Фото репорта",
+    "govAgencyNote": "Примечание ведомства",
+    "statusHistory": "История статусов",
+    "createdAt": "Создано",
+    "updatedAt": "Обновлено",
+    "coordinates": "Координаты",
+    "confirmationsCount": "Подтверждений",
+    "userClassification": "Категория (пользователь)",
+    "aiClassification": "Категория (AI)",
+    "aiPrefix": "AI",
+    "titleWithId": "Репорт #{id}"
   },
   "submit": {
     "title": "Сообщить о проблеме",
@@ -61,13 +72,16 @@
       "descriptionPlaceholder": "Подробнее...",
       "back": "← Назад",
       "submit": "Отправить",
-      "submitting": "Отправляем..."
+      "submitting": "Отправляем...",
+      "charCount": "{current}/{max}"
     },
     "success": "Заявка принята",
     "errors": {
       "photoRequired": "Выберите фото",
       "typeRequired": "Выберите категорию",
-      "locationRequired": "Укажите место"
+      "locationRequired": "Укажите место",
+      "uploadFailed": "Ошибка загрузки фото. Попробуйте ещё раз.",
+      "submitFailed": "Ошибка при отправке. Попробуйте ещё раз."
     }
   },
   "profile": {
@@ -100,7 +114,16 @@
     "rejectionReason": "Причина отклонения",
     "overrideType": "Изменить категорию",
     "aiConfidence": "Уверенность AI",
-    "note": "Примечание"
+    "note": "Примечание",
+    "backToQueue": "← Назад к очереди",
+    "noPending": "Нет ожидающих репортов",
+    "noUnderReview": "Нет репортов на рассмотрении",
+    "noChanges": "— без изменений —",
+    "reasonRequired": "Укажите причину отклонения",
+    "reasonPlaceholder": "Укажите причину...",
+    "unknownModerator": "другой модератор",
+    "reportTitle": "Репорт #{id}",
+    "noPhoto": "Нет фото"
   },
   "admin": {
     "title": "Панель администратора",
@@ -137,6 +160,16 @@
     "forbidden": "Недостаточно прав",
     "tooManyRequests": "Слишком много запросов, повторите через {seconds} с.",
     "serverError": "Что-то пошло не так",
-    "retry": "Повторить"
+    "retry": "Повторить",
+    "failedToLoad": "Не удалось загрузить",
+    "reportNotFound": "Репорт не найден",
+    "ownReport": "Нельзя подтвердить собственный репорт",
+    "alreadyConfirmed": "Вы уже подтвердили этот репорт",
+    "photoUploadFailed": "Ошибка загрузки фото. Попробуйте ещё раз.",
+    "submitFailed": "Ошибка при отправке. Попробуйте ещё раз.",
+    "failedToOpenReport": "Не удалось открыть репорт",
+    "failedToApprove": "Не удалось одобрить репорт",
+    "failedToReject": "Не удалось отклонить репорт",
+    "errorWithCode": "Ошибка {status}: {code}"
   }
 }

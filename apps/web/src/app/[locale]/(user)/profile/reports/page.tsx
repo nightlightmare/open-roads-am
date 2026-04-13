@@ -138,7 +138,7 @@ export default function ProfileReportsPage() {
                 : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
             }`}
           >
-            {tab === 'all' ? 'All' : tStatus(tab)}
+            {tab === 'all' ? tMap('filters.all') : tStatus(tab)}
           </button>
         ))}
       </div>
@@ -191,7 +191,7 @@ export default function ProfileReportsPage() {
       {cursor !== null && (
         <div className="flex justify-center">
           <Button variant="outline" onClick={handleLoadMore} disabled={loadingMore}>
-            {loadingMore ? 'Loading...' : t('loadMore')}
+            {loadingMore ? tMap('loading') : t('loadMore')}
           </Button>
         </div>
       )}

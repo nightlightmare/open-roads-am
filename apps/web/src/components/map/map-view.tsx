@@ -3,6 +3,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import { useTranslations } from 'next-intl'
 import { useMapStore } from '@/stores/map-store'
 import { apiFetch } from '@/lib/api'
 import { ReportSidePanel } from './report-side-panel'
@@ -52,6 +53,7 @@ export function MapView() {
   const { zoom, center, filters, setViewport } = useMapStore()
   const [selectedReport, setSelectedReport] = useState<ReportItem | null>(null)
   const [loading, setLoading] = useState(false)
+  const tMap = useTranslations('map')
 
   const clearMarkers = useCallback(() => {
     markersRef.current.forEach((m) => m.remove())
@@ -169,7 +171,7 @@ export function MapView() {
       <div ref={mapContainer} className="h-full w-full" />
       {loading && (
         <div className="absolute left-4 top-4 rounded-md bg-white px-3 py-1.5 text-sm shadow">
-          Загрузка...
+          {tMap('loading')}
         </div>
       )}
       {selectedReport && (

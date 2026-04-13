@@ -53,6 +53,7 @@ export default function ProfileConfirmationsPage() {
   const tMap = useTranslations('map')
   const tStatus = useTranslations('report.status')
   const tType = useTranslations('report.problemType')
+  const tReport = useTranslations('report')
   const { getToken } = useAuth()
   const params = useParams()
   const locale = (params['locale'] as string | undefined) ?? 'hy'
@@ -127,7 +128,7 @@ export default function ProfileConfirmationsPage() {
                     alt={
                       item.problem_type !== null
                         ? tType(item.problem_type as Parameters<typeof tType>[0])
-                        : 'Report photo'
+                        : tReport('photo')
                     }
                     fill
                     className="object-cover"
@@ -164,7 +165,7 @@ export default function ProfileConfirmationsPage() {
       {cursor !== null && (
         <div className="flex justify-center">
           <Button variant="outline" onClick={handleLoadMore} disabled={loadingMore}>
-            {loadingMore ? 'Loading...' : t('loadMore')}
+            {loadingMore ? tMap('loading') : t('loadMore')}
           </Button>
         </div>
       )}

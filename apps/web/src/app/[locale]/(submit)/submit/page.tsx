@@ -3,6 +3,7 @@
 import { useRef, useState, useCallback, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { useAuth } from '@clerk/nextjs'
+import { useTranslations } from 'next-intl'
 import useSWR from 'swr'
 import { useSubmitStore } from '@/stores/submit-store'
 import { useRouter } from '@/i18n/navigation'
@@ -32,17 +33,6 @@ const PROBLEM_TYPES = [
 
 type ProblemType = (typeof PROBLEM_TYPES)[number]
 
-const PROBLEM_TYPE_LABELS: Record<ProblemType, string> = {
-  pothole: 'Яма',
-  damaged_barrier: 'Повреждённое ограждение',
-  missing_marking: 'Отсутствие разметки',
-  damaged_sign: 'Повреждённый знак',
-  hazard: 'Опасность',
-  broken_light: 'Неработающий светофор',
-  missing_ramp: 'Отсутствие пандуса',
-  other: 'Другое',
-}
-
 interface ClassifyJobResponse {
   job_token: string
 }
@@ -64,6 +54,9 @@ interface Step1Props {
 
 function Step1({ onNext }: Step1Props) {
   const { getToken } = useAuth()
+  const t = useTranslations()
+  const tSubmit1 = useTranslations('submit.step1')
+  const tType = useTranslations('report.problemType')
   const {
     photoFile,
     jobToken,
@@ -145,13 +138,13 @@ function Step1({ onNext }: Step1Props) {
         setJobToken(json.job_token)
         setPollStarted(Date.now())
       } catch {
-        setUploadError('Ошибка загрузки фото. Попробуйте ещё раз.')
+        setUploadError(t('errors.photoUploadFailed'))
         setAiNoResult(true)
       } finally {
         setUploading(false)
       }
     },
-    [getToken, setPhoto, setJobToken],
+    [getToken, setPhoto, setJobToken, t],
   )
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -164,7 +157,7 @@ function Step1({ onNext }: Step1Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold">Фото</h1>
+      <h1 className="text-xl font-semibold">{tSubmit1('title')}</h1>
 
       {/* Dropzone */}
       <button
@@ -179,7 +172,7 @@ function Step1({ onNext }: Step1Props) {
           // eslint-disable-next-line @next/next/no-img-element
           <img src={preview} alt="Preview" className="max-h-64 rounded object-contain" />
         ) : (
-          <span className="text-sm">Нажмите или перетащите фото</span>
+          <span className="text-sm">{tSubmit1('dropzone')}</span>
         )}
       </button>
       <input
@@ -206,31 +199,31 @@ function Step1({ onNext }: Step1Props) {
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
           </svg>
-          Загрузка...
+          {t('map.loading')}
         </div>
       )}
 
       {/* Polling indicator */}
       {isPolling && (
-        <p className="text-sm text-muted-foreground">Анализируем фото...</p>
+        <p className="text-sm text-muted-foreground">{tSubmit1('analyzing')}</p>
       )}
 
       {/* No AI result message */}
       {aiNoResult && (
         <p className="text-sm text-muted-foreground">
-          Не удалось определить автоматически — выберите вручную
+          {tSubmit1('noAiResult')}
         </p>
       )}
 
       {/* Category grid */}
       {showCategories && (
         <div>
-          <p className="mb-2 text-sm font-medium">Выберите категорию</p>
+          <p className="mb-2 text-sm font-medium">{tSubmit1('selectType')}</p>
           {aiType && (
             <p className="mb-2 text-xs text-muted-foreground">
-              Предложение AI:{' '}
+              {tSubmit1('aiSuggested')}:{' '}
               <span className="font-medium text-foreground">
-                {PROBLEM_TYPE_LABELS[aiType as ProblemType] ?? aiType}
+                {tType(aiType as Parameters<typeof tType>[0])}
               </span>
             </p>
           )}
@@ -249,7 +242,7 @@ function Step1({ onNext }: Step1Props) {
                       : 'border-border bg-background hover:bg-accent',
                 )}
               >
-                {PROBLEM_TYPE_LABELS[type]}
+                {tType(type)}
               </button>
             ))}
           </div>
@@ -261,7 +254,7 @@ function Step1({ onNext }: Step1Props) {
         disabled={!selectedType}
         className="w-full"
       >
-        Далее →
+        {tSubmit1('next')}
       </Button>
     </div>
   )
@@ -276,6 +269,8 @@ interface Step2Props {
 function Step2({ onBack }: Step2Props) {
   const { getToken } = useAuth()
   const router = useRouter()
+  const t = useTranslations()
+  const tSubmit2 = useTranslations('submit.step2')
 
   const { jobToken, selectedType, lat, lng, description, setLocation, setDescription, reset } =
     useSubmitStore()
@@ -313,7 +308,7 @@ function Step2({ onBack }: Step2Props) {
     setSubmitError(null)
 
     if (!selectedType) {
-      setSubmitError('Выберите категорию')
+      setSubmitError(t('submit.errors.typeRequired'))
       return
     }
 
@@ -340,9 +335,9 @@ function Step2({ onBack }: Step2Props) {
       router.push(`/profile/reports/${result.id}`)
     } catch (err) {
       if (err instanceof ApiError) {
-        setSubmitError(`Ошибка: ${err.code}`)
+        setSubmitError(t('errors.errorWithCode', { status: err.status, code: err.code }))
       } else {
-        setSubmitError('Ошибка при отправке. Попробуйте ещё раз.')
+        setSubmitError(t('errors.submitFailed'))
       }
     } finally {
       setSubmitting(false)
@@ -351,11 +346,11 @@ function Step2({ onBack }: Step2Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold">Место и описание</h1>
+      <h1 className="text-xl font-semibold">{tSubmit2('title')}</h1>
 
       <div>
         <p className="mb-2 text-sm text-muted-foreground">
-          Перетащите маркер на точное место
+          {tSubmit2('locationHint')}
         </p>
         <LocationPicker
           lat={mapLat}
@@ -366,19 +361,19 @@ function Step2({ onBack }: Step2Props) {
 
       <div>
         <label htmlFor="description" className="mb-1 block text-sm font-medium">
-          Описание (необязательно)
+          {tSubmit2('description')}
         </label>
         <textarea
           id="description"
           rows={4}
           maxLength={1000}
-          placeholder="Подробнее..."
+          placeholder={tSubmit2('descriptionPlaceholder')}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         />
         <p className="mt-1 text-right text-xs text-muted-foreground">
-          {description.length}/1000
+          {t('submit.step2.charCount', { current: description.length, max: 1000 })}
         </p>
       </div>
 
@@ -388,14 +383,14 @@ function Step2({ onBack }: Step2Props) {
 
       <div className="flex gap-3">
         <Button variant="outline" onClick={onBack} className="flex-1">
-          ← Назад
+          {tSubmit2('back')}
         </Button>
         <Button
           onClick={() => void handleSubmit()}
           disabled={submitting}
           className="flex-1"
         >
-          {submitting ? 'Отправляем...' : 'Отправить'}
+          {submitting ? tSubmit2('submitting') : tSubmit2('submit')}
         </Button>
       </div>
     </div>

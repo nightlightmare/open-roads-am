@@ -46,7 +46,7 @@ export function ReportSidePanel({
           </div>
           <p className="mt-1 text-sm font-medium">{report.address_raw ?? '—'}</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {report.confirmation_count} подтверждений
+            {t('report.confirmations', { count: report.confirmation_count })}
           </p>
         </div>
         <button
@@ -63,7 +63,7 @@ export function ReportSidePanel({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={report.photo_url}
-            alt="Фото проблемы"
+            alt={t('report.photo')}
             className="h-40 w-full rounded-lg object-cover"
           />
         </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { useAuth } from '@clerk/nextjs'
+import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import { Link, useRouter } from '@/i18n/navigation'
 import { apiFetch, ApiError } from '@/lib/api'
@@ -33,27 +34,6 @@ interface PublicReport {
 interface ConfirmResponse {
   report_id: string
   confirmation_count: number
-}
-
-const STATUS_LABELS: Record<string, string> = {
-  pending_review: 'На рассмотрении',
-  under_review: 'Изучается',
-  approved: 'Одобрено',
-  in_progress: 'В работе',
-  resolved: 'Решено',
-  rejected: 'Отклонено',
-  archived: 'Архив',
-}
-
-const PROBLEM_TYPE_LABELS: Record<string, string> = {
-  pothole: 'Яма',
-  damaged_barrier: 'Повреждённое ограждение',
-  missing_marking: 'Отсутствие разметки',
-  damaged_sign: 'Повреждённый знак',
-  hazard: 'Опасность',
-  broken_light: 'Неработающий светофор',
-  missing_ramp: 'Отсутствие пандуса',
-  other: 'Другое',
 }
 
 const TIMELINE_STATUSES = new Set(['approved', 'in_progress', 'resolved'])
@@ -90,6 +70,7 @@ interface ConfirmButtonProps {
 function ConfirmButton({ reportId, initialCount, reportStatus }: ConfirmButtonProps) {
   const { getToken, isSignedIn } = useAuth()
   const router = useRouter()
+  const t = useTranslations()
   const [confirmed, setConfirmed] = useState(false)
   const [count, setCount] = useState(initialCount)
   const [loading, setLoading] = useState(false)
@@ -128,12 +109,12 @@ function ConfirmButton({ reportId, initialCount, reportStatus }: ConfirmButtonPr
 
       if (err instanceof ApiError) {
         if (err.code === 'ALREADY_CONFIRMED') {
-          setMessage('Вы уже подтвердили этот репорт')
+          setMessage(t('errors.alreadyConfirmed'))
           setConfirmed(true)
         } else if (err.code === 'OWN_REPORT') {
-          setMessage('Нельзя подтвердить собственный репорт')
+          setMessage(t('errors.ownReport'))
         } else {
-          setMessage('Ошибка. Повторите попытку.')
+          setMessage(t('errors.retry'))
         }
       }
     } finally {
@@ -145,7 +126,7 @@ function ConfirmButton({ reportId, initialCount, reportStatus }: ConfirmButtonPr
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-3">
         <span className="text-sm text-muted-foreground">
-          {count} подтверждений
+          {t('report.confirmations', { count })}
         </span>
         <Button
           variant={confirmed ? 'secondary' : 'default'}
@@ -153,7 +134,7 @@ function ConfirmButton({ reportId, initialCount, reportStatus }: ConfirmButtonPr
           onClick={() => void handleToggle()}
           disabled={loading}
         >
-          {loading ? '...' : confirmed ? 'Убрать подтверждение' : 'Подтвердить'}
+          {loading ? '...' : confirmed ? t('report.unconfirm') : t('report.confirm')}
         </Button>
       </div>
       {message && (
@@ -168,6 +149,7 @@ function ConfirmButton({ reportId, initialCount, reportStatus }: ConfirmButtonPr
 export default function ReportDetailPage() {
   const params = useParams()
   const id = params.id as string
+  const t = useTranslations()
 
   const [report, setReport] = useState<PublicReport | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -180,11 +162,11 @@ export default function ReportDetailPage() {
       const data = await apiFetch<PublicReport>(`/api/v1/public/reports/${id}`)
       setReport(data)
     } catch {
-      setError('Не удалось загрузить репорт')
+      setError(t('errors.failedToLoad'))
     } finally {
       setLoading(false)
     }
-  }, [id])
+  }, [id, t])
 
   useEffect(() => {
     void fetchReport()
@@ -193,7 +175,7 @@ export default function ReportDetailPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-16 text-muted-foreground">
-        Загрузка...
+        {t('map.loading')}
       </div>
     )
   }
@@ -201,9 +183,9 @@ export default function ReportDetailPage() {
   if (error || !report) {
     return (
       <div className="flex flex-col items-center gap-4 p-16">
-        <p className="text-destructive">{error ?? 'Репорт не найден'}</p>
+        <p className="text-destructive">{error ?? t('errors.reportNotFound')}</p>
         <Link href="/" className="text-sm text-primary underline">
-          ← На карту
+          {t('report.backToMap')}
         </Link>
       </div>
     )
@@ -224,7 +206,7 @@ export default function ReportDetailPage() {
         href="/"
         className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
       >
-        ← На карту
+        {t('report.backToMap')}
       </Link>
 
       {/* Photo */}
@@ -232,7 +214,7 @@ export default function ReportDetailPage() {
         <div className="relative mb-6 aspect-video w-full overflow-hidden rounded-lg bg-muted">
           <Image
             src={report.photo_url}
-            alt="Фото репорта"
+            alt={t('report.photo')}
             fill
             className="object-cover"
             sizes="(max-width: 672px) 100vw, 672px"
@@ -243,11 +225,11 @@ export default function ReportDetailPage() {
       {/* Status + Type */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Badge variant={statusBadgeVariant(report.status)}>
-          {STATUS_LABELS[report.status] ?? report.status}
+          {t(`report.status.${report.status}` as Parameters<typeof t>[0])}
         </Badge>
         {report.problem_type && (
           <Badge variant="outline">
-            {PROBLEM_TYPE_LABELS[report.problem_type] ?? report.problem_type}
+            {t(`report.problemType.${report.problem_type}` as Parameters<typeof t>[0])}
           </Badge>
         )}
       </div>
@@ -274,7 +256,7 @@ export default function ReportDetailPage() {
       {/* Gov agency note */}
       {govNote?.note && (
         <div className="mb-6 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-          <p className="mb-1 font-semibold">Примечание ведомства</p>
+          <p className="mb-1 font-semibold">{t('report.govAgencyNote')}</p>
           <p>{govNote.note}</p>
         </div>
       )}
@@ -283,14 +265,14 @@ export default function ReportDetailPage() {
       {timelineEntries.length > 0 && (
         <div className="mb-6">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            История статусов
+            {t('report.statusHistory')}
           </h2>
           <ol className="relative border-l border-border pl-4">
             {timelineEntries.map((entry, i) => (
               <li key={i} className="mb-4 last:mb-0">
                 <div className="absolute -left-1.5 mt-1.5 h-3 w-3 rounded-full border border-background bg-primary" />
                 <p className="text-sm font-medium">
-                  {STATUS_LABELS[entry.status] ?? entry.status}
+                  {t(`report.status.${entry.status}` as Parameters<typeof t>[0])}
                 </p>
                 <time className="text-xs text-muted-foreground">
                   {formatDate(entry.changed_at)}
@@ -306,7 +288,7 @@ export default function ReportDetailPage() {
 
       {/* Dates */}
       <p className="text-xs text-muted-foreground">
-        Создано: {formatDate(report.created_at)}
+        {t('report.createdAt')}: {formatDate(report.created_at)}
       </p>
     </div>
   )

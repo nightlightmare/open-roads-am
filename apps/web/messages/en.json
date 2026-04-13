@@ -41,7 +41,18 @@
     "confirm": "Confirm",
     "unconfirm": "Remove confirmation",
     "viewDetails": "View details",
-    "backToMap": "← Back to map"
+    "backToMap": "← Back to map",
+    "photo": "Report photo",
+    "govAgencyNote": "Gov. agency note",
+    "statusHistory": "Status history",
+    "createdAt": "Created",
+    "updatedAt": "Updated",
+    "coordinates": "Coordinates",
+    "confirmationsCount": "Confirmations",
+    "userClassification": "User classification",
+    "aiClassification": "AI classification",
+    "aiPrefix": "AI",
+    "titleWithId": "Report #{id}"
   },
   "submit": {
     "title": "Report a problem",
@@ -61,13 +72,16 @@
       "descriptionPlaceholder": "More details...",
       "back": "← Back",
       "submit": "Submit",
-      "submitting": "Submitting..."
+      "submitting": "Submitting...",
+      "charCount": "{current}/{max}"
     },
     "success": "Report submitted",
     "errors": {
       "photoRequired": "Please select a photo",
       "typeRequired": "Please select a category",
-      "locationRequired": "Please mark the location"
+      "locationRequired": "Please mark the location",
+      "uploadFailed": "Photo upload failed. Please try again.",
+      "submitFailed": "Submission failed. Please try again."
     }
   },
   "profile": {
@@ -100,7 +114,16 @@
     "rejectionReason": "Rejection reason",
     "overrideType": "Override type",
     "aiConfidence": "AI confidence",
-    "note": "Note"
+    "note": "Note",
+    "backToQueue": "← Back to queue",
+    "noPending": "No pending reports",
+    "noUnderReview": "No reports under review",
+    "noChanges": "— no changes —",
+    "reasonRequired": "Please provide a rejection reason",
+    "reasonPlaceholder": "Provide reason...",
+    "unknownModerator": "another moderator",
+    "reportTitle": "Report #{id}",
+    "noPhoto": "No photo"
   },
   "admin": {
     "title": "Admin panel",
@@ -137,6 +160,16 @@
     "forbidden": "Insufficient permissions",
     "tooManyRequests": "Too many requests, try again in {seconds}s",
     "serverError": "Something went wrong",
-    "retry": "Retry"
+    "retry": "Retry",
+    "failedToLoad": "Failed to load",
+    "reportNotFound": "Report not found",
+    "ownReport": "Cannot confirm your own report",
+    "alreadyConfirmed": "You have already confirmed this report",
+    "photoUploadFailed": "Photo upload failed. Please try again.",
+    "submitFailed": "Submission failed. Please try again.",
+    "failedToOpenReport": "Failed to open report",
+    "failedToApprove": "Failed to approve report",
+    "failedToReject": "Failed to reject report",
+    "errorWithCode": "Error {status}: {code}"
   }
 }

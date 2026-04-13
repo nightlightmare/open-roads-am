@@ -49,21 +49,6 @@ interface LockConflict {
   lock_expires_at: string
 }
 
-function problemTypeLabel(type: string | null): string {
-  if (!type) return '—'
-  const labels: Record<string, string> = {
-    pothole: 'Яма',
-    damaged_barrier: 'Повреждённый барьер',
-    missing_marking: 'Отсутствует разметка',
-    damaged_sign: 'Повреждённый знак',
-    hazard: 'Опасность',
-    broken_light: 'Сломанный фонарь',
-    missing_ramp: 'Отсутствует пандус',
-    other: 'Другое',
-  }
-  return labels[type] ?? type
-}
-
 function confidenceVariant(confidence: number | null): 'success' | 'warning' | 'destructive' {
   if (confidence === null) return 'warning'
   if (confidence >= 0.8) return 'success'
@@ -79,6 +64,14 @@ export default function ReportDetailPage() {
   const reportId = params.id as string
   const t = useTranslations('moderation')
   const tMap = useTranslations('map')
+  const tErrors = useTranslations('errors')
+  const tReport = useTranslations('report')
+  const tType = useTranslations('report.problemType')
+
+  const typeLabel = (type: string | null) => {
+    if (!type) return '—'
+    return tType(type as Parameters<typeof tType>[0])
+  }
 
   const [report, setReport] = useState<QueueItem | null>(null)
   const [loading, setLoading] = useState(true)
@@ -121,12 +114,12 @@ export default function ReportDetailPage() {
 
         // Heartbeat every 5 minutes
         heartbeatId = setInterval(async () => {
-          const t = await getToken()
+          const tk = await getToken()
           try {
             await apiFetch<unknown>(
               `/api/v1/moderation/reports/${reportId}/open`,
               { method: 'POST' },
-              t ?? undefined,
+              tk ?? undefined,
             )
           } catch {
             // ignore heartbeat errors
@@ -142,17 +135,17 @@ export default function ReportDetailPage() {
               token ?? undefined,
             )
             // Should not reach here (always 409), use fallback
-            setLocked({ locked_by_display_name: 'другой модератор', lock_expires_at: '' })
+            setLocked({ locked_by_display_name: t('unknownModerator'), lock_expires_at: '' })
           } catch (innerErr) {
             if (innerErr instanceof ApiError && innerErr.status === 409) {
               // ApiError doesn't carry body; use fallback with error code info
-              setLocked({ locked_by_display_name: 'другой модератор', lock_expires_at: '' })
+              setLocked({ locked_by_display_name: t('unknownModerator'), lock_expires_at: '' })
             } else {
-              setLocked({ locked_by_display_name: 'другой модератор', lock_expires_at: '' })
+              setLocked({ locked_by_display_name: t('unknownModerator'), lock_expires_at: '' })
             }
           }
         } else {
-          setError('Не удалось открыть репорт')
+          setError(tErrors('failedToOpenReport'))
         }
       } finally {
         setLoading(false)
@@ -166,11 +159,11 @@ export default function ReportDetailPage() {
 
       // Release lock on unmount if no action taken
       if (!actionTakenRef.current) {
-        void getToken().then((t) => {
+        void getToken().then((tk) => {
           void apiFetch<unknown>(
             `/api/v1/moderation/reports/${reportId}/lock`,
             { method: 'DELETE' },
-            t ?? undefined,
+            tk ?? undefined,
           ).catch(() => undefined)
         })
       }
@@ -197,9 +190,9 @@ export default function ReportDetailPage() {
       router.push(`/${locale}/moderation`)
     } catch (err) {
       if (err instanceof ApiError) {
-        setActionError(`Ошибка ${err.status}: ${err.code}`)
+        setActionError(tErrors('errorWithCode', { status: err.status, code: err.code }))
       } else {
-        setActionError('Не удалось одобрить репорт')
+        setActionError(tErrors('failedToApprove'))
       }
     } finally {
       setActionLoading(false)
@@ -208,7 +201,7 @@ export default function ReportDetailPage() {
 
   const handleReject = async () => {
     if (!rejectionReason.trim()) {
-      setActionError('Укажите причину отклонения')
+      setActionError(t('reasonRequired'))
       return
     }
     setActionLoading(true)
@@ -227,9 +220,9 @@ export default function ReportDetailPage() {
       router.push(`/${locale}/moderation`)
     } catch (err) {
       if (err instanceof ApiError) {
-        setActionError(`Ошибка ${err.status}: ${err.code}`)
+        setActionError(tErrors('errorWithCode', { status: err.status, code: err.code }))
       } else {
-        setActionError('Не удалось отклонить репорт')
+        setActionError(tErrors('failedToReject'))
       }
     } finally {
       setActionLoading(false)
@@ -256,7 +249,7 @@ export default function ReportDetailPage() {
           })}
         </div>
         <Button variant="outline" onClick={() => router.push(`/${locale}/moderation`)}>
-          ← Назад к очереди
+          {t('backToQueue')}
         </Button>
       </div>
     )
@@ -267,7 +260,7 @@ export default function ReportDetailPage() {
       <div className="space-y-4">
         <p className="text-destructive">{error}</p>
         <Button variant="outline" onClick={() => router.push(`/${locale}/moderation`)}>
-          ← Назад к очереди
+          {t('backToQueue')}
         </Button>
       </div>
     )
@@ -276,9 +269,9 @@ export default function ReportDetailPage() {
   if (!report) {
     return (
       <div className="space-y-4">
-        <p className="text-muted-foreground">Репорт не найден</p>
+        <p className="text-muted-foreground">{tErrors('reportNotFound')}</p>
         <Button variant="outline" onClick={() => router.push(`/${locale}/moderation`)}>
-          ← Назад к очереди
+          {t('backToQueue')}
         </Button>
       </div>
     )
@@ -288,9 +281,9 @@ export default function ReportDetailPage() {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="outline" size="sm" onClick={() => router.push(`/${locale}/moderation`)}>
-          ← Назад
+          {t('backToQueue')}
         </Button>
-        <h1 className="text-xl font-bold">Репорт #{report.id.slice(0, 8)}</h1>
+        <h1 className="text-xl font-bold">{t('reportTitle', { id: report.id.slice(0, 8) })}</h1>
       </div>
 
       {/* Photo */}
@@ -298,7 +291,7 @@ export default function ReportDetailPage() {
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={report.photo_url}
-          alt="Фото репорта"
+          alt={tReport('photo')}
           className="max-h-80 w-full rounded-lg object-cover"
         />
       )}
@@ -306,9 +299,9 @@ export default function ReportDetailPage() {
       {/* Details */}
       <div className="space-y-3 rounded-lg border bg-white p-4">
         <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary">{problemTypeLabel(report.problem_type_user)}</Badge>
+          <Badge variant="secondary">{typeLabel(report.problem_type_user)}</Badge>
           {report.problem_type_ai && (
-            <Badge variant="info">AI: {problemTypeLabel(report.problem_type_ai)}</Badge>
+            <Badge variant="info">{tReport('aiPrefix')}: {typeLabel(report.problem_type_ai)}</Badge>
           )}
           {report.ai_confidence !== null && (
             <Badge variant={confidenceVariant(report.ai_confidence)}>
@@ -349,10 +342,10 @@ export default function ReportDetailPage() {
               value={overrideType}
               onChange={(e) => setOverrideType(e.target.value as ProblemType | '')}
             >
-              <option value="">— без изменений —</option>
+              <option value="">{t('noChanges')}</option>
               {PROBLEM_TYPES.map((type) => (
                 <option key={type} value={type}>
-                  {problemTypeLabel(type)}
+                  {typeLabel(type)}
                 </option>
               ))}
             </select>
@@ -377,7 +370,7 @@ export default function ReportDetailPage() {
               rows={3}
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder="Укажите причину..."
+              placeholder={t('reasonPlaceholder')}
             />
           </div>
           <Button

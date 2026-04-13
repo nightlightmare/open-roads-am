@@ -45,27 +45,20 @@ function formatDate(dateStr: string): string {
   })
 }
 
-function problemTypeLabel(type: string | null): string {
-  if (!type) return '—'
-  const labels: Record<string, string> = {
-    pothole: 'Яма',
-    damaged_barrier: 'Повреждённый барьер',
-    missing_marking: 'Отсутствует разметка',
-    damaged_sign: 'Повреждённый знак',
-    hazard: 'Опасность',
-    broken_light: 'Сломанный фонарь',
-    missing_ramp: 'Отсутствует пандус',
-    other: 'Другое',
-  }
-  return labels[type] ?? type
-}
-
 interface ReportCardProps {
   report: QueueItem
   onClick: () => void
 }
 
 function ReportCard({ report, onClick }: ReportCardProps) {
+  const t = useTranslations()
+  const tType = useTranslations('report.problemType')
+
+  const typeLabel = (type: string | null) => {
+    if (!type) return '—'
+    return tType(type as Parameters<typeof tType>[0])
+  }
+
   return (
     <div
       className="flex cursor-pointer gap-3 rounded-lg border bg-white p-4 shadow-sm transition hover:shadow-md"
@@ -80,21 +73,21 @@ function ReportCard({ report, onClick }: ReportCardProps) {
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={report.photo_thumbnail_url}
-          alt="Фото"
+          alt={t('report.photo')}
           className="h-20 w-20 flex-shrink-0 rounded object-cover"
         />
       ) : (
         <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded bg-gray-100 text-xs text-gray-400">
-          Нет фото
+          {t('moderation.noPhoto')}
         </div>
       )}
 
       <div className="flex flex-1 flex-col gap-1 overflow-hidden">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="font-medium">{problemTypeLabel(report.problem_type_user)}</span>
+          <span className="font-medium">{typeLabel(report.problem_type_user)}</span>
           {report.problem_type_ai && (
             <Badge variant="info" className="text-xs">
-              AI: {problemTypeLabel(report.problem_type_ai)}
+              {t('report.aiPrefix')}: {typeLabel(report.problem_type_ai)}
             </Badge>
           )}
           {report.ai_confidence !== null && (
@@ -121,6 +114,7 @@ export default function ModerationPage() {
   const locale = (params.locale as string | undefined) ?? 'hy'
   const t = useTranslations('moderation')
   const tMap = useTranslations('map')
+  const tErrors = useTranslations('errors')
 
   const readerRef = useRef<ReadableStreamDefaultReader<Uint8Array> | null>(null)
 
@@ -175,14 +169,14 @@ export default function ModerationPage() {
       setUnderReviewReports(underReviewData.reports)
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(`Ошибка ${err.status}: ${err.code}`)
+        setError(tErrors('errorWithCode', { status: err.status, code: err.code }))
       } else {
-        setError('Не удалось загрузить очередь')
+        setError(tErrors('failedToLoad'))
       }
     } finally {
       setLoading(false)
     }
-  }, [getToken])
+  }, [getToken, tErrors])
 
   useEffect(() => {
     void loadAll()
@@ -261,7 +255,7 @@ export default function ModerationPage() {
           className="text-sm text-primary underline"
           onClick={() => void loadAll()}
         >
-          Повторить
+          {tErrors('retry')}
         </button>
       </div>
     )
@@ -300,7 +294,7 @@ export default function ModerationPage() {
       {/* Report list */}
       {displayReports.length === 0 ? (
         <div className="py-16 text-center text-muted-foreground">
-          {activeTab === 'pending' ? 'Нет ожидающих репортов' : 'Нет репортов на рассмотрении'}
+          {activeTab === 'pending' ? t('noPending') : t('noUnderReview')}
         </div>
       ) : (
         <div className="space-y-3">
@@ -316,4 +310,3 @@ export default function ModerationPage() {
     </div>
   )
 }
-
