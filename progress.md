@@ -304,6 +304,6 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 5. ✅ **Spec 04** — Public Map API
 6. ✅ **Spec 05** — Moderation Flow
 7. ✅ **Spec 08** — User Profile
-8. ⬜ **Spec 07** — MCP Server
+8. ✅ **Spec 07** — MCP Server
 9. ⬜ **Web frontend**
 10. ⬜ **Mobile frontend**
