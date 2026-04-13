@@ -162,9 +162,10 @@ Road problem statistics for Yerevan (last 30 days):
 
 ---
 
-### Authenticated tools (API key required)
+### Authenticated tools (API key required) — ⏸ Deferred post-frontend
 
-API key passed as `X-Api-Key` header on the internal API call. The MCP server accepts the key as a tool input parameter and forwards it — it never stores or logs keys.
+> Deferred until API-key distribution UI is in place and gov-agency accounts are onboarded.
+> `POST /api/v1/reports` also needs to support direct creation without a photo classify job token before `create_report` can work via MCP.
 
 ---
 
@@ -277,8 +278,8 @@ No internal error details forwarded to the AI agent.
 | `get_reports` | none | — |
 | `get_report` | none | — |
 | `get_stats` | none | — |
-| `create_report` | API key | `reports:write` |
-| `update_status` | API key | `status:write` |
+| `create_report` | API key | `reports:write` | ⏸ deferred |
+| `update_status` | API key | `status:write` | ⏸ deferred |
 
 ---
 
@@ -288,3 +289,8 @@ No internal error details forwarded to the AI agent.
 - Tool for moderators (approve/reject via MCP)
 - Pagination cursor support in `get_reports` MCP output (v1 returns first page only)
 - MCP server authentication (the server itself is public — auth is per tool via API key)
+
+## Deferred (post-frontend)
+
+- `create_report` — deferred until API-key distribution UI exists and `POST /api/v1/reports` supports direct creation without a photo classify job token
+- `update_status` — deferred alongside `create_report`; no real consumers until gov-agency accounts are onboarded via the web UI

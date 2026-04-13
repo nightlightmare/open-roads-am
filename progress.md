@@ -219,31 +219,27 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 
 ---
 
-### ⬜ Spec 07 — MCP Server (v1.1)
+### ✅ Spec 07 — MCP Server (v1.1, read-only)
 
-- ⬜ `McpServer` setup (`@modelcontextprotocol/sdk`)
-- ⬜ Stdio transport
-- ⬜ HTTP + SSE transport
-- ⬜ Tool: `get_reports`
-  - ⬜ Zod input schema (bbox or lat+lng required)
-  - ⬜ Calls `GET /api/v1/public/reports`
-  - ⬜ Formatted list output
-- ⬜ Tool: `get_report`
-  - ⬜ Calls `GET /api/v1/public/reports/:id`
-  - ⬜ Full detail output
-- ⬜ Tool: `get_stats`
-  - ⬜ Calls `GET /api/v1/public/stats`
-  - ⬜ Human-readable summary output
-- ⬜ Tool: `create_report` (API key required)
-  - ⬜ Calls `POST /api/v1/reports`
-  - ⬜ `api_key` forwarded as `X-Api-Key` header, never logged
-  - ⬜ Handles `photo_url` (server fetches + uploads to R2)
-- ⬜ Tool: `update_status` (API key required)
-  - ⬜ Calls `POST /api/v1/reports/:id/status`
-  - ⬜ `api_key` forwarded, never logged
-- ⬜ Error mapping: API errors → MCP `isError: true` responses
-- ⬜ Input validation with Zod before hitting API
-- ⬜ Armenia bounds validation on coordinates
+- ✅ `McpServer` setup (`@modelcontextprotocol/sdk` v1.29)
+- ✅ Stdio transport (Claude Desktop / Cursor)
+- ✅ HTTP Streamable transport (stateless, port 3002)
+- ✅ Tool: `get_reports`
+  - ✅ Zod input schema (bbox or lat+lng required)
+  - ✅ Calls `GET /api/v1/public/reports`
+  - ✅ Formatted list output
+- ✅ Tool: `get_report`
+  - ✅ Calls `GET /api/v1/public/reports/:id`
+  - ✅ Full detail output with status history
+- ✅ Tool: `get_stats`
+  - ✅ Calls `GET /api/v1/public/stats`
+  - ✅ Human-readable summary output
+- ⏸ Tool: `create_report` — deferred post-frontend
+- ⏸ Tool: `update_status` — deferred post-frontend
+- ✅ Error mapping: API errors → MCP `isError: true` responses
+- ✅ Input validation with Zod before hitting API
+- ✅ Armenia bounds validation on coordinates
+- ✅ Tests: 11 tests passing
 
 ---
 
