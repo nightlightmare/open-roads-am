@@ -12,22 +12,34 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.0.12",
+    "@hookform/resolvers": "^5.2.2",
     "@open-road/types": "workspace:*",
     "@open-road/ui": "workspace:*",
+    "@tailwindcss/postcss": "^4.2.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.8.0",
+    "maplibre-gl": "^5.23.0",
     "next": "^16.0.0",
+    "next-intl": "^4.9.1",
+    "postcss": "^8.5.9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "maplibre-gl": "latest",
-    "zustand": "latest",
-    "zod": "^4.0.0"
+    "react-hook-form": "^7.72.1",
+    "swr": "^2.4.1",
+    "tailwind-merge": "^3.5.0",
+    "tailwindcss": "^4.2.2",
+    "zod": "^4.0.0",
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
     "@open-road/config": "workspace:*",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "oxlint": "^1.60.0",
     "typescript": "^5.7.0",
-    "oxlint": "^0.16.0",
-    "vitest": "^3.0.0",
-    "@vitejs/plugin-react": "^4.0.0"
+    "vitest": "^3.0.0"
   }
 }

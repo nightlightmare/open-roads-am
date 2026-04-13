@@ -1,0 +1,17 @@
+{
+  "plugins": ["eslint", "typescript", "unicorn", "oxc", "react", "jsx-a11y", "import", "nextjs"],
+  "jsPlugins": [
+    {
+      "name": "react-js",
+      "specifier": "eslint-plugin-react"
+    }
+  ],
+  "settings": {
+    "react": {
+      "version": "19"
+    }
+  },
+  "rules": {
+    "react-js/no-multi-comp": ["error", { "ignoreStateless": false }]
+  }
+}

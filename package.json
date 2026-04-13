@@ -16,10 +16,11 @@
     "prepare": "node -e \"if(process.env.NODE_ENV!=='production'){require('child_process').execSync('husky',{stdio:'inherit'})}\""
   },
   "devDependencies": {
-    "turbo": "^2.5.0",
+    "eslint-plugin-react": "^7.37.5",
     "husky": "^9.1.0",
     "lint-staged": "^15.3.0",
-    "oxlint": "^0.16.0"
+    "oxlint": "^1.60.0",
+    "turbo": "^2.5.0"
   },
   "packageManager": "pnpm@9.15.0",
   "lint-staged": {
