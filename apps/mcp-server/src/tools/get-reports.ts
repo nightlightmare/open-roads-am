@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { PROBLEM_TYPES } from '@open-road/types'
 import { apiFetch, apiErrorToMcp } from '../api-client.js'
 
 // Armenia bounding box + ~50 km buffer (matches API validation)
@@ -20,7 +19,7 @@ export const getReportsInputSchema = {
   lng: z.number().min(LNG_MIN).max(LNG_MAX).optional().describe('Longitude (Armenia bounds)'),
   radius_km: z.number().min(0.1).max(50).optional().describe('Radius in km (default 5, max 50)'),
   problem_type: z
-    .enum(PROBLEM_TYPES)
+    .string()
     .optional()
     .describe('Filter by problem type'),
   include_resolved: z.boolean().optional().describe('Include resolved reports (default false)'),

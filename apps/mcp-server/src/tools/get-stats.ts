@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { PROBLEM_TYPES } from '@open-road/types'
 import { apiFetch, apiErrorToMcp } from '../api-client.js'
 
 const DEFAULT_STATS_DAYS = 30
@@ -7,7 +6,7 @@ const DEFAULT_STATS_DAYS = 30
 export const getStatsInputSchema = {
   region_id: z.string().uuid().optional().describe('Filter by region UUID'),
   problem_type: z
-    .enum(PROBLEM_TYPES)
+    .string()
     .optional()
     .describe('Filter by problem type'),
   from: z.string().optional().describe('Start date ISO (default: 30 days ago)'),
