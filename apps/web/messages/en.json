@@ -5,7 +5,10 @@
     "profile": "Profile",
     "signIn": "Sign in",
     "signOut": "Sign out",
-    "reportProblem": "Report a problem"
+    "reportProblem": "Report a problem",
+    "hy": "ARM",
+    "ru": "RUS",
+    "en": "ENG"
   },
   "map": {
     "loading": "Loading...",

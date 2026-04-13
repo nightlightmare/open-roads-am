@@ -191,6 +191,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@clerk/localizations':
+        specifier: ^4.4.0
+        version: 4.4.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@clerk/nextjs':
         specifier: ^7.0.12
         version: 7.0.12(next@16.2.3(@babel/core@7.29.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -994,6 +997,10 @@ packages:
     engines: {node: '>=20.9.0'}
     peerDependencies:
       fastify: '>=5'
+
+  '@clerk/localizations@4.4.0':
+    resolution: {integrity: sha512-LU18/Dg/VOgtyU+ZG+Eeqdsl0VSN0RGthp4aBCFSRsQV206YLEFN2Z+z2tAVaNUzH/nv1jSftU6kEnphllSCww==}
+    engines: {node: '>=20.9.0'}
 
   '@clerk/nextjs@7.0.12':
     resolution: {integrity: sha512-dq4iOLKf5PImLlA2YAs7c2E+yBiOYlbMlnw386xw+sTe/kv4KpRQPk2g/7PeEvFxFaV1gY764iy2sr4jy2bdQA==}
@@ -7849,6 +7856,13 @@ snapshots:
       cookies: 0.9.1
       fastify: 5.8.4
       fastify-plugin: 5.1.0
+    transitivePeerDependencies:
+      - react
+      - react-dom
+
+  '@clerk/localizations@4.4.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
+    dependencies:
+      '@clerk/shared': 4.6.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
     transitivePeerDependencies:
       - react
       - react-dom

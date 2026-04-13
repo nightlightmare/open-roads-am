@@ -5,7 +5,10 @@
     "profile": "Профиль",
     "signIn": "Войти",
     "signOut": "Выйти",
-    "reportProblem": "Сообщить о проблеме"
+    "reportProblem": "Сообщить о проблеме",
+    "hy": "АРМ",
+    "ru": "РУС",
+    "en": "ENG"
   },
   "map": {
     "loading": "Загрузка...",

@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
 import { ClerkProvider } from '@clerk/nextjs'
+import { enUS, ruRU } from '@clerk/localizations'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { routing } from '@/i18n/routing'
+import { hyAM } from '@/lib/clerk-hy'
 import '../globals.css'
 
 export async function generateMetadata({
@@ -37,11 +39,12 @@ export default async function LocaleLayout({
   }
 
   const messages = await getMessages()
+  const clerkLocalization = locale === 'ru' ? ruRU : locale === 'en' ? enUS : hyAM
 
   return (
     <html lang={locale}>
       <body>
-        <ClerkProvider>
+        <ClerkProvider localization={clerkLocalization}>
           <NextIntlClientProvider messages={messages}>
             {children}
           </NextIntlClientProvider>
