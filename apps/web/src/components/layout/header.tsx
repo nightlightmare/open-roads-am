@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import { useAuth, UserButton } from '@clerk/nextjs'
 import { Globe } from 'lucide-react'
 import { Link, usePathname, useRouter } from '@/i18n/navigation'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,17 +37,13 @@ export function Header() {
             open-road.am
           </Link>
           {(role === 'moderator' || role === 'admin') && (
-            <Link href="/moderation">
-              <Button variant="ghost" size="sm">
-                {t('moderation')}
-              </Button>
+            <Link href="/moderation" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
+              {t('moderation')}
             </Link>
           )}
           {role === 'admin' && (
-            <Link href="/admin">
-              <Button variant="ghost" size="sm">
-                {t('admin')}
-              </Button>
+            <Link href="/admin" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
+              {t('admin')}
             </Link>
           )}
         </div>
@@ -75,16 +71,14 @@ export function Header() {
 
           {isSignedIn ? (
             <>
-              <Link href="/profile">
-                <Button variant="ghost" size="sm">
-                  {t('profile')}
-                </Button>
+              <Link href="/profile" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
+                {t('profile')}
               </Link>
               <UserButton />
             </>
           ) : (
-            <Link href="/sign-in">
-              <Button size="sm">{t('signIn')}</Button>
+            <Link href="/sign-in" className={buttonVariants({ size: 'sm' })}>
+              {t('signIn')}
             </Link>
           )}
         </div>
