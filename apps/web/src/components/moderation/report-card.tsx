@@ -29,14 +29,10 @@ export function ReportCard({ report, onClick }: ReportCardProps) {
   }
 
   return (
-    <div
-      className="flex cursor-pointer gap-3 rounded-lg border bg-white p-4 shadow-sm transition hover:shadow-md"
+    <button
+      type="button"
+      className="flex w-full cursor-pointer gap-3 rounded-lg border bg-white p-4 shadow-sm transition hover:shadow-md"
       onClick={onClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') onClick()
-      }}
     >
       {report.photo_thumbnail_url ? (
         <Image
@@ -73,6 +69,6 @@ export function ReportCard({ report, onClick }: ReportCardProps) {
 
         <p className="text-xs text-gray-400">{formatDate(report.created_at)}</p>
       </div>
-    </div>
+    </button>
   )
 }

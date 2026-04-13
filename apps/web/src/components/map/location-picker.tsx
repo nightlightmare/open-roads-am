@@ -37,7 +37,7 @@ export function LocationPicker({
     })
 
     markerRef.current = new maplibregl.Marker({ draggable: true })
-      .setLngLat([lng, lat])
+      .setLngLat([initialLng.current, initialLat.current])
       .addTo(mapRef.current)
 
     markerRef.current.on('dragend', () => {

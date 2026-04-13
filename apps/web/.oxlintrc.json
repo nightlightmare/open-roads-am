@@ -1,4 +1,5 @@
 {
+  "plugins": ["eslint", "typescript", "unicorn", "oxc", "react", "jsx-a11y", "import", "nextjs"],
   "jsPlugins": [
     {
       "name": "react-js",
