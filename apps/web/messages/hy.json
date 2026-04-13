@@ -5,7 +5,10 @@
     "profile": "Անձնական էջ",
     "signIn": "Մուտք",
     "signOut": "Ելք",
-    "reportProblem": "Հայտնել խնդրի մասին"
+    "reportProblem": "Հայտնել խնդրի մասին",
+    "hy": "ՀԱՅ",
+    "ru": "ՌՈՒՍ",
+    "en": "ENG"
   },
   "map": {
     "loading": "Բեռնվում է...",
