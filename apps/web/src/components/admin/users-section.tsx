@@ -33,7 +33,7 @@ export function UsersSection() {
   return (
     <section className="space-y-4 rounded-lg border bg-white p-6">
       <h2 className="text-lg font-semibold">{t('users')}</h2>
-      <form onSubmit={(e) => void handleSubmit(e)} className="space-y-3">
+      <form data-testid="change-role-form" onSubmit={(e) => void handleSubmit(e)} className="space-y-3">
         <div>
           <label htmlFor="clerk-id" className="mb-1 block text-sm font-medium">
             {t('clerkIdLabel')}

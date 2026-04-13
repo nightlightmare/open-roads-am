@@ -31,6 +31,7 @@ export function ReportCard({ report, onClick }: ReportCardProps) {
   return (
     <button
       type="button"
+      data-testid="moderation-report-card"
       className="flex w-full cursor-pointer gap-3 rounded-lg border bg-white p-4 shadow-sm transition hover:shadow-md"
       onClick={onClick}
     >
@@ -50,7 +51,7 @@ export function ReportCard({ report, onClick }: ReportCardProps) {
 
       <div className="flex flex-1 flex-col gap-1 overflow-hidden">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="font-medium">{typeLabel(report.problem_type_user)}</span>
+          <span data-testid="report-problem-type" className="font-medium">{typeLabel(report.problem_type_user)}</span>
           {report.problem_type_ai && (
             <Badge variant="info" className="text-xs">
               {t('report.aiPrefix')}: {typeLabel(report.problem_type_ai)}

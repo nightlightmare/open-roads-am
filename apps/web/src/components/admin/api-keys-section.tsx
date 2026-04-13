@@ -65,7 +65,7 @@ export function ApiKeysSection() {
         <Button onClick={() => setShowForm(true)}>{t('createApiKey')}</Button>
       )}
       {showForm && (
-        <form onSubmit={(e) => void handleCreate(e)} className="space-y-3">
+        <form data-testid="create-api-key-form" onSubmit={(e) => void handleCreate(e)} className="space-y-3">
           <div>
             <label htmlFor="key-description" className="mb-1 block text-sm font-medium">
               {t('keyDescriptionLabel')}

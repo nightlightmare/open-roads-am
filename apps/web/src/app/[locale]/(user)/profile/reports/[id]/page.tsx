@@ -102,7 +102,7 @@ export default function ProfileReportDetailPage() {
         </div>
 
         {(profileReport.problem_type_user !== null || profileReport.problem_type_ai !== null) && (
-          <div className="border-t pt-4 space-y-2">
+          <div data-testid="user-classification" className="border-t pt-4 space-y-2">
             {profileReport.problem_type_user !== null && (
               <div className="text-sm">
                 <span className="font-medium">{tReport('userClassification')}: </span>
@@ -127,7 +127,7 @@ export default function ProfileReportDetailPage() {
       </div>
 
       {profileReport.status_history.length > 0 && (
-        <div className="rounded-lg border bg-card p-6">
+        <div data-testid="status-history" className="rounded-lg border bg-card p-6">
           <h2 className="mb-4 font-semibold">{tReport('statusHistory')}</h2>
           <ol className="space-y-3">
             {profileReport.status_history.map((entry, i) => (

@@ -100,7 +100,7 @@ export default function ReportDetailPage() {
   if (reportLocked) {
     return (
       <div className="space-y-4">
-        <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-yellow-800">
+        <div data-testid="lock-warning" className="rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-yellow-800">
           {t('lockedBy', {
             name: reportLocked.locked_by_display_name,
             time: reportLocked.lock_expires_at
@@ -160,7 +160,7 @@ export default function ReportDetailPage() {
       )}
 
       <div className="space-y-3 rounded-lg border bg-white p-4">
-        <div className="flex flex-wrap gap-2">
+        <div data-testid="report-status-badge" className="flex flex-wrap gap-2">
           <Badge variant="secondary">{typeLabel(currentReport.problem_type_user)}</Badge>
           {currentReport.problem_type_ai && (
             <Badge variant="info">

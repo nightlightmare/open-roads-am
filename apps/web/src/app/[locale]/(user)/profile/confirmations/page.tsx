@@ -52,6 +52,7 @@ export default function ProfileConfirmationsPage() {
           {confirmations.map((item) => (
             <button
               key={item.report_id}
+              data-testid="confirmation-item"
               onClick={() => router.push(`/${locale}/reports/${item.report_id}`)}
               className="flex w-full items-center gap-4 rounded-lg border bg-card p-4 text-left transition-colors hover:bg-accent"
             >
