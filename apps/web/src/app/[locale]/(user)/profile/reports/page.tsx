@@ -1,31 +1,16 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useEffect } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { useTranslations } from 'next-intl'
 import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { apiFetch } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { BadgeProps } from '@/components/ui/badge'
 import type { ReportStatus } from '@/lib/constants'
-
-interface ReportSummary {
-  id: string
-  problem_type: string
-  address_raw: string | null
-  status: ReportStatus
-  created_at: string
-  photo_thumbnail_url: string | null
-}
-
-interface ReportsResponse {
-  reports: ReportSummary[]
-  cursor: string | null
-}
-
-type StatusFilter = 'all' | ReportStatus
+import { useProfileStore } from '@/stores/profile-store'
+import type { StatusFilter } from '@/stores/profile-store'
 
 const STATUS_TABS: StatusFilter[] = [
   'all',
@@ -56,63 +41,33 @@ export default function ProfileReportsPage() {
   const tMap = useTranslations('map')
   const tStatus = useTranslations('report.status')
   const tType = useTranslations('report.problemType')
+  const tErrors = useTranslations('errors')
   const { getToken } = useAuth()
   const params = useParams()
   const locale = (params['locale'] as string | undefined) ?? 'hy'
   const router = useRouter()
 
-  const [activeTab, setActiveTab] = useState<StatusFilter>('all')
-  const [reports, setReports] = useState<ReportSummary[]>([])
-  const [cursor, setCursor] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [loadingMore, setLoadingMore] = useState(false)
-
-  const fetchReports = useCallback(
-    async (status: StatusFilter, nextCursor?: string | null) => {
-      const isInitial = nextCursor === undefined
-      if (isInitial) setLoading(true)
-      else setLoadingMore(true)
-
-      try {
-        const token = await getToken()
-        const queryParams: Record<string, string | number | boolean | undefined> = {
-          limit: 20,
-        }
-        if (status !== 'all') queryParams['status'] = status
-        if (nextCursor) queryParams['cursor'] = nextCursor
-
-        const data = await apiFetch<ReportsResponse>(
-          '/api/v1/me/reports',
-          { params: queryParams },
-          token ?? undefined,
-        )
-
-        if (isInitial) {
-          setReports(data.reports)
-        } else {
-          setReports((prev) => [...prev, ...data.reports])
-        }
-        setCursor(data.cursor)
-      } finally {
-        if (isInitial) setLoading(false)
-        else setLoadingMore(false)
-      }
-    },
-    [getToken],
-  )
+  const {
+    reports,
+    reportsLoading,
+    reportsLoadingMore,
+    reportsCursor,
+    reportsActiveTab,
+    fetchReports,
+    loadMoreReports,
+    setReportsTab,
+  } = useProfileStore()
 
   useEffect(() => {
-    void fetchReports(activeTab)
-  }, [activeTab, fetchReports])
+    void fetchReports(getToken, reportsActiveTab, { error: tErrors('failedToLoad') })
+  }, [reportsActiveTab, fetchReports, getToken, tErrors])
 
   const handleTabChange = (tab: StatusFilter) => {
-    setActiveTab(tab)
-    setCursor(null)
-    setReports([])
+    setReportsTab(tab)
   }
 
   const handleLoadMore = () => {
-    void fetchReports(activeTab, cursor)
+    void loadMoreReports(getToken, { error: tErrors('failedToLoad') })
   }
 
   return (
@@ -125,7 +80,7 @@ export default function ProfileReportsPage() {
             key={tab}
             onClick={() => handleTabChange(tab)}
             className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-              activeTab === tab
+              reportsActiveTab === tab
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
             }`}
@@ -135,7 +90,7 @@ export default function ProfileReportsPage() {
         ))}
       </div>
 
-      {loading ? (
+      {reportsLoading ? (
         <div className="py-12 text-center text-muted-foreground">{tMap('loading')}</div>
       ) : reports.length === 0 ? (
         <div className="py-12 text-center text-muted-foreground">{t('noReports')}</div>
@@ -180,10 +135,10 @@ export default function ProfileReportsPage() {
         </div>
       )}
 
-      {cursor !== null && (
+      {reportsCursor !== null && (
         <div className="flex justify-center">
-          <Button variant="outline" onClick={handleLoadMore} disabled={loadingMore}>
-            {loadingMore ? tMap('loading') : t('loadMore')}
+          <Button variant="outline" onClick={handleLoadMore} disabled={reportsLoadingMore}>
+            {reportsLoadingMore ? tMap('loading') : t('loadMore')}
           </Button>
         </div>
       )}

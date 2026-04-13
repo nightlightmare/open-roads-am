@@ -11,10 +11,6 @@ import { Spinner } from '@/components/ui/spinner'
 import { cn } from '@/lib/utils'
 import { PROBLEM_TYPES, POLL_TIMEOUT_MS } from '@/lib/constants'
 
-interface ClassifyJobResponse {
-  job_token: string
-}
-
 interface ClassifyPollResponse {
   status: 'pending' | 'done' | 'failed'
   problem_type_ai: string | null
@@ -33,15 +29,15 @@ export function Step1({ onNext }: Step1Props) {
     photoFile,
     jobToken,
     selectedType,
+    uploading,
+    uploadError,
     setPhoto,
-    setJobToken,
     setSelectedType,
+    uploadPhoto,
   } = useSubmitStore()
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
-  const [uploading, setUploading] = useState(false)
-  const [uploadError, setUploadError] = useState<string | null>(null)
   const [aiType, setAiType] = useState<string | null>(null)
   const [aiNoResult, setAiNoResult] = useState(false)
   const [pollStarted, setPollStarted] = useState<number | null>(null)
@@ -81,7 +77,6 @@ export function Step1({ onNext }: Step1Props) {
 
   const handleFileSelect = useCallback(
     async (file: File) => {
-      setUploadError(null)
       setAiType(null)
       setAiNoResult(false)
       setPollDone(false)
@@ -90,33 +85,10 @@ export function Step1({ onNext }: Step1Props) {
       setPreview(url)
       setPhoto(file)
 
-      setUploading(true)
-      try {
-        const token = await getToken()
-        const formData = new FormData()
-        formData.append('photo', file)
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL ?? ''}/api/v1/classify`,
-          {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${token ?? ''}` },
-            body: formData,
-          },
-        )
-        if (!res.ok) {
-          throw new Error(`Upload failed: ${res.status}`)
-        }
-        const json = (await res.json()) as ClassifyJobResponse
-        setJobToken(json.job_token)
-        setPollStarted(Date.now())
-      } catch {
-        setUploadError(t('errors.photoUploadFailed'))
-        setAiNoResult(true)
-      } finally {
-        setUploading(false)
-      }
+      await uploadPhoto(getToken, file, { error: t('errors.photoUploadFailed') })
+      setPollStarted(Date.now())
     },
-    [getToken, setPhoto, setJobToken, t],
+    [getToken, setPhoto, uploadPhoto, t],
   )
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

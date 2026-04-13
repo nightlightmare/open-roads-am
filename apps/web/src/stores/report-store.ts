@@ -1,6 +1,58 @@
 import { create } from 'zustand'
 import { apiFetch, ApiError } from '@/lib/api'
 
+// ─── Public Report types ───────────────────────────────────────────────────
+
+export interface StatusHistoryEntry {
+  status: string
+  changed_at: string
+  note: string | null
+}
+
+export interface PublicReport {
+  id: string
+  status: string
+  problem_type: string | null
+  description: string | null
+  latitude: number
+  longitude: number
+  address_raw: string | null
+  photo_url: string | null
+  confirmation_count: number
+  status_history: StatusHistoryEntry[]
+  created_at: string
+  updated_at: string
+}
+
+// ─── Public Report store ───────────────────────────────────────────────────
+
+interface PublicReportState {
+  report: PublicReport | null
+  reportPageLoading: boolean
+  reportPageError: string | null
+  fetchReport: (id: string, fmt: { error: string }) => Promise<void>
+}
+
+export const usePublicReportStore = create<PublicReportState>((set) => ({
+  report: null,
+  reportPageLoading: false,
+  reportPageError: null,
+
+  fetchReport: async (id, fmt) => {
+    set({ reportPageLoading: true, reportPageError: null })
+    try {
+      const data = await apiFetch<PublicReport>(`/api/v1/public/reports/${id}`)
+      set({ report: data })
+    } catch {
+      set({ reportPageError: fmt.error })
+    } finally {
+      set({ reportPageLoading: false })
+    }
+  },
+}))
+
+// ─── Confirm store ─────────────────────────────────────────────────────────
+
 interface ConfirmResponse {
   report_id: string
   confirmation_count: number

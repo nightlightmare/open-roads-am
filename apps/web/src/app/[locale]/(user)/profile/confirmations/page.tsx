@@ -1,29 +1,15 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useEffect } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { useTranslations } from 'next-intl'
 import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { apiFetch } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { BadgeProps } from '@/components/ui/badge'
 import type { ReportStatus } from '@/lib/constants'
-
-interface ConfirmationItem {
-  report_id: string
-  problem_type: string | null
-  address_raw: string | null
-  photo_thumbnail_url: string | null
-  report_status: ReportStatus
-  confirmed_at: string
-}
-
-interface ConfirmationsResponse {
-  confirmations: ConfirmationItem[]
-  cursor: string | null
-}
+import { useProfileStore } from '@/stores/profile-store'
 
 function statusVariant(status: ReportStatus): BadgeProps['variant'] {
   switch (status) {
@@ -46,62 +32,34 @@ export default function ProfileConfirmationsPage() {
   const tStatus = useTranslations('report.status')
   const tType = useTranslations('report.problemType')
   const tReport = useTranslations('report')
+  const tErrors = useTranslations('errors')
   const { getToken } = useAuth()
   const params = useParams()
   const locale = (params['locale'] as string | undefined) ?? 'hy'
   const router = useRouter()
 
-  const [confirmations, setConfirmations] = useState<ConfirmationItem[]>([])
-  const [cursor, setCursor] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [loadingMore, setLoadingMore] = useState(false)
-
-  const fetchConfirmations = useCallback(
-    async (nextCursor?: string | null) => {
-      const isInitial = nextCursor === undefined
-      if (isInitial) setLoading(true)
-      else setLoadingMore(true)
-
-      try {
-        const token = await getToken()
-        const queryParams: Record<string, string | number | boolean | undefined> = {
-          limit: 20,
-        }
-        if (nextCursor) queryParams['cursor'] = nextCursor
-
-        const data = await apiFetch<ConfirmationsResponse>(
-          '/api/v1/me/confirmations',
-          { params: queryParams },
-          token ?? undefined,
-        )
-
-        if (isInitial) {
-          setConfirmations(data.confirmations)
-        } else {
-          setConfirmations((prev) => [...prev, ...data.confirmations])
-        }
-        setCursor(data.cursor)
-      } finally {
-        if (isInitial) setLoading(false)
-        else setLoadingMore(false)
-      }
-    },
-    [getToken],
-  )
+  const {
+    confirmations,
+    confirmationsLoading,
+    confirmationsLoadingMore,
+    confirmationsCursor,
+    fetchConfirmations,
+    loadMoreConfirmations,
+  } = useProfileStore()
 
   useEffect(() => {
-    void fetchConfirmations()
-  }, [fetchConfirmations])
+    void fetchConfirmations(getToken, { error: tErrors('failedToLoad') })
+  }, [fetchConfirmations, getToken, tErrors])
 
   const handleLoadMore = () => {
-    void fetchConfirmations(cursor)
+    void loadMoreConfirmations(getToken, { error: tErrors('failedToLoad') })
   }
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{t('tabs.confirmations')}</h1>
 
-      {loading ? (
+      {confirmationsLoading ? (
         <div className="py-12 text-center text-muted-foreground">{tMap('loading')}</div>
       ) : confirmations.length === 0 ? (
         <div className="py-12 text-center text-muted-foreground">{t('noConfirmations')}</div>
@@ -154,10 +112,10 @@ export default function ProfileConfirmationsPage() {
         </div>
       )}
 
-      {cursor !== null && (
+      {confirmationsCursor !== null && (
         <div className="flex justify-center">
-          <Button variant="outline" onClick={handleLoadMore} disabled={loadingMore}>
-            {loadingMore ? tMap('loading') : t('loadMore')}
+          <Button variant="outline" onClick={handleLoadMore} disabled={confirmationsLoadingMore}>
+            {confirmationsLoadingMore ? tMap('loading') : t('loadMore')}
           </Button>
         </div>
       )}

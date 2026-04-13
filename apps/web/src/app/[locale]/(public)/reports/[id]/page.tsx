@@ -1,37 +1,16 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { useAuth } from '@clerk/nextjs'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import { Link, useRouter } from '@/i18n/navigation'
-import { apiFetch } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { TIMELINE_STATUSES, CLOSED_STATUSES } from '@/lib/constants'
 import { useReportConfirmStore } from '@/stores/report-store'
-
-interface StatusHistoryEntry {
-  status: string
-  changed_at: string
-  note: string | null
-}
-
-interface PublicReport {
-  id: string
-  status: string
-  problem_type: string | null
-  description: string | null
-  latitude: number
-  longitude: number
-  address_raw: string | null
-  photo_url: string | null
-  confirmation_count: number
-  status_history: StatusHistoryEntry[]
-  created_at: string
-  updated_at: string
-}
+import { usePublicReportStore } from '@/stores/report-store'
 
 function statusBadgeVariant(
   status: string,
@@ -114,29 +93,13 @@ export default function ReportDetailPage() {
   const params = useParams()
   const id = params.id as string
   const t = useTranslations()
-
-  const [report, setReport] = useState<PublicReport | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  const fetchReport = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-    try {
-      const data = await apiFetch<PublicReport>(`/api/v1/public/reports/${id}`)
-      setReport(data)
-    } catch {
-      setError(t('errors.failedToLoad'))
-    } finally {
-      setLoading(false)
-    }
-  }, [id, t])
+  const { report, reportPageLoading, reportPageError, fetchReport } = usePublicReportStore()
 
   useEffect(() => {
-    void fetchReport()
-  }, [fetchReport])
+    void fetchReport(id, { error: t('errors.failedToLoad') })
+  }, [id, fetchReport, t])
 
-  if (loading) {
+  if (reportPageLoading) {
     return (
       <div className="flex items-center justify-center p-16 text-muted-foreground">
         {t('map.loading')}
@@ -144,10 +107,10 @@ export default function ReportDetailPage() {
     )
   }
 
-  if (error || !report) {
+  if (reportPageError || !report) {
     return (
       <div className="flex flex-col items-center gap-4 p-16">
-        <p className="text-destructive">{error ?? t('errors.reportNotFound')}</p>
+        <p className="text-destructive">{reportPageError ?? t('errors.reportNotFound')}</p>
         <Link href="/" className="text-sm text-primary underline">
           {t('report.backToMap')}
         </Link>

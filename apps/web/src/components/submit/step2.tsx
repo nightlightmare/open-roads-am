@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { useAuth } from '@clerk/nextjs'
 import { useTranslations } from 'next-intl'
 import { useSubmitStore } from '@/stores/submit-store'
 import { useRouter } from '@/i18n/navigation'
-import { apiFetch, ApiError } from '@/lib/api'
+import { ApiError } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { YEREVAN_LAT, YEREVAN_LNG } from '@/lib/constants'
 
@@ -14,10 +14,6 @@ const LocationPicker = dynamic(
   () => import('@/components/map/location-picker').then((m) => m.LocationPicker),
   { ssr: false },
 )
-
-interface CreateReportResponse {
-  id: string
-}
 
 export interface Step2Props {
   onBack: () => void
@@ -29,13 +25,20 @@ export function Step2({ onBack }: Step2Props) {
   const t = useTranslations()
   const tSubmit2 = useTranslations('submit.step2')
 
-  const { jobToken, selectedType, lat, lng, description, setLocation, setDescription, reset } =
-    useSubmitStore()
+  const {
+    lat,
+    lng,
+    description,
+    submitting,
+    submitError,
+    setLocation,
+    setDescription,
+    reset,
+    submitReport,
+  } = useSubmitStore()
 
-  const [mapLat, setMapLat] = useState<number>(lat ?? YEREVAN_LAT)
-  const [mapLng, setMapLng] = useState<number>(lng ?? YEREVAN_LNG)
-  const [submitting, setSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState<string | null>(null)
+  const mapLat = lat ?? YEREVAN_LAT
+  const mapLng = lng ?? YEREVAN_LNG
 
   // Try to get user's geolocation on mount
   useEffect(() => {
@@ -43,8 +46,6 @@ export function Step2({ onBack }: Step2Props) {
     if (!navigator.geolocation) return
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setMapLat(pos.coords.latitude)
-        setMapLng(pos.coords.longitude)
         setLocation(pos.coords.latitude, pos.coords.longitude)
       },
       () => {
@@ -56,48 +57,23 @@ export function Step2({ onBack }: Step2Props) {
   }, [])
 
   const handleMarkerChange = (newLat: number, newLng: number) => {
-    setMapLat(newLat)
-    setMapLng(newLng)
     setLocation(newLat, newLng)
   }
 
   const handleSubmit = async () => {
-    setSubmitError(null)
-
-    if (!selectedType) {
-      setSubmitError(t('submit.errors.typeRequired'))
-      return
-    }
-
-    setSubmitting(true)
-    try {
-      const token = await getToken()
-
-      const body: Record<string, unknown> = {
-        job_token: jobToken,
-        latitude: mapLat,
-        longitude: mapLng,
-        problem_type_user: selectedType,
-      }
-      if (description.trim()) {
-        body.description = description.trim()
-      }
-
-      const result = await apiFetch<CreateReportResponse>(
-        '/api/v1/reports',
-        { method: 'POST', body: JSON.stringify(body) },
-        token ?? undefined,
-      )
+    const token = await getToken()
+    const reportId = await submitReport(token ?? '', {
+      typeRequired: t('submit.errors.typeRequired'),
+      error: (err) => {
+        if (err instanceof ApiError) {
+          return t('errors.errorWithCode', { status: err.status, code: err.code })
+        }
+        return t('errors.submitFailed')
+      },
+    })
+    if (reportId) {
       reset()
-      router.push(`/profile/reports/${result.id}`)
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setSubmitError(t('errors.errorWithCode', { status: err.status, code: err.code }))
-      } else {
-        setSubmitError(t('errors.submitFailed'))
-      }
-    } finally {
-      setSubmitting(false)
+      router.push(`/profile/reports/${reportId}`)
     }
   }
 
