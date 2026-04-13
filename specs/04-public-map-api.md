@@ -41,41 +41,73 @@ Returns reports within a map viewport or radius. The primary endpoint for the ma
 | `lat` | number | one of bbox/lat+lng | — | Center latitude for radius query |
 | `lng` | number | one of bbox/lat+lng | — | Center longitude for radius query |
 | `radius_km` | number | with lat+lng | 5 | Radius in km. Max: 50. |
+| `zoom` | integer | no | 12 | Map zoom level (0–22). Drives server-side clustering grid size. |
 | `problem_type` | string | no | all | Comma-separated list of types: `pothole,hazard,...` |
 | `include_resolved` | boolean | no | false | Include reports with `status = resolved` |
-| `cursor` | string | no | — | Opaque pagination cursor from previous response |
-| `limit` | number | no | 100 | Max results per page. Max: 500. |
 
 **Either `bbox` or (`lat` + `lng`) is required.** If both are provided, `bbox` takes precedence.
 
 **bbox max area enforcement:** if the requested bbox exceeds 2°×2°, return `400 BBOX_TOO_LARGE`. The client must zoom in.
 
-#### PostGIS query (bbox mode)
+#### Server-side clustering
+
+The response mode depends on `zoom`:
+
+| Zoom | Grid size | Mode |
+|---|---|---|
+| 0–6 | 0.5° | clusters only |
+| 7–8 | 0.25° | clusters only |
+| 9–10 | 0.1° | clusters only |
+| 11–12 | 0.05° | clusters only |
+| 13–14 | 0.01° | clusters only |
+| ≥ 15 | — | individual reports |
+
+**Cluster mode** — `ST_SnapToGrid` groups nearby points into grid cells. Returns centroid + count per cell.
 
 ```sql
 SELECT
-  id, status, problem_type_final, problem_type_user,
-  ST_X(location) AS longitude,
-  ST_Y(location) AS latitude,
-  address_raw, region_id, confirmation_count, created_at
+  ST_X(ST_Centroid(ST_Collect(location))) AS longitude,
+  ST_Y(ST_Centroid(ST_Collect(location))) AS latitude,
+  COUNT(*) AS count
 FROM reports
 WHERE
   deleted_at IS NULL
-  AND status IN ('approved', 'in_progress')  -- resolved added if include_resolved=true
+  AND status IN ('approved', 'in_progress')
   AND ST_Within(location, ST_MakeEnvelope($west, $south, $east, $north, 4326))
-  AND ($problem_types IS NULL OR problem_type_user = ANY($problem_types))
-ORDER BY created_at DESC
-LIMIT $limit
+  AND ($problem_types IS NULL OR COALESCE(problem_type_final, problem_type_user) = ANY($problem_types))
+GROUP BY ST_SnapToGrid(location, $grid_size)
+ORDER BY count DESC
 ```
 
-Canonical `problem_type` returned to client = `COALESCE(problem_type_final, problem_type_user)`.
+**Individual mode** (zoom ≥ 15) — returns up to 500 individual report points.
+
+```sql
+SELECT
+  id, status,
+  COALESCE(problem_type_final, problem_type_user) AS problem_type,
+  ST_X(location) AS longitude,
+  ST_Y(location) AS latitude,
+  address_raw, region_id, confirmation_count, created_at, photo_optimized_key
+FROM reports
+WHERE
+  deleted_at IS NULL
+  AND status IN ('approved', 'in_progress')
+  AND ST_Within(location, ST_MakeEnvelope($west, $south, $east, $north, 4326))
+  AND ($problem_types IS NULL OR COALESCE(problem_type_final, problem_type_user) = ANY($problem_types))
+ORDER BY created_at DESC
+LIMIT 500
+```
 
 #### Response `200 OK`
 
+Mixed array of clusters and individual reports:
+
 ```json
 {
-  "reports": [
+  "items": [
+    { "type": "cluster", "latitude": 40.1, "longitude": 44.5, "count": 42 },
     {
+      "type": "report",
       "id": "uuid",
       "status": "approved",
       "problem_type": "pothole",
@@ -84,24 +116,23 @@ Canonical `problem_type` returned to client = `COALESCE(problem_type_final, prob
       "address_raw": "ул. Абовяна, Ереван",
       "confirmation_count": 3,
       "created_at": "2026-04-10T08:00:00Z",
-      "photo_url": "https://imagedelivery.net/<account>/<image_id>/display",
+      "photo_url": "https://imagedelivery.net/<account>/<image_id>/public",
       "region_id": "uuid"
     }
   ],
-  "cursor": "opaque-string-or-null",
   "total_in_area": 142
 }
 ```
 
-**`photo_url`** — public Cloudflare Images URL (optimized variant). No signing, CDN-cached. Example: `https://imagedelivery.net/<account>/<image_id>/display`. R2 bucket remains private — only Cloudflare Images has internal access.
+**`photo_url`** — public Cloudflare Images URL. Built as `${CF_IMAGES_BASE_URL}/${photo_optimized_key}/public`. Only present in individual mode; null when `photo_optimized_key` is null.
 
-**`total_in_area`** — approximate count for the full area (ignores pagination). Computed via `COUNT(*)` with the same WHERE clause, cached in Redis 60s.
+**`total_in_area`** — count for the full area. Cached in Redis 60s.
 
 #### Caching
 
-- Cache key: `map:reports:<hash(bbox|lat,lng,radius,types,include_resolved)>`
-- TTL: **30 seconds** — short enough that new approved reports appear quickly
-- Cache is invalidated immediately when a report transitions to `approved` status
+- Cache key: `map:reports:<hash(bbox|lat,lng,radius,zoom,types,include_resolved)>`
+- TTL: **30 seconds**
+- Invalidated immediately when a report transitions to `approved` status
 
 ---
 
@@ -202,14 +233,9 @@ Max date range: 365 days. If exceeded, return `400 DATE_RANGE_TOO_LARGE`.
 
 ## Clustering
 
-Clustering is **client-side** using MapLibre GL with supercluster. The API returns individual report points (up to 500 per request); the client clusters them based on zoom level.
+Clustering is **server-side** using `ST_SnapToGrid`. The grid cell size is determined by the `zoom` parameter passed from the client. At high zoom levels (≥ 15) individual reports are returned; at lower zoom levels, the response contains cluster objects with a centroid and count.
 
-**Rationale:** server-side clustering via `ST_ClusterDBSCAN` was considered but rejected for v1 because:
-- Client supercluster is fast enough for ≤500 points
-- Server-side clustering complicates pagination and detail drill-down
-- Cluster boundaries would need to be recomputed on every filter change
-
-If the dataset grows beyond 500 visible points in a single viewport, revisit server-side clustering in v2.
+**Rationale:** client-side supercluster requires the full point set to be downloaded first, which degrades performance as the dataset grows. Server-side grid clustering reduces the payload to O(grid cells) regardless of the number of reports, keeping the map fast at any scale.
 
 ---
 

@@ -128,7 +128,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
   - ✅ Job options: 3 attempts, exponential backoff (1min → 5min → 15min)
   - ✅ Fetch signed R2 URL for photo (TTL 5min)
   - ✅ Resize photo if > 5 MB (max 1600px via sharp)
-  - ✅ Call Claude API (`claude-sonnet-4-5`, vision, `temperature: 0`, `max_tokens: 256`)
+  - ✅ Call Claude API (`claude-haiku-4-5-20251001`, vision, `temperature: 0`, `max_tokens: 256`)
   - ✅ Parse and validate response with Zod (`ClassificationSchema`)
   - ✅ Confidence threshold: if < 0.6 → `problem_type_ai = null`
   - ✅ `not_a_road_problem` → `problem_type_ai = null` (no auto-reject)
@@ -143,31 +143,33 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 
 ---
 
-### ⬜ Spec 04 — Public Map API (v1.0)
+### ✅ Spec 04 — Public Map API (v1.0)
 
-- ⬜ `GET /api/v1/public/reports`
-  - ⬜ Zod validation of query params (bbox or lat+lng required)
-  - ⬜ bbox max area: 2°×2° → `400 BBOX_TOO_LARGE`
-  - ⬜ PostGIS query with spatial index (`ST_Within` / `ST_DWithin`)
-  - ⬜ Canonical `problem_type` = `COALESCE(problem_type_final, problem_type_user)`
-  - ⬜ `include_resolved` filter (default: false)
-  - ⬜ Cursor-based pagination (max 500 per page)
-  - ⬜ `total_in_area` count cached separately (TTL 60s)
-  - ⬜ Redis cache (TTL 30s, invalidated on `approved` status change)
-  - ⬜ `photo_url` — Cloudflare Images public URL (no R2 keys exposed)
-  - ⬜ No `user_id` in response
-- ⬜ `GET /api/v1/public/reports/:id`
-  - ⬜ Returns full public detail
-  - ⬜ `status_history` — public transitions only (`approved`, `in_progress`, `resolved`)
-  - ⬜ `404` for non-public statuses
-  - ⬜ Redis cache (TTL 5min, invalidated on status change)
-- ⬜ `GET /api/v1/public/stats`
-  - ⬜ `region_id`, `problem_type`, `from`, `to` filters
-  - ⬜ Max date range 365 days
-  - ⬜ Redis cache (TTL 5min)
-- ⬜ Rate limiting: IP-based (60/1min, 120/1min, 30/1min per endpoint)
-- ⬜ HTTP headers: `Cache-Control`, `X-RateLimit-*`, `Access-Control-Allow-Origin: *`
-- ⬜ Integration tests for all three endpoints
+- ✅ `GET /api/v1/public/reports`
+  - ✅ Zod validation of query params (bbox or lat+lng required)
+  - ✅ bbox max area: 2°×2° → `400 BBOX_TOO_LARGE`
+  - ✅ PostGIS query with spatial index (`ST_Within`)
+  - ✅ Server-side clustering via `ST_SnapToGrid` (grid size driven by `zoom` param)
+  - ✅ Cluster mode (zoom < 15): returns `{ type, lat, lng, count }` per grid cell
+  - ✅ Individual mode (zoom ≥ 15): returns up to 500 report points
+  - ✅ Canonical `problem_type` = `COALESCE(problem_type_final, problem_type_user)`
+  - ✅ `include_resolved` filter (default: false)
+  - ✅ `total_in_area` count (same WHERE, no GROUP BY)
+  - ✅ Redis cache (TTL 30s)
+  - ✅ `photo_url` — Cloudflare Images public URL (`CF_IMAGES_BASE_URL/<key>/public`)
+  - ✅ No `user_id` in response
+- ✅ `GET /api/v1/public/reports/:id`
+  - ✅ Returns full public detail
+  - ✅ `status_history` — public transitions only (`approved`, `in_progress`, `resolved`)
+  - ✅ `404` for non-public statuses
+  - ✅ Redis cache (TTL 5min)
+- ✅ `GET /api/v1/public/stats`
+  - ✅ `region_id`, `problem_type`, `from`, `to` filters
+  - ✅ Max date range 365 days → `400 DATE_RANGE_TOO_LARGE`
+  - ✅ Redis cache (TTL 5min)
+- ✅ Rate limiting: IP-based (60/1min, 120/1min, 30/1min per endpoint)
+- ✅ HTTP headers: `Cache-Control: public`, `Access-Control-Allow-Origin: *`
+- ✅ Tests: 17 route tests + 6 getGridSize unit tests (60 total passing)
 
 ---
 
@@ -284,7 +286,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 - ⬜ Sign-in / sign-up page
 - ⬜ Auth state management
 - ⬜ Map view (MapLibre GL)
-- ⬜ Report markers + client-side clustering (supercluster)
+- ⬜ Report markers (server-side clustering via Spec 04)
 - ⬜ Report submission form (two-step flow)
 - ⬜ User profile page
 - ⬜ Moderator dashboard (queue + SSE)
@@ -306,7 +308,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 2. ✅ **Spec 01** — Database schema (Prisma + Supabase migration)
 3. ✅ **Spec 02** — Report Submission
 4. ✅ **Spec 03** — AI Classification (BullMQ worker)
-5. ⬜ **Spec 04** — Public Map API
+5. ✅ **Spec 04** — Public Map API
 6. ⬜ **Spec 05** — Moderation Flow
 7. ⬜ **Spec 08** — User Profile
 8. ⬜ **Spec 07** — MCP Server
