@@ -15,6 +15,7 @@ const EnvSchema = z.object({
   R2_SECRET_ACCESS_KEY: z.string().min(1),
   R2_ENDPOINT: z.string().url(),
   CLAUDE_API_KEY: z.string().min(1),
+  CF_IMAGES_BASE_URL: z.string().url(),
 })
 
 export type Env = z.infer<typeof EnvSchema>

@@ -12,11 +12,14 @@ import { PrismaApiKeyRepository } from './repositories/api-key.repository.js'
 import { PrismaRoleRepository } from './repositories/role.repository.js'
 import { PrismaClassificationRepository } from './repositories/classification.repository.js'
 import { PrismaReportRepository } from './repositories/report.repository.js'
+import { PrismaPublicReportRepository } from './repositories/public-report.repository.js'
 import { clerkWebhookRoutes } from './routes/internal/clerk-webhook.js'
 import { adminApiKeyRoutes } from './routes/admin/api-keys.js'
 import { adminRoleRoutes } from './routes/admin/roles.js'
 import { classifyRoutes } from './routes/classify.js'
 import { reportRoutes } from './routes/reports.js'
+import { publicReportRoutes } from './routes/public/reports.js'
+import { publicStatsRoutes } from './routes/public/stats.js'
 import { startCleanupCron } from './workers/cleanup.js'
 import { startClassifyWorker } from './workers/classify.js'
 
@@ -39,6 +42,7 @@ export async function buildServer(env: Env) {
   const roleRepo = new PrismaRoleRepository(db)
   const classificationRepo = new PrismaClassificationRepository(db)
   const reportRepo = new PrismaReportRepository(db)
+  const publicReportRepo = new PrismaPublicReportRepository(db)
 
   // Plugins
   await fastify.register(fastifyHelmet)
@@ -69,6 +73,15 @@ export async function buildServer(env: Env) {
     banDb: userRepo,
     s3,
     r2Bucket: env.R2_BUCKET,
+    redis,
+  })
+  await fastify.register(publicReportRoutes, {
+    db: publicReportRepo,
+    redis,
+    cfImagesBaseUrl: env.CF_IMAGES_BASE_URL,
+  })
+  await fastify.register(publicStatsRoutes, {
+    db: publicReportRepo,
     redis,
   })
 
