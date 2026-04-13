@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl'
 import { useMapStore } from '@/stores/map-store'
 import { apiFetch } from '@/lib/api'
 import { ReportSidePanel } from './report-side-panel'
+import { createClusterMarker, createReportMarker } from './markers'
 
 const MAP_STYLE = process.env.NEXT_PUBLIC_MAP_STYLE ?? 'https://tiles.openfreemap.org/styles/liberty'
 
@@ -33,17 +34,6 @@ interface ClusterItem {
 interface ApiResponse {
   items: Array<ReportItem | ClusterItem>
   total_in_area: number
-}
-
-const PROBLEM_TYPE_COLORS: Record<string, string> = {
-  pothole: '#ef4444',
-  damaged_barrier: '#f97316',
-  missing_marking: '#eab308',
-  damaged_sign: '#8b5cf6',
-  hazard: '#ec4899',
-  broken_light: '#06b6d4',
-  missing_ramp: '#84cc16',
-  other: '#6b7280',
 }
 
 export function MapView() {
@@ -93,30 +83,15 @@ export function MapView() {
 
       for (const item of data.items) {
         if (item.type === 'cluster') {
-          const el = document.createElement('div')
-          el.className =
-            'flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-primary text-white text-sm font-bold shadow-lg'
-          el.textContent = String(item.count)
-          el.addEventListener('click', () => {
+          const marker = createClusterMarker(item.count, () => {
             map.current?.flyTo({ center: [item.lng, item.lat], zoom: currentZoom + 2 })
-          })
-          const marker = new maplibregl.Marker({ element: el })
-            .setLngLat([item.lng, item.lat])
-            .addTo(map.current!)
+          }).setLngLat([item.lng, item.lat]).addTo(map.current!)
           markersRef.current.push(marker)
         } else {
-          const color = PROBLEM_TYPE_COLORS[item.problem_type ?? 'other'] ?? '#6b7280'
-          const el = document.createElement('div')
-          el.className = 'cursor-pointer'
-          el.innerHTML = `<svg width="28" height="36" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M14 0C6.268 0 0 6.268 0 14c0 9.334 14 22 14 22S28 23.334 28 14C28 6.268 21.732 0 14 0z" fill="${color}"/>
-            <circle cx="14" cy="14" r="6" fill="white"/>
-          </svg>`
-          el.addEventListener('click', () => setSelectedReport(item))
-          const reportMarker = new maplibregl.Marker({ element: el })
+          const marker = createReportMarker(item.problem_type, () => setSelectedReport(item))
             .setLngLat([item.longitude, item.latitude])
             .addTo(map.current!)
-          markersRef.current.push(reportMarker)
+          markersRef.current.push(marker)
         }
       }
     } catch {
