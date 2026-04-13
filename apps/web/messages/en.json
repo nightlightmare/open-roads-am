@@ -103,12 +103,32 @@
     "note": "Note"
   },
   "admin": {
-    "title": "Admin",
+    "title": "Admin panel",
     "users": "Users",
     "apiKeys": "API keys",
     "role": "Role",
     "changeRole": "Change role",
+    "saving": "Saving...",
+    "changeRoleSuccess": "Role \"{role}\" successfully assigned to {clerkId}",
+    "changeRoleError": "Failed to change role",
+    "errorWithCode": "Error {status}: {code}",
+    "clerkIdLabel": "User Clerk ID",
+    "roles": {
+      "user": "User",
+      "moderator": "Moderator",
+      "gov_agency": "Gov. agency",
+      "admin": "Administrator"
+    },
     "createApiKey": "Create key",
+    "creating": "Creating...",
+    "create": "Create",
+    "cancel": "Cancel",
+    "close": "Close",
+    "keyCreated": "Key created. Save it — it is shown only once!",
+    "keyPrefix": "Prefix: {prefix}",
+    "keyDescriptionLabel": "Description (optional)",
+    "keyDescriptionPlaceholder": "Key description...",
+    "createKeyError": "Failed to create key",
     "copyKey": "Copy",
     "keyCopied": "Copied"
   },

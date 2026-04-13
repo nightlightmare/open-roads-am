@@ -103,12 +103,32 @@
     "note": "Примечание"
   },
   "admin": {
-    "title": "Администрирование",
+    "title": "Панель администратора",
     "users": "Пользователи",
     "apiKeys": "API ключи",
     "role": "Роль",
     "changeRole": "Изменить роль",
+    "saving": "Сохранение...",
+    "changeRoleSuccess": "Роль \"{role}\" успешно назначена пользователю {clerkId}",
+    "changeRoleError": "Не удалось изменить роль",
+    "errorWithCode": "Ошибка {status}: {code}",
+    "clerkIdLabel": "Clerk ID пользователя",
+    "roles": {
+      "user": "Пользователь",
+      "moderator": "Модератор",
+      "gov_agency": "Гос. ведомство",
+      "admin": "Администратор"
+    },
     "createApiKey": "Создать ключ",
+    "creating": "Создание...",
+    "create": "Создать",
+    "cancel": "Отмена",
+    "close": "Закрыть",
+    "keyCreated": "Ключ создан. Сохраните его — он отображается только один раз!",
+    "keyPrefix": "Префикс: {prefix}",
+    "keyDescriptionLabel": "Описание (необязательно)",
+    "keyDescriptionPlaceholder": "Описание ключа...",
+    "createKeyError": "Не удалось создать ключ",
     "copyKey": "Скопировать",
     "keyCopied": "Скопировано"
   },

@@ -103,12 +103,32 @@
     "note": "Նշում"
   },
   "admin": {
-    "title": "Ադմինիստրացիա",
+    "title": "Ադմինիստրատորի վահանակ",
     "users": "Օգտատերեր",
     "apiKeys": "API բանալիներ",
     "role": "Դեր",
     "changeRole": "Փոխել դերը",
+    "saving": "Պահպանվում է...",
+    "changeRoleSuccess": "\"{role}\" դերը հաջողությամբ նշանակվեց {clerkId} օգտատիրոջը",
+    "changeRoleError": "Չհաջողվեց փոխել դերը",
+    "errorWithCode": "Սխալ {status}: {code}",
+    "clerkIdLabel": "Օգտատիրոջ Clerk ID",
+    "roles": {
+      "user": "Օգտատեր",
+      "moderator": "Մոդератոր",
+      "gov_agency": "Պետ. մարմին",
+      "admin": "Ադմինիստրատոր"
+    },
     "createApiKey": "Ստեղծել բանալի",
+    "creating": "Ստեղծվում է...",
+    "create": "Ստեղծել",
+    "cancel": "Չեղարկել",
+    "close": "Փակել",
+    "keyCreated": "Բանալին ստեղծված է: Պահպանեք այն — այն ցուցադրվում է միայն մեկ անգամ:",
+    "keyPrefix": "Նախածանց: {prefix}",
+    "keyDescriptionLabel": "Նկարագրություն (կամընտիր)",
+    "keyDescriptionPlaceholder": "Բանալու նկարագրություն...",
+    "createKeyError": "Չհաջողվեց ստեղծել բանալին",
     "copyKey": "Պատճենել",
     "keyCopied": "Պատճենվեց"
   },
