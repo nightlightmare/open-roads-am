@@ -171,5 +171,8 @@
     "failedToApprove": "Не удалось одобрить репорт",
     "failedToReject": "Не удалось отклонить репорт",
     "errorWithCode": "Ошибка {status}: {code}"
+  },
+  "meta": {
+    "description": "Сообщай о дорожных проблемах в Армении"
   }
 }

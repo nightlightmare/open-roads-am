@@ -8,35 +8,10 @@ import { useRouter } from '@/i18n/navigation'
 import { apiFetch, ApiError } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-
-const PROBLEM_TYPES = [
-  'pothole',
-  'damaged_barrier',
-  'missing_marking',
-  'damaged_sign',
-  'hazard',
-  'broken_light',
-  'missing_ramp',
-  'other',
-] as const
-
-type ProblemType = (typeof PROBLEM_TYPES)[number]
-
-interface QueueItem {
-  id: string
-  status: string
-  problem_type_user: string | null
-  problem_type_ai: string | null
-  ai_confidence: number | null
-  description: string | null
-  latitude: number
-  longitude: number
-  address_raw: string | null
-  photo_url: string | null
-  photo_thumbnail_url: string | null
-  confirmation_count: number
-  created_at: string
-}
+import { PROBLEM_TYPES } from '@/lib/constants'
+import type { ProblemType } from '@/lib/constants'
+import { useModerationStore } from '@/stores/moderation-store'
+import type { QueueItem } from '@/stores/moderation-store'
 
 interface QueueResponse {
   reports: QueueItem[]
@@ -78,11 +53,10 @@ export default function ReportDetailPage() {
   const [locked, setLocked] = useState<LockConflict | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  // Action state
+  // Action state from store
   const [overrideType, setOverrideType] = useState<ProblemType | ''>('')
   const [rejectionReason, setRejectionReason] = useState('')
-  const [actionLoading, setActionLoading] = useState(false)
-  const [actionError, setActionError] = useState<string | null>(null)
+  const { actionLoading, actionError, setActionLoading, setActionError } = useModerationStore()
 
   // Track if action was taken (to skip lock release on unmount)
   const actionTakenRef = useRef(false)

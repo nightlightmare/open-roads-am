@@ -171,5 +171,8 @@
     "failedToApprove": "Failed to approve report",
     "failedToReject": "Failed to reject report",
     "errorWithCode": "Error {status}: {code}"
+  },
+  "meta": {
+    "description": "Report road problems in Armenia"
   }
 }

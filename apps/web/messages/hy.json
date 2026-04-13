@@ -171,5 +171,8 @@
     "failedToApprove": "Չհաջողվեց հաստատել հաղորդումը",
     "failedToReject": "Չհաջողվեց մերժել հաղորդումը",
     "errorWithCode": "Սխալ {status}: {code}"
+  },
+  "meta": {
+    "description": "Հայտնել ճանապարհային խնդիրների մասին Հայաստանում"
   }
 }

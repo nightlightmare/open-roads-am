@@ -1,14 +1,22 @@
 import type { Metadata } from 'next'
 import { ClerkProvider } from '@clerk/nextjs'
 import { NextIntlClientProvider } from 'next-intl'
-import { getMessages } from 'next-intl/server'
+import { getMessages, getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { routing } from '@/i18n/routing'
 import '../globals.css'
 
-export const metadata: Metadata = {
-  title: 'open-road.am',
-  description: 'Сообщай о дорожных проблемах в Армении',
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'meta' })
+  return {
+    title: 'open-road.am',
+    description: t('description'),
+  }
 }
 
 export function generateStaticParams() {

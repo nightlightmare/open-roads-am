@@ -9,15 +9,7 @@ import { apiFetch } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { BadgeProps } from '@/components/ui/badge'
-
-type ReportStatus =
-  | 'pending_review'
-  | 'under_review'
-  | 'approved'
-  | 'in_progress'
-  | 'resolved'
-  | 'rejected'
-  | 'archived'
+import type { ReportStatus } from '@/lib/constants'
 
 interface ReportSummary {
   id: string

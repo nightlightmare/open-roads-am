@@ -1,110 +1,19 @@
 'use client'
 
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { useParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/navigation'
 import { apiFetch, ApiError } from '@/lib/api'
-import { Badge } from '@/components/ui/badge'
-
-interface QueueItem {
-  id: string
-  status: string
-  problem_type_user: string | null
-  problem_type_ai: string | null
-  ai_confidence: number | null
-  description: string | null
-  latitude: number
-  longitude: number
-  address_raw: string | null
-  photo_url: string | null
-  photo_thumbnail_url: string | null
-  confirmation_count: number
-  created_at: string
-}
+import { ReportCard } from '@/components/moderation/report-card'
+import { useModerationStore } from '@/stores/moderation-store'
+import type { QueueItem } from '@/stores/moderation-store'
 
 interface QueueResponse {
   reports: QueueItem[]
   cursor: string | null
   total_pending: number
-}
-
-function confidenceVariant(confidence: number | null): 'success' | 'warning' | 'destructive' {
-  if (confidence === null) return 'warning'
-  if (confidence >= 0.8) return 'success'
-  if (confidence >= 0.5) return 'warning'
-  return 'destructive'
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('ru-RU', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  })
-}
-
-interface ReportCardProps {
-  report: QueueItem
-  onClick: () => void
-}
-
-function ReportCard({ report, onClick }: ReportCardProps) {
-  const t = useTranslations()
-  const tType = useTranslations('report.problemType')
-
-  const typeLabel = (type: string | null) => {
-    if (!type) return '—'
-    return tType(type as Parameters<typeof tType>[0])
-  }
-
-  return (
-    <div
-      className="flex cursor-pointer gap-3 rounded-lg border bg-white p-4 shadow-sm transition hover:shadow-md"
-      onClick={onClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') onClick()
-      }}
-    >
-      {report.photo_thumbnail_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={report.photo_thumbnail_url}
-          alt={t('report.photo')}
-          className="h-20 w-20 flex-shrink-0 rounded object-cover"
-        />
-      ) : (
-        <div className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded bg-gray-100 text-xs text-gray-400">
-          {t('moderation.noPhoto')}
-        </div>
-      )}
-
-      <div className="flex flex-1 flex-col gap-1 overflow-hidden">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="font-medium">{typeLabel(report.problem_type_user)}</span>
-          {report.problem_type_ai && (
-            <Badge variant="info" className="text-xs">
-              {t('report.aiPrefix')}: {typeLabel(report.problem_type_ai)}
-            </Badge>
-          )}
-          {report.ai_confidence !== null && (
-            <Badge variant={confidenceVariant(report.ai_confidence)} className="text-xs">
-              {Math.round(report.ai_confidence * 100)}%
-            </Badge>
-          )}
-        </div>
-
-        {report.address_raw && (
-          <p className="truncate text-sm text-muted-foreground">{report.address_raw}</p>
-        )}
-
-        <p className="text-xs text-gray-400">{formatDate(report.created_at)}</p>
-      </div>
-    </div>
-  )
 }
 
 export default function ModerationPage() {
@@ -118,12 +27,20 @@ export default function ModerationPage() {
 
   const readerRef = useRef<ReadableStreamDefaultReader<Uint8Array> | null>(null)
 
-  const [activeTab, setActiveTab] = useState<'pending' | 'under_review'>('pending')
-  const [pendingReports, setPendingReports] = useState<QueueItem[]>([])
-  const [underReviewReports, setUnderReviewReports] = useState<QueueItem[]>([])
-  const [pendingCount, setPendingCount] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const {
+    activeTab,
+    pendingReports,
+    underReviewReports,
+    pendingCount,
+    loading,
+    error,
+    setActiveTab,
+    setPendingReports,
+    setUnderReviewReports,
+    setPendingCount,
+    setLoading,
+    setError,
+  } = useModerationStore()
 
   const fetchQueue = useCallback(
     async (status: 'pending_review' | 'under_review'): Promise<QueueItem[]> => {
@@ -145,7 +62,7 @@ export default function ModerationPage() {
     } catch {
       // ignore background refetch errors
     }
-  }, [fetchQueue])
+  }, [fetchQueue, setPendingReports])
 
   const loadAll = useCallback(async () => {
     setLoading(true)
@@ -176,7 +93,7 @@ export default function ModerationPage() {
     } finally {
       setLoading(false)
     }
-  }, [getToken, tErrors])
+  }, [getToken, tErrors, setPendingReports, setPendingCount, setUnderReviewReports, setLoading, setError])
 
   useEffect(() => {
     void loadAll()
@@ -233,7 +150,7 @@ export default function ModerationPage() {
       cancelled = true
       readerRef.current?.cancel().catch(() => undefined)
     }
-  }, [getToken, refetchPending])
+  }, [getToken, refetchPending, setPendingCount])
 
   const handleCardClick = (reportId: string) => {
     router.push(`/${locale}/moderation/reports/${reportId}`)
