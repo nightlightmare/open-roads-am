@@ -11,7 +11,7 @@ test.describe('Report Submission', () => {
   test('submit-01: submit page renders step 1', async ({ page }) => {
     await page.goto(`/${DEFAULT_LOCALE}/submit`)
     await expect(page.getByTestId('photo-dropzone')).toBeVisible()
-    await expect(page.getByRole('button', { name: /next|հաջորդ/i })).toBeDisabled()
+    await expect(page.getByRole('button', { name: /→$/ })).toBeDisabled()
   })
 
   test('submit-02: photo upload triggers AI classification', async ({ page }) => {
@@ -49,10 +49,10 @@ test.describe('Report Submission', () => {
 
     // Select a category
     await page.getByTestId('category-grid').getByRole('button').first().click()
-    await expect(page.getByRole('button', { name: /next|հաջորդ/i })).toBeEnabled()
+    await expect(page.getByRole('button', { name: /→$/ })).toBeEnabled()
 
     // Go to step 2
-    await page.getByRole('button', { name: /next|հաջորդ/i }).click()
+    await page.getByRole('button', { name: /→$/ }).click()
     await expect(page.locator('.maplibregl-canvas')).toBeVisible()
   })
 
@@ -63,7 +63,7 @@ test.describe('Report Submission', () => {
     await fileInput.setInputFiles(path.join(__dirname, '../helpers/test-photo.jpg'))
     await expect(page.getByTestId('category-grid')).toBeVisible({ timeout: 65_000 })
     await page.getByTestId('category-grid').getByRole('button').first().click()
-    await page.getByRole('button', { name: /next|հաջորդ/i }).click()
+    await page.getByRole('button', { name: /→$/ }).click()
 
     await expect(page.locator('.maplibregl-canvas')).toBeVisible()
     await expect(page.locator('.maplibregl-marker')).toBeVisible()
@@ -76,7 +76,7 @@ test.describe('Report Submission', () => {
     await fileInput.setInputFiles(path.join(__dirname, '../helpers/test-photo.jpg'))
     await expect(page.getByTestId('category-grid')).toBeVisible({ timeout: 65_000 })
     await page.getByTestId('category-grid').getByRole('button').first().click()
-    await page.getByRole('button', { name: /next|հաջորդ/i }).click()
+    await page.getByRole('button', { name: /→$/ }).click()
 
     const textarea = page.getByRole('textbox')
     await textarea.fill('A'.repeat(100))
@@ -90,14 +90,14 @@ test.describe('Report Submission', () => {
     await fileInput.setInputFiles(path.join(__dirname, '../helpers/test-photo.jpg'))
     await expect(page.getByTestId('category-grid')).toBeVisible({ timeout: 65_000 })
     await page.getByTestId('category-grid').getByRole('button').first().click()
-    await page.getByRole('button', { name: /next|հաջորդ/i }).click()
+    await page.getByRole('button', { name: /→$/ }).click()
 
-    await page.getByRole('button', { name: /back|հետ/i }).click()
+    await page.getByRole('button', { name: /^←/ }).click()
     await expect(page.getByTestId('photo-dropzone')).toBeVisible()
   })
 
   test('submit-09: cannot submit without photo', async ({ page }) => {
     await page.goto(`/${DEFAULT_LOCALE}/submit`)
-    await expect(page.getByRole('button', { name: /next|հաջորդ/i })).toBeDisabled()
+    await expect(page.getByRole('button', { name: /→$/ })).toBeDisabled()
   })
 })
