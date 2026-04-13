@@ -1,0 +1,122 @@
+{
+  "nav": {
+    "moderation": "Moderation",
+    "admin": "Admin",
+    "profile": "Profile",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "reportProblem": "Report a problem"
+  },
+  "map": {
+    "loading": "Loading...",
+    "noReports": "No reports found",
+    "filters": {
+      "title": "Filters",
+      "problemType": "Problem type",
+      "includeResolved": "Show resolved",
+      "all": "All"
+    }
+  },
+  "report": {
+    "status": {
+      "pending_review": "Pending review",
+      "under_review": "Under review",
+      "approved": "Approved",
+      "in_progress": "In progress",
+      "resolved": "Resolved",
+      "rejected": "Rejected",
+      "archived": "Archived"
+    },
+    "problemType": {
+      "pothole": "Pothole",
+      "damaged_barrier": "Damaged barrier",
+      "missing_marking": "Missing marking",
+      "damaged_sign": "Damaged sign",
+      "hazard": "Hazard",
+      "broken_light": "Broken light",
+      "missing_ramp": "Missing ramp",
+      "other": "Other"
+    },
+    "confirmations": "{count} confirmation(s)",
+    "confirm": "Confirm",
+    "unconfirm": "Remove confirmation",
+    "viewDetails": "View details",
+    "backToMap": "← Back to map"
+  },
+  "submit": {
+    "title": "Report a problem",
+    "step1": {
+      "title": "Photo",
+      "dropzone": "Click or drag a photo here",
+      "analyzing": "Analyzing...",
+      "selectType": "Select a category",
+      "aiSuggested": "AI suggestion",
+      "noAiResult": "Could not detect automatically — please select manually",
+      "next": "Next →"
+    },
+    "step2": {
+      "title": "Location & description",
+      "locationHint": "Drag the pin to the exact location",
+      "description": "Description (optional)",
+      "descriptionPlaceholder": "More details...",
+      "back": "← Back",
+      "submit": "Submit",
+      "submitting": "Submitting..."
+    },
+    "success": "Report submitted",
+    "errors": {
+      "photoRequired": "Please select a photo",
+      "typeRequired": "Please select a category",
+      "locationRequired": "Please mark the location"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "memberSince": "Member since {date}",
+    "stats": {
+      "submitted": "Submitted",
+      "approved": "Approved",
+      "resolved": "Resolved",
+      "confirmations": "Confirmations"
+    },
+    "tabs": {
+      "reports": "My reports",
+      "confirmations": "Confirmed"
+    },
+    "noReports": "No reports yet",
+    "noConfirmations": "No confirmations yet",
+    "loadMore": "Load more"
+  },
+  "moderation": {
+    "title": "Moderation",
+    "tabs": {
+      "pending": "Pending",
+      "underReview": "Under review"
+    },
+    "lockedBy": "Being reviewed by {name}, locked until {time}",
+    "approve": "Approve",
+    "reject": "Reject",
+    "reopen": "Reopen",
+    "rejectionReason": "Rejection reason",
+    "overrideType": "Override type",
+    "aiConfidence": "AI confidence",
+    "note": "Note"
+  },
+  "admin": {
+    "title": "Admin",
+    "users": "Users",
+    "apiKeys": "API keys",
+    "role": "Role",
+    "changeRole": "Change role",
+    "createApiKey": "Create key",
+    "copyKey": "Copy",
+    "keyCopied": "Copied"
+  },
+  "errors": {
+    "unauthorized": "Authentication required",
+    "forbidden": "Insufficient permissions",
+    "tooManyRequests": "Too many requests, try again in {seconds}s",
+    "serverError": "Something went wrong",
+    "retry": "Retry"
+  }
+}

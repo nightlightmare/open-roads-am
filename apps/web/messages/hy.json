@@ -1,0 +1,122 @@
+{
+  "nav": {
+    "moderation": "Մոդերացիա",
+    "admin": "Ադմինիստրացիա",
+    "profile": "Անձնական էջ",
+    "signIn": "Մուտք",
+    "signOut": "Ելք",
+    "reportProblem": "Հայտնել խնդրի մասին"
+  },
+  "map": {
+    "loading": "Բեռնվում է...",
+    "noReports": "Հաղորդումներ չկան",
+    "filters": {
+      "title": "Ֆիլտրեր",
+      "problemType": "Խնդրի տեսակ",
+      "includeResolved": "Ցուցադրել լուծվածները",
+      "all": "Բոլորը"
+    }
+  },
+  "report": {
+    "status": {
+      "pending_review": "Սպասում է",
+      "under_review": "Ուսումնասիրվում է",
+      "approved": "Հաստատված",
+      "in_progress": "Ընթացքի մեջ",
+      "resolved": "Լուծված",
+      "rejected": "Մերժված",
+      "archived": "Արխիվացված"
+    },
+    "problemType": {
+      "pothole": "Փոս",
+      "damaged_barrier": "Վնասված պատնեշ",
+      "missing_marking": "Բացակայ նշագծ",
+      "damaged_sign": "Վնասված նշան",
+      "hazard": "Վտանգ",
+      "broken_light": "Խափանված լույս",
+      "missing_ramp": "Բացակայ թեքություն",
+      "other": "Այլ"
+    },
+    "confirmations": "{count} հաստատում",
+    "confirm": "Հաստատել",
+    "unconfirm": "Հեռացնել հաստատումը",
+    "viewDetails": "Մանրամասներ",
+    "backToMap": "← Քարտեզ"
+  },
+  "submit": {
+    "title": "Հայտնել խնդրի մասին",
+    "step1": {
+      "title": "Լուսանկար",
+      "dropzone": "Կտտացրեք կամ քաշեք լուսանկարը",
+      "analyzing": "Վերլուծվում է...",
+      "selectType": "Ընտրեք կատեգորիա",
+      "aiSuggested": "AI առաջարկ",
+      "noAiResult": "Չհաջողվեց ինքնաբերաբար որոշել — ընտրեք ձեռքով",
+      "next": "Հաջորդ →"
+    },
+    "step2": {
+      "title": "Տեղ և նկարագրություն",
+      "locationHint": "Քաշեք գտիչը ճշգրիտ վայրը նշելու համար",
+      "description": "Նկարագրություն (կամընտիր)",
+      "descriptionPlaceholder": "Ավելի մանրամասն...",
+      "back": "← Հետ",
+      "submit": "Ուղարկել",
+      "submitting": "Ուղարկվում է..."
+    },
+    "success": "Հայտը ընդունված է",
+    "errors": {
+      "photoRequired": "Ընտրեք լուսանկար",
+      "typeRequired": "Ընտրեք կատեգորիա",
+      "locationRequired": "Նշեք վայրը"
+    }
+  },
+  "profile": {
+    "title": "Անձնական էջ",
+    "memberSince": "Անդամ {date}-ից",
+    "stats": {
+      "submitted": "Ուղարկված",
+      "approved": "Հաստատված",
+      "resolved": "Լուծված",
+      "confirmations": "Հաստատումներ"
+    },
+    "tabs": {
+      "reports": "Իմ հաղորդումները",
+      "confirmations": "Հաստատված"
+    },
+    "noReports": "Հաղորդումներ չկան",
+    "noConfirmations": "Հաստատումներ չկան",
+    "loadMore": "Ավելին"
+  },
+  "moderation": {
+    "title": "Մոդերացիա",
+    "tabs": {
+      "pending": "Սպասում են",
+      "underReview": "Ուսումնասիրվում են"
+    },
+    "lockedBy": "Ուսումնասիրում է {name}-ը, արգելափակված մինչև {time}",
+    "approve": "Հաստատել",
+    "reject": "Մերժել",
+    "reopen": "Վերաբացել",
+    "rejectionReason": "Մերժման պատճառ",
+    "overrideType": "Կատեգորիայի փոփոխություն",
+    "aiConfidence": "AI վստահություն",
+    "note": "Նշում"
+  },
+  "admin": {
+    "title": "Ադմինիստրացիա",
+    "users": "Օգտատերեր",
+    "apiKeys": "API բանալիներ",
+    "role": "Դեր",
+    "changeRole": "Փոխել դերը",
+    "createApiKey": "Ստեղծել բանալի",
+    "copyKey": "Պատճենել",
+    "keyCopied": "Պատճենվեց"
+  },
+  "errors": {
+    "unauthorized": "Մուտքը արգելված է",
+    "forbidden": "Անբավարար իրավունքներ",
+    "tooManyRequests": "Չափազանց շատ հարցումներ, կրկին փորձեք {seconds} վ.-ից",
+    "serverError": "Ինչ-որ բան սխալ է",
+    "retry": "Կրկնել"
+  }
+}

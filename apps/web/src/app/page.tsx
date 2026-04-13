@@ -1,3 +1,5 @@
-export default function Home() {
-  return <main>open-road.am — coming soon</main>
+import { redirect } from 'next/navigation'
+
+export default function RootPage() {
+  redirect('/hy')
 }

@@ -1,0 +1,122 @@
+{
+  "nav": {
+    "moderation": "Модерация",
+    "admin": "Администрирование",
+    "profile": "Профиль",
+    "signIn": "Войти",
+    "signOut": "Выйти",
+    "reportProblem": "Сообщить о проблеме"
+  },
+  "map": {
+    "loading": "Загрузка...",
+    "noReports": "Репортов не найдено",
+    "filters": {
+      "title": "Фильтры",
+      "problemType": "Тип проблемы",
+      "includeResolved": "Показать решённые",
+      "all": "Все"
+    }
+  },
+  "report": {
+    "status": {
+      "pending_review": "На рассмотрении",
+      "under_review": "Изучается",
+      "approved": "Одобрено",
+      "in_progress": "В работе",
+      "resolved": "Решено",
+      "rejected": "Отклонено",
+      "archived": "Архив"
+    },
+    "problemType": {
+      "pothole": "Яма",
+      "damaged_barrier": "Повреждённое ограждение",
+      "missing_marking": "Отсутствие разметки",
+      "damaged_sign": "Повреждённый знак",
+      "hazard": "Опасность",
+      "broken_light": "Неработающий светофор",
+      "missing_ramp": "Отсутствие пандуса",
+      "other": "Другое"
+    },
+    "confirmations": "{count} подтверждений",
+    "confirm": "Подтвердить",
+    "unconfirm": "Убрать подтверждение",
+    "viewDetails": "Подробнее",
+    "backToMap": "← На карту"
+  },
+  "submit": {
+    "title": "Сообщить о проблеме",
+    "step1": {
+      "title": "Фото",
+      "dropzone": "Нажмите или перетащите фото",
+      "analyzing": "Анализируем...",
+      "selectType": "Выберите категорию",
+      "aiSuggested": "Предложение AI",
+      "noAiResult": "Не удалось определить автоматически — выберите вручную",
+      "next": "Далее →"
+    },
+    "step2": {
+      "title": "Место и описание",
+      "locationHint": "Перетащите маркер на точное место",
+      "description": "Описание (необязательно)",
+      "descriptionPlaceholder": "Подробнее...",
+      "back": "← Назад",
+      "submit": "Отправить",
+      "submitting": "Отправляем..."
+    },
+    "success": "Заявка принята",
+    "errors": {
+      "photoRequired": "Выберите фото",
+      "typeRequired": "Выберите категорию",
+      "locationRequired": "Укажите место"
+    }
+  },
+  "profile": {
+    "title": "Профиль",
+    "memberSince": "Участник с {date}",
+    "stats": {
+      "submitted": "Отправлено",
+      "approved": "Одобрено",
+      "resolved": "Решено",
+      "confirmations": "Подтверждений"
+    },
+    "tabs": {
+      "reports": "Мои репорты",
+      "confirmations": "Подтверждённые"
+    },
+    "noReports": "Репортов нет",
+    "noConfirmations": "Подтверждений нет",
+    "loadMore": "Загрузить ещё"
+  },
+  "moderation": {
+    "title": "Модерация",
+    "tabs": {
+      "pending": "Ожидают",
+      "underReview": "На рассмотрении"
+    },
+    "lockedBy": "Рассматривает {name}, заблокировано до {time}",
+    "approve": "Одобрить",
+    "reject": "Отклонить",
+    "reopen": "Переоткрыть",
+    "rejectionReason": "Причина отклонения",
+    "overrideType": "Изменить категорию",
+    "aiConfidence": "Уверенность AI",
+    "note": "Примечание"
+  },
+  "admin": {
+    "title": "Администрирование",
+    "users": "Пользователи",
+    "apiKeys": "API ключи",
+    "role": "Роль",
+    "changeRole": "Изменить роль",
+    "createApiKey": "Создать ключ",
+    "copyKey": "Скопировать",
+    "keyCopied": "Скопировано"
+  },
+  "errors": {
+    "unauthorized": "Необходима авторизация",
+    "forbidden": "Недостаточно прав",
+    "tooManyRequests": "Слишком много запросов, повторите через {seconds} с.",
+    "serverError": "Что-то пошло не так",
+    "retry": "Повторить"
+  }
+}
