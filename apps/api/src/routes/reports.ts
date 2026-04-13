@@ -6,7 +6,8 @@ import { z } from 'zod'
 import { verifyAuth } from '../middleware/verify-auth.js'
 import { createBannedCheck } from '../middleware/banned-check.js'
 import { rateLimit, RateLimitError } from '../middleware/rate-limit.js'
-import { copyInR2 } from '../lib/r2.js'
+import { copyInR2, getSignedDownloadUrl } from '../lib/r2.js'
+import { uploadImageFromUrl } from '../lib/cf-images.js'
 import type { ClassificationRepository } from '../repositories/classification.repository.js'
 import type { ReportRepository } from '../repositories/report.repository.js'
 import type { UserBanRepository } from '../middleware/banned-check.js'
@@ -35,13 +36,15 @@ interface ReportRoutesOptions {
   s3: S3Client
   r2Bucket: string
   redis: Redis
+  cfAccountId: string
+  cfImagesApiToken: string
 }
 
 export async function reportRoutes(
   fastify: FastifyInstance,
   options: ReportRoutesOptions,
 ): Promise<void> {
-  const { classificationDb, reportDb, banDb, s3, r2Bucket, redis } = options
+  const { classificationDb, reportDb, banDb, s3, r2Bucket, redis, cfAccountId, cfImagesApiToken } = options
   const bannedCheck = createBannedCheck(redis, banDb)
 
   fastify.post(
@@ -105,6 +108,13 @@ export async function reportRoutes(
         fastify.log.error({ err, reportId: id }, 'geo resolution failed')
       })
 
+      // Async: upload to Cloudflare Images (fire and forget)
+      uploadToCfImagesAsync(reportDb, s3, r2Bucket, cfAccountId, cfImagesApiToken, id, permanentKey).catch(
+        (err: unknown) => {
+          fastify.log.error({ err, reportId: id }, 'cf images upload failed')
+        },
+      )
+
       // Notify moderators via Redis pub/sub
       await redis.publish(
         'events:moderation',
@@ -159,6 +169,20 @@ async function reverseGeocode(lat: number, lng: number): Promise<string | null> 
   } catch {
     return null
   }
+}
+
+async function uploadToCfImagesAsync(
+  reportDb: ReportRepository,
+  s3: S3Client,
+  bucket: string,
+  cfAccountId: string,
+  cfImagesApiToken: string,
+  reportId: string,
+  photoKey: string,
+): Promise<void> {
+  const signedUrl = await getSignedDownloadUrl(s3, bucket, photoKey, 900) // 15 min TTL
+  const cfImageId = await uploadImageFromUrl(cfAccountId, cfImagesApiToken, signedUrl)
+  await reportDb.updatePhotoOptimizedKey(reportId, cfImageId)
 }
 
 // Optional extension interface for PostGIS region lookup

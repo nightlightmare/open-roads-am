@@ -15,6 +15,7 @@ export interface CreateReportData {
 export interface ReportRepository {
   create(data: CreateReportData): Promise<{ id: string; createdAt: Date }>
   updateRegionAndAddress(id: string, regionId: string | null, addressRaw: string | null): Promise<void>
+  updatePhotoOptimizedKey(id: string, key: string): Promise<void>
 }
 
 export class PrismaReportRepository implements ReportRepository {
@@ -71,6 +72,13 @@ export class PrismaReportRepository implements ReportRepository {
         region_id: regionId,
         address_raw: addressRaw,
       },
+    })
+  }
+
+  async updatePhotoOptimizedKey(id: string, key: string): Promise<void> {
+    await this.db.report.update({
+      where: { id },
+      data: { photo_optimized_key: key },
     })
   }
 }

@@ -13,6 +13,7 @@ import { PrismaRoleRepository } from './repositories/role.repository.js'
 import { PrismaClassificationRepository } from './repositories/classification.repository.js'
 import { PrismaReportRepository } from './repositories/report.repository.js'
 import { PrismaPublicReportRepository } from './repositories/public-report.repository.js'
+import { PrismaModerationRepository } from './repositories/moderation.repository.js'
 import { clerkWebhookRoutes } from './routes/internal/clerk-webhook.js'
 import { adminApiKeyRoutes } from './routes/admin/api-keys.js'
 import { adminRoleRoutes } from './routes/admin/roles.js'
@@ -20,8 +21,12 @@ import { classifyRoutes } from './routes/classify.js'
 import { reportRoutes } from './routes/reports.js'
 import { publicReportRoutes } from './routes/public/reports.js'
 import { publicStatsRoutes } from './routes/public/stats.js'
-import { startCleanupCron } from './workers/cleanup.js'
+import { moderationQueueRoutes } from './routes/moderation/queue.js'
+import { moderationActionsRoutes } from './routes/moderation/actions.js'
+import { moderationFeedRoutes } from './routes/moderation/feed.js'
+import { startCleanupCron, startArchiveCron } from './workers/cleanup.js'
 import { startClassifyWorker } from './workers/classify.js'
+import { startLeaseExpiryWorker } from './workers/lease-expiry.js'
 
 export async function buildServer(env: Env) {
   const fastify = Fastify({
@@ -43,6 +48,7 @@ export async function buildServer(env: Env) {
   const classificationRepo = new PrismaClassificationRepository(db)
   const reportRepo = new PrismaReportRepository(db)
   const publicReportRepo = new PrismaPublicReportRepository(db)
+  const moderationRepo = new PrismaModerationRepository(db)
 
   // Plugins
   await fastify.register(fastifyHelmet)
@@ -74,6 +80,8 @@ export async function buildServer(env: Env) {
     s3,
     r2Bucket: env.R2_BUCKET,
     redis,
+    cfAccountId: env.CF_ACCOUNT_ID,
+    cfImagesApiToken: env.CF_IMAGES_API_TOKEN,
   })
   await fastify.register(publicReportRoutes, {
     db: publicReportRepo,
@@ -84,10 +92,25 @@ export async function buildServer(env: Env) {
     db: publicReportRepo,
     redis,
   })
+  await fastify.register(moderationQueueRoutes, {
+    db: moderationRepo,
+    redis,
+    cfImagesBaseUrl: env.CF_IMAGES_BASE_URL,
+  })
+  await fastify.register(moderationActionsRoutes, {
+    db: moderationRepo,
+    redis,
+  })
+  await fastify.register(moderationFeedRoutes, {
+    db: moderationRepo,
+    redis,
+  })
 
   // Background workers (only in non-test envs)
   if (env.NODE_ENV !== 'test') {
     startCleanupCron(classificationRepo, s3, env.R2_BUCKET)
+    startArchiveCron(moderationRepo)
+    startLeaseExpiryWorker(redis, moderationRepo)
     startClassifyWorker({
       redis,
       workerRedis: getBullMQRedis(env.REDIS_URL),
