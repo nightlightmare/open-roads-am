@@ -33,7 +33,7 @@ describe('get_reports', () => {
   it('returns error if neither bbox nor lat/lng provided', async () => {
     const res = await getReportsHandler({} as never, API_BASE)
     expect(res.isError).toBe(true)
-    expect(res.content[0].text).toContain('bbox or lat+lng')
+    expect(res.content[0]!.text).toContain('bbox or lat+lng')
   })
 
   it('returns error if bbox too large', async () => {
@@ -42,7 +42,7 @@ describe('get_reports', () => {
       API_BASE,
     )
     expect(res.isError).toBe(true)
-    expect(res.content[0].text).toContain('too large')
+    expect(res.content[0]!.text).toContain('too large')
   })
 
   it('returns formatted report list', async () => {
@@ -59,29 +59,29 @@ describe('get_reports', () => {
     })
     const res = await getReportsHandler({ lat: 40.18, lng: 44.51 }, API_BASE)
     expect(res.isError).toBeUndefined()
-    expect(res.content[0].text).toContain('pothole')
-    expect(res.content[0].text).toContain('ул. Абовяна')
-    expect(res.content[0].text).toContain('12 total')
+    expect(res.content[0]!.text).toContain('pothole')
+    expect(res.content[0]!.text).toContain('ул. Абовяна')
+    expect(res.content[0]!.text).toContain('12 total')
   })
 
   it('returns "no reports" message when empty', async () => {
     mockOk({ items: [], total_in_area: 0 })
     const res = await getReportsHandler({ lat: 40.18, lng: 44.51 }, API_BASE)
     expect(res.isError).toBeUndefined()
-    expect(res.content[0].text).toContain('No reports found')
+    expect(res.content[0]!.text).toContain('No reports found')
   })
 
   it('returns mcp error on API failure', async () => {
     mockError(429, 'RATE_LIMIT_EXCEEDED')
     const res = await getReportsHandler({ lat: 40.18, lng: 44.51 }, API_BASE)
     expect(res.isError).toBe(true)
-    expect(res.content[0].text).toContain('Rate limit')
+    expect(res.content[0]!.text).toContain('Rate limit')
   })
 
   it('passes bbox as comma-separated string to API', async () => {
     mockOk({ items: [], total_in_area: 0 })
     await getReportsHandler({ bbox: { west: 44.0, south: 40.0, east: 44.5, north: 40.5 } }, API_BASE)
-    const url = mockFetch.mock.calls[0][0] as string
+    const url = mockFetch.mock.calls[0]![0]! as string
     expect(url).toContain('bbox=44%2C40%2C44.5%2C40.5')
   })
 })
@@ -106,7 +106,7 @@ describe('get_report', () => {
     })
     const res = await getReportHandler({ id: REPORT_ID }, API_BASE)
     expect(res.isError).toBeUndefined()
-    const text = res.content[0].text
+    const text = res.content[0]!.text
     expect(text).toContain('pothole')
     expect(text).toContain('in progress')
     expect(text).toContain('Передано в MTAI')
@@ -117,7 +117,7 @@ describe('get_report', () => {
     mockError(404, 'NOT_FOUND')
     const res = await getReportHandler({ id: REPORT_ID }, API_BASE)
     expect(res.isError).toBe(true)
-    expect(res.content[0].text).toContain('not found')
+    expect(res.content[0]!.text).toContain('not found')
   })
 })
 
@@ -133,7 +133,7 @@ describe('get_stats', () => {
     })
     const res = await getStatsHandler({}, API_BASE)
     expect(res.isError).toBeUndefined()
-    const text = res.content[0].text
+    const text = res.content[0]!.text
     expect(text).toContain('312')       // total
     expect(text).toContain('13.1%')     // resolution rate
     expect(text).toContain('11.4 days') // avg days
@@ -149,13 +149,13 @@ describe('get_stats', () => {
     })
     const res = await getStatsHandler({}, API_BASE)
     expect(res.isError).toBeUndefined()
-    expect(res.content[0].text).toContain('n/a')
+    expect(res.content[0]!.text).toContain('n/a')
   })
 
   it('passes date range to API', async () => {
     mockOk({ by_status: {}, by_type: {}, resolution_rate_pct: 0, avg_days_to_in_progress: null })
     await getStatsHandler({ from: '2026-01-01', to: '2026-04-01' }, API_BASE)
-    const url = mockFetch.mock.calls[0][0] as string
+    const url = mockFetch.mock.calls[0]![0]! as string
     expect(url).toContain('from=2026-01-01')
     expect(url).toContain('to=2026-04-01')
   })
