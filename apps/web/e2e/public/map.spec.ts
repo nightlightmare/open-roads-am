@@ -9,7 +9,7 @@ test.describe('Public Map', () => {
 
   test('map-02: root redirects to locale', async ({ page }) => {
     await page.goto('/')
-    await page.waitForURL(/^\/(hy|ru|en)/)
+    await page.waitForURL(/\/(hy|ru|en)/, { timeout: 15_000 })
     expect(page.url()).toMatch(/\/(hy|ru|en)/)
   })
 

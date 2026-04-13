@@ -9,15 +9,19 @@ test.describe('Profile Reports', () => {
 
   test('reports-01: reports list renders', async ({ page }) => {
     await page.goto(`/${DEFAULT_LOCALE}/profile/reports`)
-    // Either report cards or empty state
-    const hasReports = await page.getByTestId('report-card').first().isVisible().catch(() => false)
-    const hasEmpty = await page.getByText(/no reports/i).isVisible().catch(() => false)
-    expect(hasReports || hasEmpty).toBe(true)
+    // Wait for loading to finish — then expect either cards or empty state
+    await expect(
+      page.getByTestId('report-card').first().or(page.getByText(/no reports|չկան/i)),
+    ).toBeVisible({ timeout: 10_000 })
   })
 
   test('reports-02: status filter tabs work', async ({ page }) => {
     await page.goto(`/${DEFAULT_LOCALE}/profile/reports`)
-    const approvedTab = page.getByRole('button', { name: /approved/i })
+    // Wait for page to load
+    await expect(
+      page.getByTestId('report-card').first().or(page.getByText(/no reports|չկան/i)),
+    ).toBeVisible({ timeout: 10_000 })
+    const approvedTab = page.getByRole('button', { name: /approved|Հաստատված/i })
     if (await approvedTab.isVisible()) {
       await approvedTab.click()
       await page.waitForTimeout(500)
@@ -26,6 +30,7 @@ test.describe('Profile Reports', () => {
 
   test('reports-04: report card navigates to detail', async ({ page }) => {
     await page.goto(`/${DEFAULT_LOCALE}/profile/reports`)
+    await page.waitForTimeout(3000)
     const card = page.getByTestId('report-card').first()
     if (await card.isVisible()) {
       await card.click()
@@ -35,6 +40,7 @@ test.describe('Profile Reports', () => {
 
   test('reports-05: profile report detail shows AI and user classification', async ({ page }) => {
     await page.goto(`/${DEFAULT_LOCALE}/profile/reports`)
+    await page.waitForTimeout(3000)
     const card = page.getByTestId('report-card').first()
     if (await card.isVisible()) {
       await card.click()
@@ -45,6 +51,7 @@ test.describe('Profile Reports', () => {
 
   test('reports-06: profile report detail shows status history', async ({ page }) => {
     await page.goto(`/${DEFAULT_LOCALE}/profile/reports`)
+    await page.waitForTimeout(3000)
     const card = page.getByTestId('report-card').first()
     if (await card.isVisible()) {
       await card.click()

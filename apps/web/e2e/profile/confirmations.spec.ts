@@ -9,13 +9,14 @@ test.describe('Confirmations', () => {
 
   test('confirmations-01: confirmations list renders', async ({ page }) => {
     await page.goto(`/${DEFAULT_LOCALE}/profile/confirmations`)
-    const hasList = await page.getByTestId('confirmation-item').first().isVisible().catch(() => false)
-    const hasEmpty = await page.getByText(/no confirmation/i).isVisible().catch(() => false)
-    expect(hasList || hasEmpty).toBe(true)
+    await expect(
+      page.getByTestId('confirmation-item').first().or(page.getByText(/no confirmation|չկան/i)),
+    ).toBeVisible({ timeout: 10_000 })
   })
 
   test('confirmations-02: confirmation item links to report', async ({ page }) => {
     await page.goto(`/${DEFAULT_LOCALE}/profile/confirmations`)
+    await page.waitForTimeout(3000)
     const item = page.getByTestId('confirmation-item').first()
     if (await item.isVisible()) {
       await item.click()

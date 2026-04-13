@@ -9,12 +9,14 @@ test.describe('User Profile', () => {
 
   test('profile-01: profile page renders stats', async ({ page }) => {
     await page.goto(`/${DEFAULT_LOCALE}/profile`)
-    await expect(page.getByTestId('stat-card').first()).toBeVisible()
+    await expect(page.getByTestId('stat-card').first()).toBeVisible({ timeout: 10_000 })
   })
 
   test('profile-02: profile page has navigation tabs', async ({ page }) => {
     await page.goto(`/${DEFAULT_LOCALE}/profile`)
-    await expect(page.getByRole('link', { name: /reports|my reports/i })).toBeVisible()
-    await expect(page.getByRole('link', { name: /confirm/i })).toBeVisible()
+    await expect(page.getByTestId('stat-card').first()).toBeVisible({ timeout: 10_000 })
+    // Check for links to reports and confirmations sub-pages
+    await expect(page.locator('a[href*="/profile/reports"]')).toBeVisible()
+    await expect(page.locator('a[href*="/profile/confirmations"]')).toBeVisible()
   })
 })
