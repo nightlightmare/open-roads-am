@@ -297,21 +297,28 @@ export class PrismaUserProfileRepository implements UserProfileRepository {
     if (existing) return { ok: false, code: 'ALREADY_CONFIRMED' }
 
     // Atomic: insert confirmation + increment count
-    const result = await this.db.$transaction(async (tx) => {
-      await tx.$queryRaw`
-        INSERT INTO report_confirmations (report_id, user_id)
-        VALUES (${reportId}::uuid, ${user.id}::uuid)
-      `
-      const updated = await tx.$queryRaw<Array<{ confirmation_count: number }>>`
-        UPDATE reports
-        SET confirmation_count = confirmation_count + 1, updated_at = now()
-        WHERE id = ${reportId}::uuid
-        RETURNING confirmation_count
-      `
-      return updated[0]!.confirmation_count
-    })
-
-    return { ok: true, count: result }
+    try {
+      const result = await this.db.$transaction(async (tx) => {
+        await tx.$queryRaw`
+          INSERT INTO report_confirmations (report_id, user_id)
+          VALUES (${reportId}::uuid, ${user.id}::uuid)
+        `
+        const updated = await tx.$queryRaw<Array<{ confirmation_count: number }>>`
+          UPDATE reports
+          SET confirmation_count = confirmation_count + 1, updated_at = now()
+          WHERE id = ${reportId}::uuid
+          RETURNING confirmation_count
+        `
+        return updated[0]!.confirmation_count
+      })
+      return { ok: true, count: result }
+    } catch (err) {
+      // PostgreSQL unique constraint violation (concurrent duplicate confirm)
+      if (err instanceof Error && 'code' in err && (err as NodeJS.ErrnoException).code === '23505') {
+        return { ok: false, code: 'ALREADY_CONFIRMED' }
+      }
+      throw err
+    }
   }
 
   async removeConfirmation(clerkId: string, reportId: string): Promise<RemoveConfirmationResult> {
