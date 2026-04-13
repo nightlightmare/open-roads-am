@@ -3,9 +3,22 @@
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import { useAuth, UserButton } from '@clerk/nextjs'
+import { Globe } from 'lucide-react'
 import { Link, usePathname, useRouter } from '@/i18n/navigation'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { routing } from '@/i18n/routing'
+
+const LOCALE_LABELS: Record<string, string> = {
+  hy: 'Հայերեն',
+  ru: 'Русский',
+  en: 'English',
+}
 
 export function Header() {
   const t = useTranslations('nav')
@@ -24,40 +37,41 @@ export function Header() {
             open-road.am
           </Link>
           {(role === 'moderator' || role === 'admin') && (
-            <Link
-              href="/moderation"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground"
-            >
-              {t('moderation')}
+            <Link href="/moderation">
+              <Button variant="ghost" size="sm">
+                {t('moderation')}
+              </Button>
             </Link>
           )}
           {role === 'admin' && (
-            <Link
-              href="/admin"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground"
-            >
-              {t('admin')}
+            <Link href="/admin">
+              <Button variant="ghost" size="sm">
+                {t('admin')}
+              </Button>
             </Link>
           )}
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 text-xs font-medium">
-            {routing.locales.map((locale) => (
-              <button
-                key={locale}
-                type="button"
-                onClick={() => router.replace(pathname, { locale })}
-                className={`rounded px-1.5 py-0.5 transition-colors ${
-                  locale === currentLocale
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {t(locale as Parameters<typeof t>[0])}
-              </button>
-            ))}
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Globe className="h-4 w-4" />
+                {LOCALE_LABELS[currentLocale] ?? currentLocale}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {routing.locales.map((locale) => (
+                <DropdownMenuItem
+                  key={locale}
+                  onClick={() => router.replace(pathname, { locale })}
+                  className={locale === currentLocale ? 'bg-accent' : ''}
+                >
+                  {LOCALE_LABELS[locale] ?? locale}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {isSignedIn ? (
             <>
