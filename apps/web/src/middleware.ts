@@ -1,10 +1,10 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
-import createIntlMiddleware from 'next-intl/middleware'
+import createMiddleware from 'next-intl/middleware'
 import { routing } from './i18n/routing'
 import type { NextRequest } from 'next/server'
 
-const intlMiddleware = createIntlMiddleware(routing)
+const intlMiddleware = createMiddleware(routing)
 
 const isProtectedUserRoute = createRouteMatcher([
   '/:locale/profile(.*)',
