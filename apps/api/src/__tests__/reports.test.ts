@@ -16,6 +16,10 @@ vi.mock('../middleware/rate-limit.js', () => ({
 }))
 vi.mock('../lib/r2.js', () => ({
   copyInR2: vi.fn(async () => undefined),
+  getSignedDownloadUrl: vi.fn(async () => 'https://r2.example.com/signed'),
+}))
+vi.mock('../lib/cf-images.js', () => ({
+  uploadImageFromUrl: vi.fn(async () => 'cf-image-id-123'),
 }))
 
 const mockClassificationDb = {
@@ -30,6 +34,7 @@ const mockClassificationDb = {
 const mockReportDb = {
   create: vi.fn(async () => ({ id: 'report_uuid_1', createdAt: new Date('2026-04-12T00:00:00Z') })),
   updateRegionAndAddress: vi.fn(async () => undefined),
+  updatePhotoOptimizedKey: vi.fn(async () => undefined),
 }
 
 const mockRedis = { publish: vi.fn(async () => undefined) }
@@ -44,6 +49,8 @@ async function buildApp() {
     s3: {} as never,
     r2Bucket: 'test-bucket',
     redis: mockRedis as never,
+    cfAccountId: 'test-account-id',
+    cfImagesApiToken: 'test-api-token',
   })
   return fastify
 }

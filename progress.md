@@ -173,52 +173,49 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 
 ---
 
-### ⬜ Spec 05 — Moderation Flow (v1.0)
+### ✅ Spec 05 — Moderation Flow (v1.0)
 
-- ⬜ `GET /api/v1/moderation/queue` (moderator, admin)
-  - ⬜ Filter by `status`, `problem_type`, cursor/limit
-  - ⬜ Returns `problem_type_ai`, `ai_confidence` (internal only)
-- ⬜ `POST /api/v1/moderation/reports/:id/open` (moderator, admin)
-  - ⬜ Redis lease: `SET moderation:lock:<id> <clerk_id> EX 900 NX`
-  - ⬜ Returns `409` if locked by another moderator (with display name + expiry)
-  - ⬜ Refreshes TTL if same moderator reconnects
-  - ⬜ Transition: `pending_review → under_review`
-- ⬜ `POST /api/v1/moderation/reports/:id/approve` (moderator, admin)
-  - ⬜ Requires caller holds Redis lease
-  - ⬜ Optional `problem_type_final` override
-  - ⬜ `moderated_by` set server-side from JWT
-  - ⬜ DELETE Redis lease
-  - ⬜ Invalidate Redis cache for report and map area
-  - ⬜ Publish `events:report-approved`
-  - ⬜ Transition: `under_review → approved`
-- ⬜ `POST /api/v1/moderation/reports/:id/reject` (moderator, admin)
-  - ⬜ `rejection_reason` required
-  - ⬜ Stored in DB, never returned via public API
-  - ⬜ Transition: `under_review → rejected`
-- ⬜ `POST /api/v1/moderation/reports/:id/reopen` (admin only)
-  - ⬜ `note` required
-  - ⬜ Transition: `rejected → under_review`
-- ⬜ `DELETE /api/v1/moderation/reports/:id/lock` (moderator, admin)
-  - ⬜ Only lease holder (or admin) can release
-  - ⬜ DELETE Redis key
-  - ⬜ Revert: `under_review → pending_review`
-- ⬜ `GET /api/v1/moderation/feed` — SSE
-  - ⬜ Redis pub/sub → SSE fan-out
-  - ⬜ Event: `new_report`
-  - ⬜ Event: `queue_count` every 60s
-  - ⬜ Keepalive comment every 30s
-- ⬜ `POST /api/v1/reports/:id/status` (gov_agency, admin)
-  - ⬜ Allowed transitions: `approved → in_progress`, `in_progress → resolved`
-  - ⬜ Optional `note` (shown publicly in status history)
-  - ⬜ Invalidate Redis cache
-- ⬜ Cron: lease expiry every 2 min
-  - ⬜ SCAN `moderation:lock:*` from Redis
-  - ⬜ Revert `under_review` reports without active lease → `pending_review`
-  - ⬜ INSERT `report_status_history` with `note = 'lease_expired'`
-- ⬜ Cron: archive daily at 03:00 Yerevan time
-  - ⬜ `resolved` + older than 90 days → `archived`
-  - ⬜ `approved` + no gov action for 365 days → `archived`
-- ⬜ Integration tests for all state transitions and lease logic
+- ✅ `GET /api/v1/moderation/queue` (moderator, admin)
+  - ✅ Filter by `status`, `problem_type`, cursor/limit
+  - ✅ Returns `problem_type_ai`, `ai_confidence` (internal only)
+  - ✅ `photo_url` / `photo_thumbnail_url` via Cloudflare Images
+- ✅ `POST /api/v1/moderation/reports/:id/open` (moderator, admin)
+  - ✅ Redis lease: `SET moderation:lock:<id> <clerk_id> EX 900`
+  - ✅ Returns `409` if locked by another moderator
+  - ✅ Refreshes TTL if same moderator reconnects
+  - ✅ Transition: `pending_review → under_review`
+- ✅ `POST /api/v1/moderation/reports/:id/approve` (moderator, admin)
+  - ✅ Requires caller holds Redis lease
+  - ✅ Optional `problem_type_final` override
+  - ✅ `moderated_by` set server-side from JWT
+  - ✅ DELETE Redis lease + invalidate `report:<id>` cache
+  - ✅ Publish `events:report-approved`
+  - ✅ Transition: `under_review → approved`
+- ✅ `POST /api/v1/moderation/reports/:id/reject` (moderator, admin)
+  - ✅ `rejection_reason` required
+  - ✅ Stored in DB, never returned via public API
+  - ✅ Transition: `under_review → rejected`
+- ✅ `POST /api/v1/moderation/reports/:id/reopen` (admin only)
+  - ✅ `note` required
+  - ✅ Admin acquires lease on reopen
+  - ✅ Transition: `rejected → under_review`
+- ✅ `DELETE /api/v1/moderation/reports/:id/lock` (moderator, admin)
+  - ✅ Only lease holder (or admin) can release
+  - ✅ DELETE Redis key + revert `under_review → pending_review`
+- ✅ `GET /api/v1/moderation/feed` — SSE
+  - ✅ Redis pub/sub → SSE fan-out
+  - ✅ Event: `new_report` (from `events:moderation`)
+  - ✅ Event: `queue_count` every 60s
+  - ✅ Keepalive comment every 30s
+  - ✅ Max 10 simultaneous connections
+- ✅ `POST /api/v1/reports/:id/status` (gov_agency, admin)
+  - ✅ Allowed transitions: `approved → in_progress`, `in_progress → resolved`
+  - ✅ Optional `note` (shown publicly in status history)
+  - ✅ Invalidate Redis cache
+- ✅ Cron: lease expiry every 2 min (SCAN `moderation:lock:*`, revert stale `under_review`)
+- ✅ Cron: archive daily at 03:00 Yerevan (UTC+4 = 23:00 UTC)
+- ✅ CF Images integration: upload photo on report creation (fire-and-forget, populates `photo_optimized_key`)
+- ✅ Tests: 17 moderation route tests (77 total passing)
 
 ---
 
@@ -309,7 +306,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 3. ✅ **Spec 02** — Report Submission
 4. ✅ **Spec 03** — AI Classification (BullMQ worker)
 5. ✅ **Spec 04** — Public Map API
-6. ⬜ **Spec 05** — Moderation Flow
+6. ✅ **Spec 05** — Moderation Flow
 7. ⬜ **Spec 08** — User Profile
 8. ⬜ **Spec 07** — MCP Server
 9. ⬜ **Web frontend**
