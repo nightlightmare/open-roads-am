@@ -2,8 +2,9 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { getReportsInputSchema, getReportsHandler } from './tools/get-reports.js'
 import { getReportInputSchema, getReportHandler } from './tools/get-report.js'
 import { getStatsInputSchema, getStatsHandler } from './tools/get-stats.js'
+import { updateStatusInputSchema, updateStatusHandler } from './tools/update-status.js'
 
-export function createMcpServer(apiBaseUrl: string): McpServer {
+export function createMcpServer(apiBaseUrl: string, apiKey?: string): McpServer {
   const server = new McpServer({
     name: 'open-road-mcp',
     version: '1.0.0',
@@ -38,6 +39,18 @@ export function createMcpServer(apiBaseUrl: string): McpServer {
       inputSchema: getStatsInputSchema,
     },
     (input) => getStatsHandler(input, apiBaseUrl),
+  )
+
+  server.registerTool(
+    'update_status',
+    {
+      description:
+        'Update the status of an approved report. ' +
+        'Allowed transitions: approved → in_progress, in_progress → resolved. ' +
+        'Requires an API key with status:write scope.',
+      inputSchema: updateStatusInputSchema,
+    },
+    (input) => updateStatusHandler(input, apiBaseUrl, apiKey),
   )
 
   return server

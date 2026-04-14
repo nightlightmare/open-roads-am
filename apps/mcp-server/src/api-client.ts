@@ -45,7 +45,7 @@ export async function apiFetch(
   }
 
   const res = await fetch(url.toString(), {
-    headers: { 'User-Agent': 'open-road-mcp/1.0' },
+    headers: { 'User-Agent': 'open-road-mcp/1.0', 'Accept': 'application/json' },
   })
 
   if (!res.ok) {
@@ -55,6 +55,41 @@ export async function apiFetch(
       code = body.code ?? code
     } catch {
       // ignore parse error
+    }
+    throw new ApiError(res.status, code, `API error ${res.status}: ${code}`)
+  }
+
+  return res.json()
+}
+
+export async function apiFetchAuth(
+  baseUrl: string,
+  apiKey: string,
+  method: string,
+  path: string,
+  body?: Record<string, unknown>,
+): Promise<unknown> {
+  const url = new URL(path, baseUrl)
+
+  const headers: Record<string, string> = {
+    'User-Agent': 'open-road-mcp/1.0',
+    'X-Api-Key': apiKey,
+    'Accept': 'application/json',
+  }
+  if (body) headers['Content-Type'] = 'application/json'
+
+  const init: RequestInit = { method, headers }
+  if (body) init.body = JSON.stringify(body)
+
+  const res = await fetch(url.toString(), init)
+
+  if (!res.ok) {
+    let code = 'INTERNAL_ERROR'
+    try {
+      const parsed = (await res.json()) as { code?: string }
+      code = parsed.code ?? code
+    } catch {
+      // ignore
     }
     throw new ApiError(res.status, code, `API error ${res.status}: ${code}`)
   }
