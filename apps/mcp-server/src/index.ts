@@ -4,6 +4,7 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { createMcpServer } from './server.js'
 
 const API_BASE_URL = process.env.API_BASE_URL
+const API_KEY = process.env.API_KEY
 const TRANSPORT = process.env.TRANSPORT ?? 'stdio'
 const PORT = Number(process.env.PORT ?? 3002)
 
@@ -35,7 +36,7 @@ if (TRANSPORT === 'http') {
     const transport = new StreamableHTTPServerTransport(
       { sessionIdGenerator: undefined } as unknown as ConstructorParameters<typeof StreamableHTTPServerTransport>[0],
     )
-    const mcpServer = createMcpServer(API_BASE_URL)
+    const mcpServer = createMcpServer(API_BASE_URL, API_KEY)
     try {
       await mcpServer.connect(transport as Parameters<typeof mcpServer.connect>[0])
       await transport.handleRequest(req, res, parsedBody)
@@ -53,7 +54,7 @@ if (TRANSPORT === 'http') {
 } else {
   // Stdio transport — for Claude Desktop / Cursor integration
   const transport = new StdioServerTransport()
-  const server = createMcpServer(API_BASE_URL)
+  const server = createMcpServer(API_BASE_URL, API_KEY)
   await server.connect(transport)
   // Structured log to stderr so it doesn't interfere with MCP stdio protocol
   console.error(JSON.stringify({ event: 'mcp_server_started', transport: 'stdio' }))

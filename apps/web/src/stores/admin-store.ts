@@ -24,7 +24,7 @@ interface AdminState {
   ) => Promise<boolean>
   createApiKey: (
     token: string,
-    description: string,
+    data: { userId: string; scopes: string[] },
     fmt: { error: ErrFmt },
   ) => Promise<boolean>
   clearCreatedKey: () => void
@@ -54,15 +54,15 @@ export const useAdminStore = create<AdminState>((set) => ({
     }
   },
 
-  createApiKey: async (token, description, fmt) => {
+  createApiKey: async (token, data, fmt) => {
     set({ keyLoading: true, keyError: null })
     try {
-      const data = await apiFetch<CreatedKey>(
+      const result = await apiFetch<CreatedKey>(
         '/api/v1/admin/api-keys',
-        { method: 'POST', body: JSON.stringify({ description: description.trim() || undefined }) },
+        { method: 'POST', body: JSON.stringify(data) },
         token,
       )
-      set({ keyLoading: false, createdKey: data })
+      set({ keyLoading: false, createdKey: result })
       return true
     } catch (err) {
       set({ keyLoading: false, keyError: fmt.error(err) })
