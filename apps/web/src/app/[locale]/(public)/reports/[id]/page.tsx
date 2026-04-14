@@ -83,11 +83,11 @@ export default function ReportDetailPage() {
 
       {/* Status + Type */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <Badge variant={statusVariant(report.status)}>
+        <Badge data-testid="report-status-badge" variant={statusVariant(report.status)}>
           {t(`report.status.${report.status}` as Parameters<typeof t>[0])}
         </Badge>
         {report.problem_type && (
-          <Badge variant="outline">
+          <Badge data-testid="report-problem-type" variant="outline">
             {t(`report.problemType.${report.problem_type}` as Parameters<typeof t>[0])}
           </Badge>
         )}
@@ -114,7 +114,7 @@ export default function ReportDetailPage() {
 
       {/* Gov agency note */}
       {govNote?.note && (
-        <div className="mb-6 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+        <div data-testid="gov-agency-note" className="mb-6 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
           <p className="mb-1 font-semibold">{t('report.govAgencyNote')}</p>
           <p>{govNote.note}</p>
         </div>
@@ -122,7 +122,7 @@ export default function ReportDetailPage() {
 
       {/* Status history timeline */}
       {timelineEntries.length > 0 && (
-        <div className="mb-6">
+        <div data-testid="status-history" className="mb-6">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
             {t('report.statusHistory')}
           </h2>

@@ -43,7 +43,7 @@ export function ConfirmButton({ reportId, initialCount, reportStatus }: ConfirmB
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-3">
-        <span className="text-sm text-muted-foreground">
+        <span data-testid="confirmation-count" className="text-sm text-muted-foreground">
           {t('report.confirmations', { count })}
         </span>
         <Button

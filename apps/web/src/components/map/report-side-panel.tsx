@@ -33,7 +33,7 @@ export function ReportSidePanel({
     : '—'
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-10 rounded-t-2xl bg-white shadow-2xl md:bottom-4 md:left-4 md:right-auto md:w-80 md:rounded-2xl">
+    <div data-testid="report-side-panel" className="absolute bottom-0 left-0 right-0 z-10 rounded-t-2xl bg-white shadow-2xl md:bottom-4 md:left-4 md:right-auto md:w-80 md:rounded-2xl">
       <div className="flex items-start justify-between p-4">
         <div className="flex-1">
           <div className="flex items-center gap-2">

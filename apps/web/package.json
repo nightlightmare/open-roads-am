@@ -9,7 +9,8 @@
     "lint": "oxlint ./src",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@clerk/localizations": "^4.4.0",
@@ -36,10 +37,13 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@clerk/testing": "^2.0.12",
     "@open-road/config": "workspace:*",
+    "@playwright/test": "^1.59.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.0.0",
+    "dotenv": "^16.0.0",
     "oxlint": "^1.60.0",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0"

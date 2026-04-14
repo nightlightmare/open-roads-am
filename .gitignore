@@ -16,6 +16,7 @@ out/
 
 # Environment variables
 .env
+.env.test
 .env.local
 .env.development.local
 .env.test.local
@@ -42,6 +43,11 @@ Thumbs.db
 # Test coverage
 coverage/
 .nyc_output/
+
+# Playwright
+playwright-report/
+test-results/
+blob-report/
 
 # Prisma
 prisma/migrations/dev.db

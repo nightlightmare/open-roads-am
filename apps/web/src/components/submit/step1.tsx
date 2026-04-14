@@ -107,6 +107,7 @@ export function Step1({ onNext }: Step1Props) {
       {/* Dropzone */}
       <button
         type="button"
+        data-testid="photo-dropzone"
         onClick={() => fileInputRef.current?.click()}
         className={cn(
           'flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 text-muted-foreground transition-colors hover:border-primary hover:text-primary',
@@ -163,11 +164,12 @@ export function Step1({ onNext }: Step1Props) {
               </span>
             </p>
           )}
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div data-testid="category-grid" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {PROBLEM_TYPES.map((type) => (
               <button
                 key={type}
                 type="button"
+                data-selected={selectedType === type}
                 onClick={() => setSelectedType(type)}
                 className={cn(
                   'rounded-md border px-3 py-2 text-sm transition-colors',

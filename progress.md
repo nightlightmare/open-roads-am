@@ -275,15 +275,39 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 
 ## Frontend — Web (`apps/web`)
 
-- ⬜ Clerk Provider setup
-- ⬜ Sign-in / sign-up page
-- ⬜ Auth state management
-- ⬜ Map view (MapLibre GL)
-- ⬜ Report markers (server-side clustering via Spec 04)
-- ⬜ Report submission form (two-step flow)
-- ⬜ User profile page
-- ⬜ Moderator dashboard (queue + SSE)
-- ⬜ i18n (Armenian / Russian / English) via `next-intl`
+### ✅ Spec 10 — Web Frontend
+
+- ✅ Clerk Provider setup + `clerkMiddleware` (role-based route protection)
+- ✅ Sign-in / sign-up pages (Clerk hosted components)
+- ✅ Clerk i18n: Armenian (custom `hyAM`), Russian (`ruRU`), English (`enUS`)
+- ✅ i18n via `next-intl` (hy / ru / en) with locale-prefixed routes
+- ✅ Language switcher (shadcn DropdownMenu + Globe icon)
+- ✅ Sticky header with role-based nav links (moderation, admin)
+- ✅ Map view (MapLibre GL) with server-side clustering
+- ✅ Report markers (color-coded by type) + cluster markers
+- ✅ Map side panel (report preview on marker click)
+- ✅ Map filters (problem type multiselect, include resolved toggle)
+- ✅ Public report detail (`/reports/:id`) with status history, confirm button
+- ✅ Report submission form (two-step: photo+AI classification → location+description)
+- ✅ User profile (`/profile`) with stats, reports list, confirmations list
+- ✅ Profile report detail (`/profile/reports/:id`) with AI classification info
+- ✅ Moderation queue (`/moderation`) with SSE real-time updates
+- ✅ Moderation review (`/moderation/reports/:id`) with approve/reject/reopen, lease heartbeat
+- ✅ Admin panel (`/admin`) — change user roles, create API keys
+- ✅ Zustand stores: map, submit, report, profile, moderation, admin
+- ✅ All API logic in Zustand store actions (not in components)
+- ✅ oxlint: 0 warnings, 0 errors (react/no-multi-comp enforced, ui/ excluded)
+- ⚠️ Middleware in `proxy.ts` — needs rename to `middleware.ts` for Next.js to pick it up
+- ⬜ Unit/component tests (Vitest + RTL)
+
+### 🔄 Spec 11 — E2E Tests (Playwright)
+
+- ✅ Spec written
+- ✅ Playwright config + helpers (auth, fixtures, test photo)
+- ✅ Test suites: public map (9), report detail (6), auth (5), submit (8), profile (2), reports (5), confirmations (2), moderation queue (4), moderation review (5), admin (4) = 50 tests
+- ⬜ Seed script (`apps/api/scripts/seed-e2e.ts`)
+- ⬜ CI workflow (`.github/workflows/e2e.yml`)
+- ⬜ Test data-testid attributes on components (needed for selectors)
 
 ## Frontend — Mobile (`apps/mobile`)
 
