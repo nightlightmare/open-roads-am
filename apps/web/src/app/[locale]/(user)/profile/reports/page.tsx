@@ -3,7 +3,8 @@
 import { useEffect } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { useTranslations } from 'next-intl'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
+import { Link, useRouter } from '@/i18n/navigation'
 import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -56,6 +57,13 @@ export default function ProfileReportsPage() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Link href="/" className="cursor-pointer hover:text-foreground transition-colors">←</Link>
+        <span>/</span>
+        <Link href="/profile" className="cursor-pointer hover:text-foreground transition-colors">{t('title')}</Link>
+        <span>/</span>
+        <span className="text-foreground">{t('tabs.reports')}</span>
+      </div>
       <h1 className="text-2xl font-bold">{t('tabs.reports')}</h1>
 
       <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
