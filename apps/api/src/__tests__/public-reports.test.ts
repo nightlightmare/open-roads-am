@@ -217,8 +217,8 @@ describe('GET /api/v1/public/reports/:id', () => {
       confirmation_count: 7,
       photo_optimized_key: 'img/abc123',
       status_history: [
-        { status: 'approved', changed_at: new Date('2026-04-10T09:00:00Z') },
-        { status: 'in_progress', changed_at: new Date('2026-04-11T14:00:00Z') },
+        { status: 'approved', changed_at: new Date('2026-04-10T09:00:00Z'), note: null },
+        { status: 'in_progress', changed_at: new Date('2026-04-11T14:00:00Z'), note: 'Scheduled for repair' },
       ],
       created_at: new Date('2026-04-10T08:00:00Z'),
       updated_at: new Date('2026-04-11T14:00:00Z'),

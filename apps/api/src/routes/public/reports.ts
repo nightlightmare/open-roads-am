@@ -187,6 +187,7 @@ export async function publicReportRoutes(
       status_history: report.status_history.map((h) => ({
         status: h.status,
         changed_at: h.changed_at.toISOString(),
+        note: h.note ?? null,
       })),
       created_at: report.created_at.toISOString(),
       updated_at: report.updated_at.toISOString(),
