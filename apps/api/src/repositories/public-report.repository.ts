@@ -58,7 +58,7 @@ export interface PublicReportDetail {
   region_id: string | null
   confirmation_count: number
   photo_optimized_key: string | null
-  status_history: Array<{ status: string; changed_at: Date }>
+  status_history: Array<{ status: string; changed_at: Date; note: string | null }>
   created_at: Date
   updated_at: Date
 }
@@ -265,9 +265,9 @@ export class PrismaPublicReportRepository implements PublicReportRepository {
 
     // Only public-facing status transitions (exclude internal ones)
     const historyRows = await this.db.$queryRaw<
-      Array<{ to_status: string; created_at: Date }>
+      Array<{ to_status: string; created_at: Date; note: string | null }>
     >`
-      SELECT to_status::text, created_at
+      SELECT to_status::text, created_at, note
       FROM report_status_history
       WHERE
         report_id = ${id}::uuid
@@ -286,7 +286,7 @@ export class PrismaPublicReportRepository implements PublicReportRepository {
       region_id: row.region_id,
       confirmation_count: row.confirmation_count,
       photo_optimized_key: row.photo_optimized_key,
-      status_history: historyRows.map((h) => ({ status: h.to_status, changed_at: h.created_at })),
+      status_history: historyRows.map((h) => ({ status: h.to_status, changed_at: h.created_at, note: h.note })),
       created_at: row.created_at,
       updated_at: row.updated_at,
     }
