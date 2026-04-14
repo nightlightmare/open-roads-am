@@ -78,6 +78,7 @@ export async function buildServer(env: Env) {
     s3,
     r2Bucket: env.R2_BUCKET,
     redis,
+    prisma: db,
   })
   await fastify.register(reportRoutes, {
     classificationDb: classificationRepo,
@@ -88,6 +89,7 @@ export async function buildServer(env: Env) {
     redis,
     cfAccountId: env.CF_ACCOUNT_ID,
     cfImagesApiToken: env.CF_IMAGES_API_TOKEN,
+    prisma: db,
   })
   await fastify.register(publicReportRoutes, {
     db: publicReportRepo,
@@ -106,6 +108,7 @@ export async function buildServer(env: Env) {
   await fastify.register(moderationActionsRoutes, {
     db: moderationRepo,
     redis,
+    prisma: db,
   })
   await fastify.register(moderationFeedRoutes, {
     db: moderationRepo,

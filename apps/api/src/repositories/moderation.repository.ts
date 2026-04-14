@@ -182,7 +182,7 @@ export class PrismaModerationRepository implements ModerationRepository {
             ${id}::uuid,
             ${fromStatus}::"report_status",
             ${toStatus}::"report_status",
-            (SELECT id FROM users WHERE clerk_id = ${changedBy}),
+            ${changedBy}::uuid,
             ${changedByRole}::"user_role",
             ${note}::text
           FROM updated
@@ -226,7 +226,7 @@ export class PrismaModerationRepository implements ModerationRepository {
         SET
           status = 'approved'::"report_status",
           problem_type_final = ${problemTypeFinal}::"problem_type",
-          moderated_by = (SELECT id FROM users WHERE clerk_id = ${moderatedBy}),
+          moderated_by = ${moderatedBy}::uuid,
           moderated_at = now(),
           updated_at = now()
         WHERE id = ${id}::uuid
@@ -240,7 +240,7 @@ export class PrismaModerationRepository implements ModerationRepository {
         ${id}::uuid,
         'under_review'::"report_status",
         'approved'::"report_status",
-        (SELECT id FROM users WHERE clerk_id = ${moderatedBy}),
+        ${moderatedBy}::uuid,
         ${moderatedByRole}::"user_role",
         ${note}::text
       FROM updated
@@ -256,7 +256,7 @@ export class PrismaModerationRepository implements ModerationRepository {
         SET
           status = 'rejected'::"report_status",
           rejection_reason = ${rejectionReason}::text,
-          moderated_by = (SELECT id FROM users WHERE clerk_id = ${moderatedBy}),
+          moderated_by = ${moderatedBy}::uuid,
           moderated_at = now(),
           updated_at = now()
         WHERE id = ${id}::uuid
@@ -270,7 +270,7 @@ export class PrismaModerationRepository implements ModerationRepository {
         ${id}::uuid,
         'under_review'::"report_status",
         'rejected'::"report_status",
-        (SELECT id FROM users WHERE clerk_id = ${moderatedBy}),
+        ${moderatedBy}::uuid,
         ${moderatedByRole}::"user_role",
         NULL::text
       FROM updated
