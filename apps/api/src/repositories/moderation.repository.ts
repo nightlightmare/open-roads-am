@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client'
+import { Prisma, type PrismaClient } from '@prisma/client'
 
 export interface ModerationQueueItem {
   id: string
@@ -86,6 +86,14 @@ export class PrismaModerationRepository implements ModerationRepository {
     `
     const total_pending = Number(totalResult[0]?.count ?? 0)
 
+    const ptFilter = problemType !== null
+      ? Prisma.sql`(problem_type_user::text = ${problemType}::text OR problem_type_ai::text = ${problemType}::text)`
+      : Prisma.sql`TRUE`
+
+    const cursorFilter = cursor !== null
+      ? Prisma.sql`created_at > ${new Date(cursor)}`
+      : Prisma.sql`TRUE`
+
     const rows = await this.db.$queryRaw<
       Array<{
         id: string
@@ -119,12 +127,8 @@ export class PrismaModerationRepository implements ModerationRepository {
       WHERE
         deleted_at IS NULL
         AND status = ${status}::"report_status"
-        AND (
-          ${problemType} IS NULL
-          OR problem_type_user::text = ${problemType ?? ''}
-          OR problem_type_ai::text = ${problemType ?? ''}
-        )
-        AND (${cursor} IS NULL OR created_at > ${cursor ? new Date(cursor) : new Date(0)})
+        AND ${ptFilter}
+        AND ${cursorFilter}
       ORDER BY created_at ASC
       LIMIT ${limit + 1}
     `
@@ -191,7 +195,7 @@ export class PrismaModerationRepository implements ModerationRepository {
             ${toStatus}::"report_status",
             ${changedBy}::uuid,
             ${changedByRole}::"user_role",
-            ${note}
+            ${note}::text
           )
         `
       } else {
@@ -202,7 +206,7 @@ export class PrismaModerationRepository implements ModerationRepository {
             ${id}::uuid,
             ${fromStatus}::"report_status",
             ${toStatus}::"report_status",
-            ${note}
+            ${note}::text
           )
         `
       }
@@ -235,7 +239,7 @@ export class PrismaModerationRepository implements ModerationRepository {
           'approved'::"report_status",
           ${moderatedBy}::uuid,
           ${moderatedByRole}::"user_role",
-          ${note}
+          ${note}::text
         )
       `
     })
@@ -248,7 +252,7 @@ export class PrismaModerationRepository implements ModerationRepository {
         UPDATE reports
         SET
           status = 'rejected'::"report_status",
-          rejection_reason = ${rejectionReason},
+          rejection_reason = ${rejectionReason}::text,
           moderated_by = ${moderatedBy}::uuid,
           moderated_at = now(),
           updated_at = now()

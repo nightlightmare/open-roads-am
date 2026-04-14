@@ -38,9 +38,9 @@ export class PrismaReportRepository implements ReportRepository {
           ${data.problemTypeAi}::"problem_type",
           ${data.aiConfidence}::real,
           ${JSON.stringify(data.aiRawResponse)}::jsonb,
-          ST_SetSRID(ST_MakePoint(${data.longitude}, ${data.latitude}), 4326),
-          ${data.photoOriginalKey},
-          ${data.description}
+          ST_SetSRID(ST_MakePoint(${data.longitude}::float8, ${data.latitude}::float8), 4326),
+          ${data.photoOriginalKey}::text,
+          ${data.description}::text
         )
         RETURNING id, created_at
       `
