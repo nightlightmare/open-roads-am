@@ -1,11 +1,13 @@
-import { PrismaPostgresAdapter } from '@prisma/adapter-ppg'
+import pg from 'pg'
+import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '@prisma/client'
 
 let prisma: PrismaClient | undefined
 
 export function getPrisma(databaseUrl: string): PrismaClient {
   if (!prisma) {
-    const adapter = new PrismaPostgresAdapter({ connectionString: databaseUrl })
+    const pool = new pg.Pool({ connectionString: databaseUrl })
+    const adapter = new PrismaPg(pool)
     prisma = new PrismaClient({ adapter })
   }
   return prisma
