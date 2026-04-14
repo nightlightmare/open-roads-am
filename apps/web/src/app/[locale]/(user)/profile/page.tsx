@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server'
 import { Link } from '@/i18n/navigation'
 import { apiFetch } from '@/lib/api'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 import { StatCard } from '@/components/profile/stat-card'
 
 interface MeResponse {
@@ -28,6 +28,7 @@ export default async function ProfilePage({
   const { getToken } = await auth()
   const token = await getToken()
   const t = await getTranslations('profile')
+  const tReport = await getTranslations('report')
 
   let me: MeResponse | null = null
   try {
@@ -42,6 +43,13 @@ export default async function ProfilePage({
 
   return (
     <div className="space-y-8">
+      <Link
+        href="/"
+        className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+      >
+        {tReport('backToMap')}
+      </Link>
+
       <div className="flex items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold">{me?.display_name ?? t('title')}</h1>
@@ -64,11 +72,11 @@ export default async function ProfilePage({
       </div>
 
       <div className="flex gap-4">
-        <Link href="/profile/reports">
-          <Button variant="outline">{t('tabs.reports')}</Button>
+        <Link href="/profile/reports" className={buttonVariants({ variant: 'outline', className: 'cursor-pointer' })}>
+          {t('tabs.reports')}
         </Link>
-        <Link href="/profile/confirmations">
-          <Button variant="outline">{t('tabs.confirmations')}</Button>
+        <Link href="/profile/confirmations" className={buttonVariants({ variant: 'outline', className: 'cursor-pointer' })}>
+          {t('tabs.confirmations')}
         </Link>
       </div>
     </div>
