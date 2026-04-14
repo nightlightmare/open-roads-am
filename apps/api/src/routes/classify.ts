@@ -51,7 +51,7 @@ export async function classifyRoutes(
     { preHandler: [verifyAuth, bannedCheck] },
     async (request, reply) => {
       const auth = request.auth!
-      const userId = await resolveUserId(prisma, auth.clerkId)
+      const userId = await resolveUserId(prisma, redis, auth.clerkId)
 
       // Rate limit: 20 uploads/hour
       try {
@@ -123,7 +123,7 @@ export async function classifyRoutes(
     { preHandler: [verifyAuth] },
     async (request, reply) => {
       const auth = request.auth!
-      const userId = await resolveUserId(prisma, auth.clerkId)
+      const userId = await resolveUserId(prisma, redis, auth.clerkId)
       const { job_token } = request.params as { job_token: string }
 
       const record = await db.findByIdAndUser(job_token, userId)

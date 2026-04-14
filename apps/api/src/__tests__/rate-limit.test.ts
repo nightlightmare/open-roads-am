@@ -2,10 +2,9 @@ import { describe, it, expect, vi } from 'vitest'
 import { rateLimit, RateLimitError } from '../middleware/rate-limit.js'
 import type { Redis } from 'ioredis'
 
-function makeRedis(incrResult: number) {
+function makeRedis(evalResult: number) {
   return {
-    incr: vi.fn().mockResolvedValue(incrResult),
-    expire: vi.fn().mockResolvedValue(1),
+    eval: vi.fn().mockResolvedValue(evalResult),
   } as unknown as Redis
 }
 
@@ -18,19 +17,17 @@ describe('rateLimit', () => {
     await expect(rateLimit(makeRedis(11), 'key', 10, 60)).rejects.toBeInstanceOf(RateLimitError)
   })
 
-  it('sets TTL on first request (count === 1)', async () => {
+  it('calls eval with correct args', async () => {
     const redis = makeRedis(1)
     await rateLimit(redis, 'key', 10, 60)
-    expect(redis.expire).toHaveBeenCalledWith('key', 60)
-  })
-
-  it('does not set TTL when count > 1', async () => {
-    const redis = makeRedis(3)
-    await rateLimit(redis, 'key', 10, 60)
-    expect(redis.expire).not.toHaveBeenCalled()
+    expect(redis.eval).toHaveBeenCalledWith(expect.any(String), 1, 'key', 60000)
   })
 
   it('throws on exact limit boundary', async () => {
     await expect(rateLimit(makeRedis(10), 'key', 9, 60)).rejects.toBeInstanceOf(RateLimitError)
+  })
+
+  it('allows exact limit', async () => {
+    await expect(rateLimit(makeRedis(10), 'key', 10, 60)).resolves.toBeUndefined()
   })
 })

@@ -27,8 +27,7 @@ const mockDb = {
 const mockRedis = {
   get: vi.fn().mockResolvedValue(null),
   set: vi.fn().mockResolvedValue('OK'),
-  incr: vi.fn().mockResolvedValue(1),
-  expire: vi.fn().mockResolvedValue(1),
+  eval: vi.fn().mockResolvedValue(1),
 }
 
 async function buildApp() {
