@@ -13,8 +13,12 @@ export async function verifyAuth(
     return
   }
 
+  const claims = auth.sessionClaims as Record<string, unknown>
+  const metadata = (claims?.publicMetadata ?? claims?.public_metadata) as Record<string, unknown> | undefined
+  const role = (metadata?.role ?? claims?.role) as Role | undefined
+
   request.auth = {
     clerkId: auth.userId!,
-    role: ((auth.sessionClaims as Record<string, unknown>)?.role as Role) ?? 'user',
+    role: role ?? 'user',
   }
 }
