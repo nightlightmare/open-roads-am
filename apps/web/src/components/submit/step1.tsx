@@ -89,7 +89,10 @@ export function Step1({ onNext }: Step1Props) {
       setPhoto(file)
 
       await uploadPhoto(getToken, file, { error: t('errors.photoUploadFailed') })
-      setPollStarted(Date.now())
+      const { jobToken: token, uploadError: err } = useSubmitStore.getState()
+      if (token && !err) {
+        setPollStarted(Date.now())
+      }
     },
     [getToken, setPhoto, uploadPhoto, t],
   )
@@ -100,7 +103,7 @@ export function Step1({ onNext }: Step1Props) {
   }
 
   const isPolling = !!jobToken && !pollDone && !uploading
-  const showCategories = !uploading && (pollDone || aiNoResult) && !!photoFile
+  const showCategories = !uploading && (pollDone || aiNoResult || !!uploadError) && !!photoFile
 
   return (
     <div className="flex flex-col gap-6">
@@ -147,16 +150,14 @@ export function Step1({ onNext }: Step1Props) {
         <p className="text-sm text-muted-foreground">{tSubmit1('analyzing')}</p>
       )}
 
-      {/* No AI result message */}
-      {aiNoResult && (
-        <p className="text-sm text-muted-foreground">
-          {tSubmit1('noAiResult')}
-        </p>
-      )}
-
-      {/* Category grid */}
+      {/* No AI result message + Category grid */}
       {showCategories && (
-        <div>
+        <div className="min-h-[200px]">
+          {aiNoResult && (
+            <p className="mb-2 text-sm text-muted-foreground">
+              {tSubmit1('noAiResult')}
+            </p>
+          )}
           <p className="mb-2 text-sm font-medium">{tSubmit1('selectType')}</p>
           {aiType && (
             <p className="mb-2 text-xs text-muted-foreground">
@@ -186,6 +187,11 @@ export function Step1({ onNext }: Step1Props) {
               </button>
             ))}
           </div>
+          {selectedType === 'other' && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              {tSubmit1('otherHint')}
+            </p>
+          )}
         </div>
       )}
 

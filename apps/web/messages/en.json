@@ -63,7 +63,8 @@
       "selectType": "Select a category",
       "aiSuggested": "AI suggestion",
       "noAiResult": "Could not detect automatically — please select manually",
-      "next": "Next →"
+      "next": "Next →",
+      "otherHint": "Please describe the problem in the description field on the next step"
     },
     "step2": {
       "title": "Location & description",
