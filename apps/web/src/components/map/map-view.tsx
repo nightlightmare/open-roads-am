@@ -26,8 +26,8 @@ interface ReportItem {
 
 interface ClusterItem {
   type: 'cluster'
-  lat: number
-  lng: number
+  latitude: number
+  longitude: number
   count: number
 }
 
@@ -84,8 +84,8 @@ export function MapView() {
       for (const item of data.items) {
         if (item.type === 'cluster') {
           const marker = createClusterMarker(item.count, () => {
-            map.current?.flyTo({ center: [item.lng, item.lat], zoom: currentZoom + 2 })
-          }).setLngLat([item.lng, item.lat]).addTo(map.current!)
+            map.current?.flyTo({ center: [item.longitude, item.latitude], zoom: currentZoom + 2 })
+          }).setLngLat([item.longitude, item.latitude]).addTo(map.current!)
           markersRef.current.push(marker)
         } else {
           const marker = createReportMarker(item.problem_type, () => setSelectedReport(item))
