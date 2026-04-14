@@ -54,7 +54,7 @@ export default function ProfileConfirmationsPage() {
               key={item.report_id}
               data-testid="confirmation-item"
               onClick={() => router.push(`/${locale}/reports/${item.report_id}`)}
-              className="flex w-full items-center gap-4 rounded-lg border bg-card p-4 text-left transition-colors hover:bg-accent"
+              className="flex w-full cursor-pointer items-center gap-4 rounded-lg border bg-card p-4 text-left transition-colors hover:bg-accent"
             >
               {item.photo_thumbnail_url !== null && (
                 <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">

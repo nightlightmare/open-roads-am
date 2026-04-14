@@ -58,20 +58,22 @@ export default function ProfileReportsPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{t('tabs.reports')}</h1>
 
-      <div className="flex flex-wrap gap-2">
-        {STATUS_TABS.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => handleTabChange(tab)}
-            className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-              reportsActiveTab === tab
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-            }`}
-          >
-            {tab === 'all' ? tMap('filters.all') : tStatus(tab)}
-          </button>
-        ))}
+      <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+        <div className="flex gap-2 pb-2 sm:flex-wrap sm:pb-0">
+          {STATUS_TABS.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => handleTabChange(tab)}
+              className={`cursor-pointer whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                reportsActiveTab === tab
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+              }`}
+            >
+              {tab === 'all' ? tMap('filters.all') : tStatus(tab)}
+            </button>
+          ))}
+        </div>
       </div>
 
       {reportsLoading ? (
@@ -85,7 +87,7 @@ export default function ProfileReportsPage() {
               key={report.id}
               data-testid="report-card"
               onClick={() => router.push(`/${locale}/profile/reports/${report.id}`)}
-              className="flex w-full items-center gap-4 rounded-lg border bg-card p-4 text-left transition-colors hover:bg-accent"
+              className="flex w-full cursor-pointer items-center gap-4 rounded-lg border bg-card p-4 text-left transition-colors hover:bg-accent"
             >
               {report.photo_thumbnail_url && (
                 <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-md">
