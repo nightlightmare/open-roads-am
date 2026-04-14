@@ -5,16 +5,13 @@ import { verifyAuth } from '../../middleware/verify-auth.js'
 import { requireRole } from '../../middleware/require-role.js'
 import type { PrismaClient } from '@prisma/client'
 import type { ModerationRepository } from '../../repositories/moderation.repository.js'
+import type { ProblemTypeRepository } from '../../repositories/problem-type.repository.js'
 import { resolveUserId } from '../../lib/resolve-user-id.js'
 
 const LEASE_TTL = 900 // 15 minutes
-const VALID_PROBLEM_TYPES = [
-  'pothole', 'damaged_barrier', 'missing_marking', 'damaged_sign',
-  'hazard', 'broken_light', 'missing_ramp', 'other',
-] as const
 
 const ApproveBodySchema = z.object({
-  problem_type_final: z.enum(VALID_PROBLEM_TYPES).optional(),
+  problem_type_final: z.string().min(1).optional(),
   note: z.string().max(500).optional(),
 })
 
@@ -37,6 +34,7 @@ function leaseKey(reportId: string): string {
 
 interface ModerationActionsOptions {
   db: ModerationRepository
+  problemTypeDb: ProblemTypeRepository
   redis: Redis
   prisma: PrismaClient
 }
@@ -45,7 +43,7 @@ export async function moderationActionsRoutes(
   fastify: FastifyInstance,
   options: ModerationActionsOptions,
 ): Promise<void> {
-  const { db, redis, prisma } = options
+  const { db, problemTypeDb, redis, prisma } = options
 
   // POST /api/v1/moderation/reports/:id/open
   fastify.post(
@@ -104,6 +102,14 @@ export async function moderationActionsRoutes(
       const parsed = ApproveBodySchema.safeParse(request.body)
       if (!parsed.success) {
         return reply.code(400).send({ code: 'VALIDATION_ERROR', errors: parsed.error.flatten() })
+      }
+
+      // Validate problem_type_final against DB if provided
+      if (parsed.data.problem_type_final) {
+        const typeExists = await problemTypeDb.exists(parsed.data.problem_type_final)
+        if (!typeExists) {
+          return reply.code(400).send({ code: 'INVALID_PROBLEM_TYPE' })
+        }
       }
 
       const report = await db.findById(id)

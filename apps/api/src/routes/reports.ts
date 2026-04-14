@@ -11,6 +11,7 @@ import { uploadImageFromUrl } from '../lib/cf-images.js'
 import type { PrismaClient } from '@prisma/client'
 import type { ClassificationRepository } from '../repositories/classification.repository.js'
 import type { ReportRepository } from '../repositories/report.repository.js'
+import type { ProblemTypeRepository } from '../repositories/problem-type.repository.js'
 import type { UserBanRepository } from '../middleware/banned-check.js'
 import { resolveUserId } from '../lib/resolve-user-id.js'
 
@@ -24,16 +25,14 @@ const CreateReportSchema = z.object({
   job_token: z.string().uuid(),
   latitude: z.number().min(LAT_MIN).max(LAT_MAX),
   longitude: z.number().min(LNG_MIN).max(LNG_MAX),
-  problem_type_user: z.enum([
-    'pothole', 'damaged_barrier', 'missing_marking', 'damaged_sign',
-    'hazard', 'broken_light', 'missing_ramp', 'other',
-  ]),
+  problem_type_user: z.string().min(1),
   description: z.string().max(1000).trim().optional(),
 })
 
 interface ReportRoutesOptions {
   classificationDb: ClassificationRepository
   reportDb: ReportRepository
+  problemTypeDb: ProblemTypeRepository
   banDb: UserBanRepository
   s3: S3Client
   r2Bucket: string
@@ -47,7 +46,7 @@ export async function reportRoutes(
   fastify: FastifyInstance,
   options: ReportRoutesOptions,
 ): Promise<void> {
-  const { classificationDb, reportDb, banDb, s3, r2Bucket, redis, cfAccountId, cfImagesApiToken, prisma } = options
+  const { classificationDb, reportDb, problemTypeDb, banDb, s3, r2Bucket, redis, cfAccountId, cfImagesApiToken, prisma } = options
   const bannedCheck = createBannedCheck(redis, banDb)
 
   fastify.post(
@@ -63,6 +62,12 @@ export async function reportRoutes(
       }
 
       const { job_token, latitude, longitude, problem_type_user, description } = parsed.data
+
+      // Validate problem_type_user against DB (must be an active problem type)
+      const problemTypeExists = await problemTypeDb.exists(problem_type_user)
+      if (!problemTypeExists) {
+        return reply.code(400).send({ code: 'INVALID_PROBLEM_TYPE' })
+      }
 
       // Rate limit: 10 reports/24h
       try {

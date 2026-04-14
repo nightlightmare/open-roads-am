@@ -15,6 +15,7 @@ import { PrismaReportRepository } from './repositories/report.repository.js'
 import { PrismaPublicReportRepository } from './repositories/public-report.repository.js'
 import { PrismaModerationRepository } from './repositories/moderation.repository.js'
 import { PrismaUserProfileRepository } from './repositories/user-profile.repository.js'
+import { PrismaProblemTypeRepository } from './repositories/problem-type.repository.js'
 import { clerkWebhookRoutes } from './routes/internal/clerk-webhook.js'
 import { adminApiKeyRoutes } from './routes/admin/api-keys.js'
 import { adminRoleRoutes } from './routes/admin/roles.js'
@@ -22,6 +23,7 @@ import { classifyRoutes } from './routes/classify.js'
 import { reportRoutes } from './routes/reports.js'
 import { publicReportRoutes } from './routes/public/reports.js'
 import { publicStatsRoutes } from './routes/public/stats.js'
+import { publicProblemTypesRoutes } from './routes/public/problem-types.js'
 import { moderationQueueRoutes } from './routes/moderation/queue.js'
 import { moderationActionsRoutes } from './routes/moderation/actions.js'
 import { moderationFeedRoutes } from './routes/moderation/feed.js'
@@ -53,6 +55,7 @@ export async function buildServer(env: Env) {
   const publicReportRepo = new PrismaPublicReportRepository(db)
   const moderationRepo = new PrismaModerationRepository(db)
   const userProfileRepo = new PrismaUserProfileRepository(db)
+  const problemTypeRepo = new PrismaProblemTypeRepository(db)
 
   // Plugins
   await fastify.register(fastifyHelmet)
@@ -83,6 +86,7 @@ export async function buildServer(env: Env) {
   await fastify.register(reportRoutes, {
     classificationDb: classificationRepo,
     reportDb: reportRepo,
+    problemTypeDb: problemTypeRepo,
     banDb: userRepo,
     s3,
     r2Bucket: env.R2_BUCKET,
@@ -100,6 +104,10 @@ export async function buildServer(env: Env) {
     db: publicReportRepo,
     redis,
   })
+  await fastify.register(publicProblemTypesRoutes, {
+    db: problemTypeRepo,
+    redis,
+  })
   await fastify.register(moderationQueueRoutes, {
     db: moderationRepo,
     redis,
@@ -107,6 +115,7 @@ export async function buildServer(env: Env) {
   })
   await fastify.register(moderationActionsRoutes, {
     db: moderationRepo,
+    problemTypeDb: problemTypeRepo,
     redis,
     prisma: db,
   })

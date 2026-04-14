@@ -1,3 +1,4 @@
+// Hardcoded fallback — ideally fetched from GET /api/v1/public/problem-types
 export const PROBLEM_TYPES = [
   'pothole',
   'damaged_barrier',
@@ -9,7 +10,8 @@ export const PROBLEM_TYPES = [
   'other',
 ] as const
 
-export type ProblemType = (typeof PROBLEM_TYPES)[number]
+// ProblemType is now dynamic (DB-driven), string for forward compatibility
+export type ProblemType = string
 
 export const REPORT_STATUSES = [
   'pending_review',

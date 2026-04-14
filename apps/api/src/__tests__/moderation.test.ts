@@ -66,6 +66,7 @@ async function buildApp() {
   })
   await fastify.register(moderationActionsRoutes, {
     db: mockDb as never,
+    problemTypeDb: { findAllActive: vi.fn(), findById: vi.fn(), exists: vi.fn(async () => true) } as never,
     redis: mockRedis as never,
     prisma: {} as never,
   })

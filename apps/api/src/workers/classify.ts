@@ -13,17 +13,7 @@ const MAX_IMAGE_BYTES = 5 * 1024 * 1024 // 5 MB
 const MAX_IMAGE_DIMENSION = 1600
 
 const ClassificationSchema = z.object({
-  problem_type: z.enum([
-    'pothole',
-    'damaged_barrier',
-    'missing_marking',
-    'damaged_sign',
-    'hazard',
-    'broken_light',
-    'missing_ramp',
-    'other',
-    'not_a_road_problem',
-  ]),
+  problem_type: z.string().min(1),
   confidence: z.number().min(0).max(1),
   reasoning: z.string().max(500),
 })
