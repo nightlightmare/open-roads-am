@@ -3,7 +3,9 @@ import type { Redis } from 'ioredis'
 import { z } from 'zod'
 import { verifyAuth } from '../../middleware/verify-auth.js'
 import { requireRole } from '../../middleware/require-role.js'
+import type { PrismaClient } from '@prisma/client'
 import type { ModerationRepository } from '../../repositories/moderation.repository.js'
+import { resolveUserId } from '../../lib/resolve-user-id.js'
 
 const LEASE_TTL = 900 // 15 minutes
 const VALID_PROBLEM_TYPES = [
@@ -36,13 +38,14 @@ function leaseKey(reportId: string): string {
 interface ModerationActionsOptions {
   db: ModerationRepository
   redis: Redis
+  prisma: PrismaClient
 }
 
 export async function moderationActionsRoutes(
   fastify: FastifyInstance,
   options: ModerationActionsOptions,
 ): Promise<void> {
-  const { db, redis } = options
+  const { db, redis, prisma } = options
 
   // POST /api/v1/moderation/reports/:id/open
   fastify.post(
@@ -51,6 +54,7 @@ export async function moderationActionsRoutes(
     async (request, reply) => {
       const { id } = request.params as { id: string }
       const auth = request.auth!
+      const userId = await resolveUserId(prisma, auth.clerkId)
 
       const report = await db.findById(id)
       if (!report) return reply.code(404).send({ code: 'NOT_FOUND' })
@@ -77,7 +81,7 @@ export async function moderationActionsRoutes(
       await redis.set(key, auth.clerkId, 'EX', LEASE_TTL)
 
       const transitioned = await db.transitionStatus(
-        id, 'pending_review', 'under_review', auth.clerkId, auth.role, null,
+        id, 'pending_review', 'under_review', userId, auth.role, null,
       )
       if (!transitioned) {
         await redis.del(key)
@@ -95,6 +99,7 @@ export async function moderationActionsRoutes(
     async (request, reply) => {
       const { id } = request.params as { id: string }
       const auth = request.auth!
+      const userId = await resolveUserId(prisma, auth.clerkId)
 
       const parsed = ApproveBodySchema.safeParse(request.body)
       if (!parsed.success) {
@@ -114,7 +119,7 @@ export async function moderationActionsRoutes(
       }
 
       await db.approve(id, {
-        moderatedBy: auth.clerkId,
+        moderatedBy: userId,
         moderatedByRole: auth.role,
         problemTypeFinal: parsed.data.problem_type_final ?? null,
         note: parsed.data.note ?? null,
@@ -137,6 +142,7 @@ export async function moderationActionsRoutes(
     async (request, reply) => {
       const { id } = request.params as { id: string }
       const auth = request.auth!
+      const userId = await resolveUserId(prisma, auth.clerkId)
 
       const parsed = RejectBodySchema.safeParse(request.body)
       if (!parsed.success) {
@@ -156,7 +162,7 @@ export async function moderationActionsRoutes(
       }
 
       await db.reject(id, {
-        moderatedBy: auth.clerkId,
+        moderatedBy: userId,
         moderatedByRole: auth.role,
         rejectionReason: parsed.data.rejection_reason,
       })
@@ -174,6 +180,7 @@ export async function moderationActionsRoutes(
     async (request, reply) => {
       const { id } = request.params as { id: string }
       const auth = request.auth!
+      const userId = await resolveUserId(prisma, auth.clerkId)
 
       const parsed = ReopenBodySchema.safeParse(request.body)
       if (!parsed.success) {
@@ -187,7 +194,7 @@ export async function moderationActionsRoutes(
       }
 
       const transitioned = await db.transitionStatus(
-        id, 'rejected', 'under_review', auth.clerkId, auth.role, parsed.data.note,
+        id, 'rejected', 'under_review', userId, auth.role, parsed.data.note,
       )
       if (!transitioned) {
         return reply.code(400).send({ code: 'INVALID_TRANSITION' })
@@ -207,6 +214,7 @@ export async function moderationActionsRoutes(
     async (request, reply) => {
       const { id } = request.params as { id: string }
       const auth = request.auth!
+      const userId = await resolveUserId(prisma, auth.clerkId)
 
       const lease = await redis.get(leaseKey(id))
       if (!lease) return reply.code(404).send({ code: 'LOCK_NOT_FOUND' })
@@ -219,7 +227,7 @@ export async function moderationActionsRoutes(
       await redis.del(leaseKey(id))
 
       const reverted = await db.transitionStatus(
-        id, 'under_review', 'pending_review', auth.clerkId, auth.role, null,
+        id, 'under_review', 'pending_review', userId, auth.role, null,
       )
       if (!reverted) {
         // Report may have already been approved/rejected
@@ -237,6 +245,7 @@ export async function moderationActionsRoutes(
     async (request, reply) => {
       const { id } = request.params as { id: string }
       const auth = request.auth!
+      const userId = await resolveUserId(prisma, auth.clerkId)
 
       const parsed = StatusBodySchema.safeParse(request.body)
       if (!parsed.success) {
@@ -246,7 +255,7 @@ export async function moderationActionsRoutes(
       const updated = await db.updateStatus(
         id,
         parsed.data.status,
-        auth.clerkId,
+        userId,
         auth.role,
         parsed.data.note ?? null,
       )

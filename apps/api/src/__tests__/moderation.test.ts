@@ -11,6 +11,9 @@ vi.mock('../middleware/verify-auth.js', () => ({
 vi.mock('../middleware/require-role.js', () => ({
   requireRole: () => vi.fn(async () => undefined),
 }))
+vi.mock('../lib/resolve-user-id.js', () => ({
+  resolveUserId: vi.fn(async () => 'uuid_mod_clerk_id'),
+}))
 
 const REPORT_ID = 'a0000000-0000-4000-8000-000000000001'
 
@@ -64,6 +67,7 @@ async function buildApp() {
   await fastify.register(moderationActionsRoutes, {
     db: mockDb as never,
     redis: mockRedis as never,
+    prisma: {} as never,
   })
   return fastify
 }
@@ -166,7 +170,7 @@ describe('POST /api/v1/moderation/reports/:id/approve', () => {
       payload: {},
     })
     expect(res.statusCode).toBe(200)
-    expect(mockDb.approve).toHaveBeenCalledWith(REPORT_ID, expect.objectContaining({ moderatedBy: 'mod_clerk_id' }))
+    expect(mockDb.approve).toHaveBeenCalledWith(REPORT_ID, expect.objectContaining({ moderatedBy: 'uuid_mod_clerk_id' }))
     expect(mockRedis.del).toHaveBeenCalledWith(`moderation:lock:${REPORT_ID}`)
     expect(mockRedis.del).toHaveBeenCalledWith(`report:${REPORT_ID}`)
     expect(mockRedis.publish).toHaveBeenCalledWith('events:report-approved', expect.any(String))
@@ -253,7 +257,7 @@ describe('DELETE /api/v1/moderation/reports/:id/lock', () => {
     expect(res.statusCode).toBe(200)
     expect(mockRedis.del).toHaveBeenCalledWith(`moderation:lock:${REPORT_ID}`)
     expect(mockDb.transitionStatus).toHaveBeenCalledWith(
-      REPORT_ID, 'under_review', 'pending_review', 'mod_clerk_id', 'moderator', null,
+      REPORT_ID, 'under_review', 'pending_review', 'uuid_mod_clerk_id', 'moderator', null,
     )
   })
 
@@ -284,7 +288,7 @@ describe('POST /api/v1/reports/:id/status', () => {
     })
     expect(res.statusCode).toBe(200)
     expect(mockDb.updateStatus).toHaveBeenCalledWith(
-      REPORT_ID, 'in_progress', 'mod_clerk_id', 'moderator', 'We are working on it',
+      REPORT_ID, 'in_progress', 'uuid_mod_clerk_id', 'moderator', 'We are working on it',
     )
     expect(mockRedis.del).toHaveBeenCalledWith(`report:${REPORT_ID}`)
   })

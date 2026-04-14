@@ -21,6 +21,9 @@ vi.mock('../lib/r2.js', () => ({
 vi.mock('../lib/cf-images.js', () => ({
   uploadImageFromUrl: vi.fn(async () => 'cf-image-id-123'),
 }))
+vi.mock('../lib/resolve-user-id.js', () => ({
+  resolveUserId: vi.fn(async () => 'uuid_user_test123'),
+}))
 
 const mockClassificationDb = {
   create: vi.fn(),
@@ -51,6 +54,7 @@ async function buildApp() {
     redis: mockRedis as never,
     cfAccountId: 'test-account-id',
     cfImagesApiToken: 'test-api-token',
+    prisma: {} as never,
   })
   return fastify
 }

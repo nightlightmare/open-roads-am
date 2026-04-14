@@ -8,8 +8,10 @@ import { createBannedCheck } from '../middleware/banned-check.js'
 import { rateLimit, RateLimitError } from '../middleware/rate-limit.js'
 import { uploadToR2 } from '../lib/r2.js'
 import { getClassifyQueue, JOB_CLASSIFY } from '../lib/queue.js'
+import type { PrismaClient } from '@prisma/client'
 import type { ClassificationRepository } from '../repositories/classification.repository.js'
 import type { UserBanRepository } from '../middleware/banned-check.js'
+import { resolveUserId } from '../lib/resolve-user-id.js'
 
 // Magic bytes for file type validation
 const JPEG_MAGIC = Buffer.from([0xff, 0xd8, 0xff])
@@ -32,13 +34,14 @@ interface ClassifyRoutesOptions {
   s3: S3Client
   r2Bucket: string
   redis: Redis
+  prisma: PrismaClient
 }
 
 export async function classifyRoutes(
   fastify: FastifyInstance,
   options: ClassifyRoutesOptions,
 ): Promise<void> {
-  const { db, banDb, s3, r2Bucket, redis } = options
+  const { db, banDb, s3, r2Bucket, redis, prisma } = options
   const bannedCheck = createBannedCheck(redis, banDb)
   const queue = getClassifyQueue(redis)
 
@@ -48,6 +51,7 @@ export async function classifyRoutes(
     { preHandler: [verifyAuth, bannedCheck] },
     async (request, reply) => {
       const auth = request.auth!
+      const userId = await resolveUserId(prisma, auth.clerkId)
 
       // Rate limit: 20 uploads/hour
       try {
@@ -96,7 +100,7 @@ export async function classifyRoutes(
       // Insert photo_classifications row
       const expiresAt = new Date(Date.now() + 30 * 60 * 1000) // +30 min
       const { id: classificationId } = await db.create({
-        userId: auth.clerkId,
+        userId,
         photoTempKey,
         expiresAt,
       })
@@ -119,9 +123,10 @@ export async function classifyRoutes(
     { preHandler: [verifyAuth] },
     async (request, reply) => {
       const auth = request.auth!
+      const userId = await resolveUserId(prisma, auth.clerkId)
       const { job_token } = request.params as { job_token: string }
 
-      const record = await db.findByIdAndUser(job_token, auth.clerkId)
+      const record = await db.findByIdAndUser(job_token, userId)
       if (!record) {
         return reply.code(404).send({ code: 'NOT_FOUND' })
       }

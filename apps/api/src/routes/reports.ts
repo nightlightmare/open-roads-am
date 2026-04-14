@@ -8,9 +8,11 @@ import { createBannedCheck } from '../middleware/banned-check.js'
 import { rateLimit, RateLimitError } from '../middleware/rate-limit.js'
 import { copyInR2, getSignedDownloadUrl } from '../lib/r2.js'
 import { uploadImageFromUrl } from '../lib/cf-images.js'
+import type { PrismaClient } from '@prisma/client'
 import type { ClassificationRepository } from '../repositories/classification.repository.js'
 import type { ReportRepository } from '../repositories/report.repository.js'
 import type { UserBanRepository } from '../middleware/banned-check.js'
+import { resolveUserId } from '../lib/resolve-user-id.js'
 
 // Armenia bounding box + ~50 km buffer (per spec)
 const LAT_MIN = 38.8
@@ -38,13 +40,14 @@ interface ReportRoutesOptions {
   redis: Redis
   cfAccountId: string
   cfImagesApiToken: string
+  prisma: PrismaClient
 }
 
 export async function reportRoutes(
   fastify: FastifyInstance,
   options: ReportRoutesOptions,
 ): Promise<void> {
-  const { classificationDb, reportDb, banDb, s3, r2Bucket, redis, cfAccountId, cfImagesApiToken } = options
+  const { classificationDb, reportDb, banDb, s3, r2Bucket, redis, cfAccountId, cfImagesApiToken, prisma } = options
   const bannedCheck = createBannedCheck(redis, banDb)
 
   fastify.post(
@@ -52,6 +55,7 @@ export async function reportRoutes(
     { preHandler: [verifyAuth, bannedCheck] },
     async (request, reply) => {
       const auth = request.auth!
+      const userId = await resolveUserId(prisma, auth.clerkId)
 
       const parsed = CreateReportSchema.safeParse(request.body)
       if (!parsed.success) {
@@ -74,7 +78,7 @@ export async function reportRoutes(
       }
 
       // Validate job_token ownership and expiry
-      const classification = await classificationDb.findByIdAndUser(job_token, auth.clerkId)
+      const classification = await classificationDb.findByIdAndUser(job_token, userId)
       if (!classification) {
         return reply.code(400).send({ code: 'INVALID_JOB_TOKEN' })
       }
@@ -89,7 +93,7 @@ export async function reportRoutes(
 
       // Insert report (location via raw SQL in repository)
       const { id, createdAt } = await reportDb.create({
-        userId: auth.clerkId,
+        userId,
         problemTypeUser: problem_type_user,
         problemTypeAi: classification.problemTypeAi,
         aiConfidence: classification.aiConfidence,

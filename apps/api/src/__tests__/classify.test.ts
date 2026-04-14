@@ -23,6 +23,9 @@ vi.mock('../lib/queue.js', () => ({
   getClassifyQueue: () => ({ add: vi.fn(async () => undefined) }),
   JOB_CLASSIFY: 'classify-report-photo',
 }))
+vi.mock('../lib/resolve-user-id.js', () => ({
+  resolveUserId: vi.fn(async () => 'uuid_user_test123'),
+}))
 vi.mock('sharp', () => ({
   default: () => ({
     toFormat: () => ({
@@ -50,6 +53,7 @@ async function buildApp() {
     s3: {} as never,
     r2Bucket: 'test-bucket',
     redis: {} as never,
+    prisma: {} as never,
   })
   return fastify
 }
