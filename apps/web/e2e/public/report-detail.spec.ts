@@ -26,16 +26,20 @@ test.describe('Public Report Detail', () => {
   })
 
   test('report-05: confirm toggles count', async ({ page }) => {
-    await signInAs(page, 'user')
+    // Sign in as admin (not the report owner) to be able to confirm
+    await signInAs(page, 'admin')
     await page.goto(`/${DEFAULT_LOCALE}/reports/${FIXTURES.approvedReportWithPhoto}`)
+    await page.waitForLoadState('networkidle')
 
-    const confirmBtn = page.getByRole('button', { name: /confirm|հաստատել/i })
-    await expect(confirmBtn).toBeVisible()
+    const countEl = page.getByTestId('confirmation-count')
+    await expect(countEl).toBeVisible({ timeout: 10_000 })
 
-    const countBefore = await page.getByTestId('confirmation-count').textContent()
-    await confirmBtn.click()
-    await page.waitForTimeout(1000)
-    const countAfter = await page.getByTestId('confirmation-count').textContent()
+    const countBefore = await countEl.textContent()
+    // Click the confirm/unconfirm button (next to the count)
+    const btn = countEl.locator('..').getByRole('button')
+    await btn.click()
+    await page.waitForTimeout(2000)
+    const countAfter = await countEl.textContent()
     expect(countAfter).not.toBe(countBefore)
   })
 
