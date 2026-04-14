@@ -56,25 +56,27 @@ export function Step1({ onNext }: Step1Props) {
     { refreshInterval: 2000 },
   )
 
+  // Hard timeout: show categories after POLL_TIMEOUT_MS regardless of poll state
   useEffect(() => {
-    if (!pollData) return
-    if (pollData.status === 'pending') {
-      // Check timeout
-      if (pollStarted && Date.now() - pollStarted > POLL_TIMEOUT_MS) {
-        setPollDone(true)
-        setAiNoResult(true)
-      }
-      return
-    }
+    if (!pollStarted || pollDone) return
+    const timer = setTimeout(() => {
+      setPollDone(true)
+      setAiNoResult(true)
+    }, POLL_TIMEOUT_MS)
+    return () => clearTimeout(timer)
+  }, [pollStarted, pollDone])
+
+  useEffect(() => {
+    if (!pollData || pollDone) return
+    if (pollData.status === 'pending') return
     setPollDone(true)
     if (pollData.status === 'done' && pollData.problem_type_ai) {
       setAiType(pollData.problem_type_ai)
-      // Pre-select AI suggestion
       setSelectedType(pollData.problem_type_ai)
     } else {
       setAiNoResult(true)
     }
-  }, [pollData, pollStarted, setSelectedType])
+  }, [pollData, pollDone, setSelectedType])
 
   const handleFileSelect = useCallback(
     async (file: File) => {

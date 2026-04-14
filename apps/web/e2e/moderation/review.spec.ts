@@ -22,8 +22,7 @@ test.describe('Moderation Review', () => {
     await page.goto(`/${DEFAULT_LOCALE}/moderation/reports/${FIXTURES.lockedReport}`)
     await expect(
       page.getByTestId('lock-warning')
-        .or(page.getByTestId('report-status-badge'))
-        .or(page.getByRole('button', { name: /^←/ })),
+        .or(page.getByTestId('report-status-badge')),
     ).toBeVisible({ timeout: 20_000 })
   })
 
