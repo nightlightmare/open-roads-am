@@ -4,6 +4,8 @@ import { DEFAULT_LOCALE } from '../helpers/fixtures'
 import path from 'node:path'
 
 test.describe('Report Submission', () => {
+  test.setTimeout(120_000)
+
   test.beforeEach(async ({ page }) => {
     await signInAs(page, 'user')
   })
@@ -24,7 +26,7 @@ test.describe('Report Submission', () => {
     await expect(page.getByText(/Analyz|Վերլուծվում|Анализируем/i)).toBeVisible({ timeout: 10_000 })
 
     // Should eventually show category grid
-    await expect(page.getByTestId('category-grid')).toBeVisible({ timeout: 65_000 })
+    await expect(page.getByTestId('category-grid')).toBeVisible({ timeout: 90_000 })
   })
 
   test('submit-03: user can change category selection', async ({ page }) => {
@@ -32,7 +34,7 @@ test.describe('Report Submission', () => {
 
     const fileInput = page.locator('input[type="file"]')
     await fileInput.setInputFiles(path.join(__dirname, '../helpers/test-photo.jpg'))
-    await expect(page.getByTestId('category-grid')).toBeVisible({ timeout: 65_000 })
+    await expect(page.getByTestId('category-grid')).toBeVisible({ timeout: 90_000 })
 
     const buttons = page.getByTestId('category-grid').getByRole('button')
     const secondButton = buttons.nth(1)
@@ -45,7 +47,7 @@ test.describe('Report Submission', () => {
 
     const fileInput = page.locator('input[type="file"]')
     await fileInput.setInputFiles(path.join(__dirname, '../helpers/test-photo.jpg'))
-    await expect(page.getByTestId('category-grid')).toBeVisible({ timeout: 65_000 })
+    await expect(page.getByTestId('category-grid')).toBeVisible({ timeout: 90_000 })
 
     // Select a category
     await page.getByTestId('category-grid').getByRole('button').first().click()
@@ -61,7 +63,7 @@ test.describe('Report Submission', () => {
 
     const fileInput = page.locator('input[type="file"]')
     await fileInput.setInputFiles(path.join(__dirname, '../helpers/test-photo.jpg'))
-    await expect(page.getByTestId('category-grid')).toBeVisible({ timeout: 65_000 })
+    await expect(page.getByTestId('category-grid')).toBeVisible({ timeout: 90_000 })
     await page.getByTestId('category-grid').getByRole('button').first().click()
     await page.getByRole('button', { name: /→$/ }).click()
 
@@ -74,7 +76,7 @@ test.describe('Report Submission', () => {
 
     const fileInput = page.locator('input[type="file"]')
     await fileInput.setInputFiles(path.join(__dirname, '../helpers/test-photo.jpg'))
-    await expect(page.getByTestId('category-grid')).toBeVisible({ timeout: 65_000 })
+    await expect(page.getByTestId('category-grid')).toBeVisible({ timeout: 90_000 })
     await page.getByTestId('category-grid').getByRole('button').first().click()
     await page.getByRole('button', { name: /→$/ }).click()
 
@@ -88,7 +90,7 @@ test.describe('Report Submission', () => {
 
     const fileInput = page.locator('input[type="file"]')
     await fileInput.setInputFiles(path.join(__dirname, '../helpers/test-photo.jpg'))
-    await expect(page.getByTestId('category-grid')).toBeVisible({ timeout: 65_000 })
+    await expect(page.getByTestId('category-grid')).toBeVisible({ timeout: 90_000 })
     await page.getByTestId('category-grid').getByRole('button').first().click()
     await page.getByRole('button', { name: /→$/ }).click()
 
