@@ -174,51 +174,54 @@ export class PrismaModerationRepository implements ModerationRepository {
     changedByRole: string | null,
     note: string | null,
   ): Promise<boolean> {
-    const result = await this.db.$transaction(async (tx) => {
-      const updated = await tx.$queryRaw<Array<{ id: string }>>`
-        UPDATE reports
-        SET status = ${toStatus}::"report_status", updated_at = now()
-        WHERE id = ${id}::uuid
-          AND status = ${fromStatus}::"report_status"
-          AND deleted_at IS NULL
-        RETURNING id
-      `
-      if (updated.length === 0) return false
-
-      if (changedBy && changedByRole) {
-        await tx.$queryRaw`
+    const historyInsert = changedBy && changedByRole
+      ? Prisma.sql`
           INSERT INTO report_status_history
             (report_id, from_status, to_status, changed_by, changed_by_role, note)
-          VALUES (
+          SELECT
             ${id}::uuid,
             ${fromStatus}::"report_status",
             ${toStatus}::"report_status",
             ${changedBy}::uuid,
             ${changedByRole}::"user_role",
             ${note}::text
-          )
+          FROM updated
+          WHERE EXISTS (SELECT 1 FROM updated)
         `
-      } else {
-        await tx.$queryRaw`
+      : Prisma.sql`
           INSERT INTO report_status_history
             (report_id, from_status, to_status, note)
-          VALUES (
+          SELECT
             ${id}::uuid,
             ${fromStatus}::"report_status",
             ${toStatus}::"report_status",
             ${note}::text
-          )
+          FROM updated
+          WHERE EXISTS (SELECT 1 FROM updated)
         `
-      }
-      return true
-    })
-    return result
+
+    const result = await this.db.$queryRaw<Array<{ success: boolean }>>`
+      WITH updated AS (
+        UPDATE reports
+        SET status = ${toStatus}::"report_status", updated_at = now()
+        WHERE id = ${id}::uuid
+          AND status = ${fromStatus}::"report_status"
+          AND deleted_at IS NULL
+        RETURNING id
+      ),
+      history AS (
+        ${historyInsert}
+        RETURNING id
+      )
+      SELECT EXISTS (SELECT 1 FROM updated) AS success
+    `
+    return result[0]?.success ?? false
   }
 
   async approve(id: string, data: ApproveData): Promise<void> {
     const { moderatedBy, moderatedByRole, problemTypeFinal, note } = data
-    await this.db.$transaction(async (tx) => {
-      await tx.$queryRaw`
+    await this.db.$queryRaw`
+      WITH updated AS (
         UPDATE reports
         SET
           status = 'approved'::"report_status",
@@ -229,26 +232,26 @@ export class PrismaModerationRepository implements ModerationRepository {
         WHERE id = ${id}::uuid
           AND status = 'under_review'::"report_status"
           AND deleted_at IS NULL
-      `
-      await tx.$queryRaw`
-        INSERT INTO report_status_history
-          (report_id, from_status, to_status, changed_by, changed_by_role, note)
-        VALUES (
-          ${id}::uuid,
-          'under_review'::"report_status",
-          'approved'::"report_status",
-          ${moderatedBy}::uuid,
-          ${moderatedByRole}::"user_role",
-          ${note}::text
-        )
-      `
-    })
+        RETURNING id
+      )
+      INSERT INTO report_status_history
+        (report_id, from_status, to_status, changed_by, changed_by_role, note)
+      SELECT
+        ${id}::uuid,
+        'under_review'::"report_status",
+        'approved'::"report_status",
+        ${moderatedBy}::uuid,
+        ${moderatedByRole}::"user_role",
+        ${note}::text
+      FROM updated
+      WHERE EXISTS (SELECT 1 FROM updated)
+    `
   }
 
   async reject(id: string, data: RejectData): Promise<void> {
     const { moderatedBy, moderatedByRole, rejectionReason } = data
-    await this.db.$transaction(async (tx) => {
-      await tx.$queryRaw`
+    await this.db.$queryRaw`
+      WITH updated AS (
         UPDATE reports
         SET
           status = 'rejected'::"report_status",
@@ -259,20 +262,20 @@ export class PrismaModerationRepository implements ModerationRepository {
         WHERE id = ${id}::uuid
           AND status = 'under_review'::"report_status"
           AND deleted_at IS NULL
-      `
-      await tx.$queryRaw`
-        INSERT INTO report_status_history
-          (report_id, from_status, to_status, changed_by, changed_by_role, note)
-        VALUES (
-          ${id}::uuid,
-          'under_review'::"report_status",
-          'rejected'::"report_status",
-          ${moderatedBy}::uuid,
-          ${moderatedByRole}::"user_role",
-          NULL
-        )
-      `
-    })
+        RETURNING id
+      )
+      INSERT INTO report_status_history
+        (report_id, from_status, to_status, changed_by, changed_by_role, note)
+      SELECT
+        ${id}::uuid,
+        'under_review'::"report_status",
+        'rejected'::"report_status",
+        ${moderatedBy}::uuid,
+        ${moderatedByRole}::"user_role",
+        NULL::text
+      FROM updated
+      WHERE EXISTS (SELECT 1 FROM updated)
+    `
   }
 
   async updateStatus(

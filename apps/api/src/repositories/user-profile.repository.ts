@@ -308,22 +308,24 @@ export class PrismaUserProfileRepository implements UserProfileRepository {
     })
     if (existing) return { ok: false, code: 'ALREADY_CONFIRMED' }
 
-    // Atomic: insert confirmation + increment count
+    // Atomic: insert confirmation + increment count (CTE for PgBouncer compatibility)
     try {
-      const result = await this.db.$transaction(async (tx) => {
-        await tx.$queryRaw`
+      const result = await this.db.$queryRaw<Array<{ confirmation_count: number }>>`
+        WITH new_confirmation AS (
           INSERT INTO report_confirmations (report_id, user_id)
           VALUES (${reportId}::uuid, ${user.id}::uuid)
-        `
-        const updated = await tx.$queryRaw<Array<{ confirmation_count: number }>>`
+          RETURNING id
+        ),
+        updated AS (
           UPDATE reports
           SET confirmation_count = confirmation_count + 1, updated_at = now()
           WHERE id = ${reportId}::uuid
+            AND EXISTS (SELECT 1 FROM new_confirmation)
           RETURNING confirmation_count
-        `
-        return updated[0]!.confirmation_count
-      })
-      return { ok: true, count: result }
+        )
+        SELECT confirmation_count FROM updated
+      `
+      return { ok: true, count: result[0]!.confirmation_count }
     } catch (err) {
       // PostgreSQL unique constraint violation (concurrent duplicate confirm)
       if (err instanceof Error && 'code' in err && (err as NodeJS.ErrnoException).code === '23505') {
@@ -341,25 +343,24 @@ export class PrismaUserProfileRepository implements UserProfileRepository {
     const user = users[0]
     if (!user) return { ok: false, code: 'NOT_FOUND' }
 
-    // Atomic: delete confirmation + decrement count
-    const result = await this.db.$transaction(async (tx) => {
-      const deleted = await tx.$queryRaw<Array<{ id: string }>>`
+    // Atomic: delete confirmation + decrement count (CTE for PgBouncer compatibility)
+    const result = await this.db.$queryRaw<Array<{ confirmation_count: number | null }>>`
+      WITH deleted AS (
         DELETE FROM report_confirmations
         WHERE report_id = ${reportId}::uuid AND user_id = ${user.id}::uuid
         RETURNING id
-      `
-      if (deleted.length === 0) return null
-
-      const updated = await tx.$queryRaw<Array<{ confirmation_count: number }>>`
+      ),
+      updated AS (
         UPDATE reports
         SET confirmation_count = GREATEST(confirmation_count - 1, 0), updated_at = now()
         WHERE id = ${reportId}::uuid
+          AND EXISTS (SELECT 1 FROM deleted)
         RETURNING confirmation_count
-      `
-      return updated[0]!.confirmation_count
-    })
+      )
+      SELECT confirmation_count FROM updated
+    `
 
-    if (result === null) return { ok: false, code: 'NOT_FOUND' }
-    return { ok: true, count: result }
+    if (result.length === 0) return { ok: false, code: 'NOT_FOUND' }
+    return { ok: true, count: result[0]!.confirmation_count! }
   }
 }

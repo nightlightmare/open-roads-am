@@ -24,8 +24,9 @@ export class PrismaReportRepository implements ReportRepository {
   async create(data: CreateReportData): Promise<{ id: string; createdAt: Date }> {
     // location is geometry — must use raw SQL for insert.
     // Also inserts initial report_status_history row (spec: every status change is recorded).
-    return this.db.$transaction(async (tx) => {
-      const result = await tx.$queryRaw<Array<{ id: string; created_at: Date }>>`
+    // Uses CTE instead of interactive transaction for PgBouncer compatibility.
+    const result = await this.db.$queryRaw<Array<{ id: string; created_at: Date }>>`
+      WITH new_report AS (
         INSERT INTO reports (
           user_id, status, problem_type_user, problem_type_ai,
           ai_confidence, ai_raw_response, location,
@@ -43,22 +44,21 @@ export class PrismaReportRepository implements ReportRepository {
           ${data.description}::text
         )
         RETURNING id, created_at
-      `
-      const row = result[0]!
-
-      // Audit trail: initial status transition (from_status = null = system creation)
-      await tx.$queryRaw`
+      ),
+      history AS (
         INSERT INTO report_status_history (report_id, from_status, to_status, changed_by)
-        VALUES (
-          ${row.id}::uuid,
+        SELECT
+          new_report.id,
           NULL,
           'pending_review'::"report_status",
           ${data.userId}::uuid
-        )
-      `
-
-      return { id: row.id, createdAt: row.created_at }
-    })
+        FROM new_report
+        RETURNING id
+      )
+      SELECT id, created_at FROM new_report
+    `
+    const row = result[0]!
+    return { id: row.id, createdAt: row.created_at }
   }
 
   async updateRegionAndAddress(
