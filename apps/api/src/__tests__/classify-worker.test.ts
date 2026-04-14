@@ -18,9 +18,10 @@ describe('parseClassificationResponse', () => {
     expect(() => parseClassificationResponse('not json')).toThrow()
   })
 
-  it('throws when problem_type is not a valid enum value', () => {
+  it('accepts any non-empty string as problem_type (DB-validated at runtime)', () => {
     const text = JSON.stringify({ problem_type: 'unknown_type', confidence: 0.8, reasoning: 'test' })
-    expect(() => parseClassificationResponse(text)).toThrow()
+    const result = parseClassificationResponse(text)
+    expect(result.problem_type).toBe('unknown_type')
   })
 
   it('throws when confidence is out of range', () => {

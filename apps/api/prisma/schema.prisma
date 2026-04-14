@@ -37,18 +37,7 @@ enum ReportStatus {
   @@map("report_status")
 }
 
-enum ProblemType {
-  pothole
-  damaged_barrier
-  missing_marking
-  damaged_sign
-  hazard
-  broken_light
-  missing_ramp
-  other
-
-  @@map("problem_type")
-}
+// ProblemType is now a table, not an enum — see model ProblemType below
 
 enum RegionType {
   marz
@@ -112,10 +101,10 @@ model Report {
   id                  String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   user_id             String       @db.Uuid
   status              ReportStatus @default(pending_review)
-  problem_type_ai     ProblemType?
+  problem_type_ai     String?
   ai_confidence       Float?       @db.Real
-  problem_type_user   ProblemType?
-  problem_type_final  ProblemType?
+  problem_type_user   String?
+  problem_type_final  String?
   description         String?
   // geometry(Point, 4326) — managed via raw SQL / migrations
   location            Unsupported("geometry(Point, 4326)")
@@ -182,7 +171,7 @@ model PhotoClassification {
   user_id         String                    @db.Uuid
   photo_temp_key  String
   status          PhotoClassificationStatus @default(pending)
-  problem_type_ai ProblemType?
+  problem_type_ai String?
   ai_confidence   Float?                    @db.Real
   ai_raw_response Json?
   expires_at      DateTime                  @db.Timestamptz(6)
@@ -211,4 +200,15 @@ model ApiKey {
 
   @@index([key_prefix])
   @@map("api_keys")
+}
+
+model ProblemType {
+  id         String  @id
+  name_hy    String
+  name_ru    String
+  name_en    String
+  is_active  Boolean @default(true)
+  sort_order Int     @default(0)
+
+  @@map("problem_types")
 }

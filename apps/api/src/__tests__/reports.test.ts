@@ -40,6 +40,12 @@ const mockReportDb = {
   updatePhotoOptimizedKey: vi.fn(async () => undefined),
 }
 
+const mockProblemTypeDb = {
+  findAllActive: vi.fn(async () => []),
+  findById: vi.fn(async () => null),
+  exists: vi.fn(async () => true),
+}
+
 const mockRedis = { publish: vi.fn(async () => undefined) }
 
 async function buildApp() {
@@ -48,6 +54,7 @@ async function buildApp() {
   await fastify.register(reportRoutes, {
     classificationDb: mockClassificationDb,
     reportDb: mockReportDb,
+    problemTypeDb: mockProblemTypeDb,
     banDb: {} as never,
     s3: {} as never,
     r2Bucket: 'test-bucket',

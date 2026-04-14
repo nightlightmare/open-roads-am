@@ -1,8 +1,7 @@
 export type Role = 'user' | 'moderator' | 'gov_agency' | 'admin'
 
-export type ProblemType =
-  | 'pothole' | 'damaged_barrier' | 'missing_marking' | 'damaged_sign'
-  | 'hazard' | 'broken_light' | 'missing_ramp' | 'other'
+// ProblemType is now dynamic — validated against the problem_types DB table at runtime
+export type ProblemType = string
 
 export type ReportStatus =
   | 'pending_review' | 'under_review' | 'approved'

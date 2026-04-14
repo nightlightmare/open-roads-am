@@ -276,6 +276,22 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 
 ---
 
+### ✅ Spec 09 — Problem Types Table (v1.0)
+
+- ✅ Prisma schema: removed `enum ProblemType`, added `ProblemType` model (`problem_types` table)
+- ✅ Changed `problem_type_*` fields in Report and PhotoClassification from enum to `String?`
+- ✅ Migration SQL: create table, seed data, ALTER columns to TEXT, add FK constraints, drop old enum
+- ✅ `PrismaProblemTypeRepository` (`findAllActive`, `findById`, `exists`)
+- ✅ `GET /api/v1/public/problem-types` — rate limited 60/min, Redis cached 5min
+- ✅ `@open-road/types`: `ProblemType` changed from union to `string`
+- ✅ Reports route: `problem_type_user` validated via `z.string().min(1)` + runtime DB check
+- ✅ Moderation actions: `problem_type_final` validated via `z.string().min(1)` + runtime DB check
+- ✅ Classify worker: `ClassificationSchema.problem_type` changed from `z.enum()` to `z.string()`
+- ✅ Frontend constants: `ProblemType` type changed to `string`, hardcoded array kept as fallback
+- ✅ Server wiring: `PrismaProblemTypeRepository` instantiated and passed to routes
+
+---
+
 ## Frontend — Web (`apps/web`)
 
 ### ✅ Spec 10 — Web Frontend
@@ -335,4 +351,5 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 8. ✅ **Spec 07** — MCP Server
 9. ✅ **Spec 10** — Web frontend
 10. ✅ **Spec 11** — E2E tests (51/51 passing)
-11. ⬜ **Mobile frontend**
+11. ✅ **Spec 09** — Problem Types Table
+12. ⬜ **Mobile frontend**

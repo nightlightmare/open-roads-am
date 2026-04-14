@@ -1,5 +1,4 @@
 import type { PrismaClient } from '@prisma/client'
-import { ProblemType } from '@prisma/client'
 
 export interface ClassificationRecord {
   id: string
@@ -93,7 +92,7 @@ export class PrismaClassificationRepository implements ClassificationRepository 
       data: {
         status: data.status,
         ...(data.problemTypeAi !== undefined && {
-          problem_type_ai: data.problemTypeAi as ProblemType | null,
+          problem_type_ai: data.problemTypeAi,
         }),
         ...(data.aiConfidence !== undefined && { ai_confidence: data.aiConfidence }),
         ...(data.aiRawResponse !== undefined && { ai_raw_response: data.aiRawResponse as object }),
