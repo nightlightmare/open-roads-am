@@ -18,7 +18,6 @@ export function LocationPicker({
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
-  const markerRef = useRef<maplibregl.Marker | null>(null)
 
   // Stable refs — init effect closes over them so it has no deps other than itself
   const onChangeRef = useRef(onChange)
@@ -36,14 +35,10 @@ export function LocationPicker({
       zoom: 14,
     })
 
-    markerRef.current = new maplibregl.Marker({ draggable: true })
-      .setLngLat([initialLng.current, initialLat.current])
-      .addTo(mapRef.current)
-
-    markerRef.current.on('dragend', () => {
-      const lngLat = markerRef.current?.getLngLat()
-      if (lngLat) {
-        onChangeRef.current(lngLat.lat, lngLat.lng)
+    mapRef.current.on('moveend', () => {
+      const center = mapRef.current?.getCenter()
+      if (center) {
+        onChangeRef.current(center.lat, center.lng)
       }
     })
 
@@ -52,16 +47,25 @@ export function LocationPicker({
     return () => {
       mapRef.current?.remove()
       mapRef.current = null
-      markerRef.current = null
     }
   }, [])
 
-  // Update marker position if lat/lng props change externally
+  // Pan map if lat/lng props change externally
   useEffect(() => {
-    if (markerRef.current) {
-      markerRef.current.setLngLat([lng, lat])
+    if (mapRef.current) {
+      mapRef.current.setCenter([lng, lat])
     }
   }, [lat, lng])
 
-  return <div ref={containerRef} className="h-64 w-full rounded-md overflow-hidden" />
+  return (
+    <div className="relative h-64 w-full rounded-md overflow-hidden">
+      <div ref={containerRef} className="h-full w-full" />
+      <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-full">
+        <svg width="28" height="36" viewBox="0 0 28 36" fill="none">
+          <path d="M14 0C6.268 0 0 6.268 0 14c0 9.334 14 22 14 22S28 23.334 28 14C28 6.268 21.732 0 14 0z" fill="#16a34a"/>
+          <circle cx="14" cy="14" r="6" fill="white"/>
+        </svg>
+      </div>
+    </div>
+  )
 }
