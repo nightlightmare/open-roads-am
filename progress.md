@@ -234,8 +234,11 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 - ✅ Tool: `get_stats`
   - ✅ Calls `GET /api/v1/public/stats`
   - ✅ Human-readable summary output
-- ⏸ Tool: `create_report` — deferred post-frontend
-- ⏸ Tool: `update_status` — deferred post-frontend
+- ⏸ Tool: `create_report` — deferred (requires multipart photo upload, not practical via MCP)
+- ✅ Tool: `update_status`
+  - ✅ Transitions: approved → in_progress, in_progress → resolved
+  - ✅ API key auth via `X-Api-Key` header
+  - ✅ Optional note parameter
 - ✅ Error mapping: API errors → MCP `isError: true` responses
 - ✅ Input validation with Zod before hitting API
 - ✅ Armenia bounds validation on coordinates
@@ -297,17 +300,18 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 - ✅ Zustand stores: map, submit, report, profile, moderation, admin
 - ✅ All API logic in Zustand store actions (not in components)
 - ✅ oxlint: 0 warnings, 0 errors (react/no-multi-comp enforced, ui/ excluded)
-- ⚠️ Middleware in `proxy.ts` — needs rename to `middleware.ts` for Next.js to pick it up
+- ✅ Middleware in `proxy.ts` (Next.js 16 convention, not `middleware.ts`)
 - ⬜ Unit/component tests (Vitest + RTL)
 
-### 🔄 Spec 11 — E2E Tests (Playwright)
+### ✅ Spec 11 — E2E Tests (Playwright)
 
 - ✅ Spec written
 - ✅ Playwright config + helpers (auth, fixtures, test photo)
-- ✅ Test suites: public map (9), report detail (6), auth (5), submit (8), profile (2), reports (5), confirmations (2), moderation queue (4), moderation review (5), admin (4) = 50 tests
-- ⬜ Seed script (`apps/api/scripts/seed-e2e.ts`)
-- ⬜ CI workflow (`.github/workflows/e2e.yml`)
-- ⬜ Test data-testid attributes on components (needed for selectors)
+- ✅ Test suites: 51 tests across 10 suites — **51/51 passing**
+- ✅ Seed script (`apps/api/scripts/seed-e2e.ts`)
+- ✅ `data-testid` attributes on 16 components
+- ✅ Global setup: Clerk auth + test data reset
+- ⬜ CI workflow (not needed per decision)
 
 ## Frontend — Mobile (`apps/mobile`)
 
@@ -329,5 +333,6 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 6. ✅ **Spec 05** — Moderation Flow
 7. ✅ **Spec 08** — User Profile
 8. ✅ **Spec 07** — MCP Server
-9. ⬜ **Web frontend**
-10. ⬜ **Mobile frontend**
+9. ✅ **Spec 10** — Web frontend
+10. ✅ **Spec 11** — E2E tests (51/51 passing)
+11. ⬜ **Mobile frontend**
