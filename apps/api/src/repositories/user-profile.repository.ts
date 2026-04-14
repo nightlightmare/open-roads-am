@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client'
+import { Prisma, type PrismaClient } from '@prisma/client'
 
 export interface UserProfileStats {
   reports_submitted: number
@@ -129,6 +129,14 @@ export class PrismaUserProfileRepository implements UserProfileRepository {
   ): Promise<{ reports: MyReportItem[]; cursor: string | null }> {
     const { status, cursor, limit } = query
 
+    const statusFilter = status !== null
+      ? Prisma.sql`r.status = ${status}::"report_status"`
+      : Prisma.sql`TRUE`
+
+    const cursorFilter = cursor !== null
+      ? Prisma.sql`r.created_at < ${new Date(cursor)}`
+      : Prisma.sql`TRUE`
+
     const rows = await this.db.$queryRaw<
       Array<{
         id: string
@@ -154,8 +162,8 @@ export class PrismaUserProfileRepository implements UserProfileRepository {
       JOIN users u ON u.id = r.user_id
       WHERE u.clerk_id = ${clerkId}
         AND r.deleted_at IS NULL
-        AND (${status} IS NULL OR r.status = ${status ?? ''}::"report_status")
-        AND (${cursor} IS NULL OR r.created_at < ${cursor ? new Date(cursor) : new Date(0)})
+        AND ${statusFilter}
+        AND ${cursorFilter}
       ORDER BY r.created_at DESC
       LIMIT ${limit + 1}
     `
@@ -229,6 +237,10 @@ export class PrismaUserProfileRepository implements UserProfileRepository {
   ): Promise<{ confirmations: MyConfirmationItem[]; cursor: string | null }> {
     const { cursor, limit } = query
 
+    const cursorFilter = cursor !== null
+      ? Prisma.sql`rc.created_at < ${new Date(cursor)}`
+      : Prisma.sql`TRUE`
+
     const rows = await this.db.$queryRaw<
       Array<{
         report_id: string
@@ -251,7 +263,7 @@ export class PrismaUserProfileRepository implements UserProfileRepository {
       JOIN users u ON u.id = rc.user_id
       WHERE u.clerk_id = ${clerkId}
         AND r.deleted_at IS NULL
-        AND (${cursor} IS NULL OR rc.created_at < ${cursor ? new Date(cursor) : new Date(0)})
+        AND ${cursorFilter}
       ORDER BY rc.created_at DESC
       LIMIT ${limit + 1}
     `

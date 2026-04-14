@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client'
+import { Prisma, type PrismaClient } from '@prisma/client'
 
 // Grid size in degrees by zoom level — drives ST_SnapToGrid clustering
 export function getGridSize(zoom: number): number | null {
@@ -88,6 +88,31 @@ export interface PublicReportRepository {
 // Public status transitions that are shown to end-users
 const PUBLIC_STATUSES = ['approved', 'in_progress', 'resolved']
 
+/** Build a conditional WHERE fragment for nullable problemTypes array filter */
+function problemTypesFilter(problemTypes: string[] | null): Prisma.Sql {
+  if (problemTypes === null) {
+    return Prisma.sql`TRUE`
+  }
+  return Prisma.sql`COALESCE(problem_type_final, problem_type_user)::text = ANY(${problemTypes}::text[])`
+}
+
+/** Build a conditional WHERE fragment for nullable regionId */
+function regionIdFilter(regionId: string | null, alias?: string): Prisma.Sql {
+  if (regionId === null) {
+    return Prisma.sql`TRUE`
+  }
+  const col = alias ? Prisma.sql`${Prisma.raw(alias)}.region_id` : Prisma.sql`region_id`
+  return Prisma.sql`${col} = ${regionId}::uuid`
+}
+
+/** Build a conditional WHERE fragment for nullable problemType (single value) */
+function problemTypeFilter(problemType: string | null): Prisma.Sql {
+  if (problemType === null) {
+    return Prisma.sql`TRUE`
+  }
+  return Prisma.sql`COALESCE(problem_type_final, problem_type_user)::text = ${problemType}::text`
+}
+
 export class PrismaPublicReportRepository implements PublicReportRepository {
   constructor(private readonly db: PrismaClient) {}
 
@@ -99,6 +124,8 @@ export class PrismaPublicReportRepository implements PublicReportRepository {
       ? ['approved', 'in_progress', 'resolved']
       : ['approved', 'in_progress']
 
+    const ptFilter = problemTypesFilter(problemTypes)
+
     // Total count (same WHERE, no GROUP BY)
     const countResult = await this.db.$queryRaw<Array<{ count: bigint }>>`
       SELECT COUNT(*) AS count
@@ -106,11 +133,8 @@ export class PrismaPublicReportRepository implements PublicReportRepository {
       WHERE
         deleted_at IS NULL
         AND status = ANY(${statuses}::"report_status"[])
-        AND ST_Within(location, ST_MakeEnvelope(${west}, ${south}, ${east}, ${north}, 4326))
-        AND (
-          ${problemTypes} IS NULL
-          OR COALESCE(problem_type_final, problem_type_user)::text = ANY(${problemTypes ?? []})
-        )
+        AND ST_Within(location, ST_MakeEnvelope(${west}::float8, ${south}::float8, ${east}::float8, ${north}::float8, 4326))
+        AND ${ptFilter}
     `
     const totalInArea = Number(countResult[0]?.count ?? 0)
 
@@ -129,12 +153,9 @@ export class PrismaPublicReportRepository implements PublicReportRepository {
         WHERE
           deleted_at IS NULL
           AND status = ANY(${statuses}::"report_status"[])
-          AND ST_Within(location, ST_MakeEnvelope(${west}, ${south}, ${east}, ${north}, 4326))
-          AND (
-            ${problemTypes} IS NULL
-            OR COALESCE(problem_type_final, problem_type_user)::text = ANY(${problemTypes ?? []})
-          )
-        GROUP BY ST_SnapToGrid(location, ${gridSize})
+          AND ST_Within(location, ST_MakeEnvelope(${west}::float8, ${south}::float8, ${east}::float8, ${north}::float8, 4326))
+          AND ${ptFilter}
+        GROUP BY ST_SnapToGrid(location, ${gridSize}::float8)
         ORDER BY count DESC
       `
 
@@ -178,11 +199,8 @@ export class PrismaPublicReportRepository implements PublicReportRepository {
       WHERE
         deleted_at IS NULL
         AND status = ANY(${statuses}::"report_status"[])
-        AND ST_Within(location, ST_MakeEnvelope(${west}, ${south}, ${east}, ${north}, 4326))
-        AND (
-          ${problemTypes} IS NULL
-          OR COALESCE(problem_type_final, problem_type_user)::text = ANY(${problemTypes ?? []})
-        )
+        AND ST_Within(location, ST_MakeEnvelope(${west}::float8, ${south}::float8, ${east}::float8, ${north}::float8, 4326))
+        AND ${ptFilter}
       ORDER BY created_at DESC
       LIMIT 500
     `
@@ -277,6 +295,10 @@ export class PrismaPublicReportRepository implements PublicReportRepository {
   async getStats(query: StatsQuery): Promise<PublicStats> {
     const { regionId, problemType, from, to } = query
 
+    const rFilter = regionIdFilter(regionId)
+    const rFilterAliased = regionIdFilter(regionId, 'r')
+    const ptFilter = problemTypeFilter(problemType)
+
     // Counts by status
     const statusRows = await this.db.$queryRaw<
       Array<{ status: string; count: bigint }>
@@ -288,8 +310,8 @@ export class PrismaPublicReportRepository implements PublicReportRepository {
         AND status = ANY(${PUBLIC_STATUSES}::"report_status"[])
         AND created_at >= ${from}
         AND created_at <= ${to}
-        AND (${regionId} IS NULL OR region_id = ${regionId}::uuid)
-        AND (${problemType} IS NULL OR COALESCE(problem_type_final, problem_type_user)::text = ${problemType ?? ''})
+        AND ${rFilter}
+        AND ${ptFilter}
       GROUP BY status
     `
 
@@ -304,7 +326,7 @@ export class PrismaPublicReportRepository implements PublicReportRepository {
         AND status = ANY(${PUBLIC_STATUSES}::"report_status"[])
         AND created_at >= ${from}
         AND created_at <= ${to}
-        AND (${regionId} IS NULL OR region_id = ${regionId}::uuid)
+        AND ${rFilter}
         AND COALESCE(problem_type_final, problem_type_user) IS NOT NULL
       GROUP BY COALESCE(problem_type_final, problem_type_user)
     `
@@ -322,7 +344,7 @@ export class PrismaPublicReportRepository implements PublicReportRepository {
         r.deleted_at IS NULL
         AND r.created_at >= ${from}
         AND r.created_at <= ${to}
-        AND (${regionId} IS NULL OR r.region_id = ${regionId}::uuid)
+        AND ${rFilterAliased}
     `
 
     const byStatus: Record<string, number> = {}
