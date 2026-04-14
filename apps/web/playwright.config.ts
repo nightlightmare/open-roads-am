@@ -8,7 +8,7 @@ export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,
   retries: process.env.CI ? 1 : 0,
-  maxFailures: process.env.CI ? undefined : 5,
+  ...(process.env.CI ? {} : { maxFailures: 5 }),
   reporter: process.env.CI ? 'github' : 'list',
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000',
