@@ -65,6 +65,9 @@ importers:
       '@types/node':
         specifier: ^22.0.0
         version: 22.19.17
+      '@types/pg':
+        specifier: ^8.20.0
+        version: 8.20.0
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
@@ -96,9 +99,6 @@ importers:
       '@open-road/config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@types/pg':
-        specifier: ^8.20.0
-        version: 8.20.0
       dotenv:
         specifier: ^16.0.0
         version: 16.6.1
