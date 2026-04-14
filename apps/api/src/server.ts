@@ -57,7 +57,9 @@ export async function buildServer(env: Env) {
   // Plugins
   await fastify.register(fastifyHelmet)
   await fastify.register(fastifyCors, {
-    origin: env.NODE_ENV === 'production' ? [env.WEB_URL] : true,
+    origin: env.NODE_ENV === 'production'
+      ? [env.WEB_URL, 'http://localhost:3000', 'http://localhost:3001']
+      : true,
     credentials: true,
   })
   await fastify.register(clerkPlugin)
