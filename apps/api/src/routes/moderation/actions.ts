@@ -54,7 +54,7 @@ export async function moderationActionsRoutes(
     async (request, reply) => {
       const { id } = request.params as { id: string }
       const auth = request.auth!
-      const userId = await resolveUserId(prisma, auth.clerkId)
+      const userId = await resolveUserId(prisma, redis, auth.clerkId)
 
       const report = await db.findById(id)
       if (!report) return reply.code(404).send({ code: 'NOT_FOUND' })
@@ -99,7 +99,7 @@ export async function moderationActionsRoutes(
     async (request, reply) => {
       const { id } = request.params as { id: string }
       const auth = request.auth!
-      const userId = await resolveUserId(prisma, auth.clerkId)
+      const userId = await resolveUserId(prisma, redis, auth.clerkId)
 
       const parsed = ApproveBodySchema.safeParse(request.body)
       if (!parsed.success) {
@@ -142,7 +142,7 @@ export async function moderationActionsRoutes(
     async (request, reply) => {
       const { id } = request.params as { id: string }
       const auth = request.auth!
-      const userId = await resolveUserId(prisma, auth.clerkId)
+      const userId = await resolveUserId(prisma, redis, auth.clerkId)
 
       const parsed = RejectBodySchema.safeParse(request.body)
       if (!parsed.success) {
@@ -180,7 +180,7 @@ export async function moderationActionsRoutes(
     async (request, reply) => {
       const { id } = request.params as { id: string }
       const auth = request.auth!
-      const userId = await resolveUserId(prisma, auth.clerkId)
+      const userId = await resolveUserId(prisma, redis, auth.clerkId)
 
       const parsed = ReopenBodySchema.safeParse(request.body)
       if (!parsed.success) {
@@ -214,7 +214,7 @@ export async function moderationActionsRoutes(
     async (request, reply) => {
       const { id } = request.params as { id: string }
       const auth = request.auth!
-      const userId = await resolveUserId(prisma, auth.clerkId)
+      const userId = await resolveUserId(prisma, redis, auth.clerkId)
 
       const lease = await redis.get(leaseKey(id))
       if (!lease) return reply.code(404).send({ code: 'LOCK_NOT_FOUND' })
@@ -245,7 +245,7 @@ export async function moderationActionsRoutes(
     async (request, reply) => {
       const { id } = request.params as { id: string }
       const auth = request.auth!
-      const userId = await resolveUserId(prisma, auth.clerkId)
+      const userId = await resolveUserId(prisma, redis, auth.clerkId)
 
       const parsed = StatusBodySchema.safeParse(request.body)
       if (!parsed.success) {

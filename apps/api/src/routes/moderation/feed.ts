@@ -7,8 +7,7 @@ import type { ModerationRepository } from '../../repositories/moderation.reposit
 const HEARTBEAT_INTERVAL_MS = 30_000
 const QUEUE_COUNT_INTERVAL_MS = 60_000
 const MAX_SSE_CONNECTIONS = 10
-
-let activeConnections = 0
+const SSE_COUNTER_KEY = 'moderation:sse:connections'
 
 interface ModerationFeedOptions {
   db: ModerationRepository
@@ -25,11 +24,11 @@ export async function moderationFeedRoutes(
     '/api/v1/moderation/feed',
     { preHandler: [verifyAuth, requireRole('moderator', 'admin')] },
     async (request, reply) => {
-      if (activeConnections >= MAX_SSE_CONNECTIONS) {
+      const connCount = await redis.incr(SSE_COUNTER_KEY)
+      if (connCount > MAX_SSE_CONNECTIONS) {
+        await redis.decr(SSE_COUNTER_KEY)
         return reply.code(503).send({ code: 'TOO_MANY_CONNECTIONS' })
       }
-
-      activeConnections++
       const raw = reply.raw
       raw.setHeader('Content-Type', 'text/event-stream')
       raw.setHeader('Cache-Control', 'no-cache')
@@ -70,7 +69,7 @@ export async function moderationFeedRoutes(
       const cleanup = () => {
         if (cleaned) return
         cleaned = true
-        activeConnections--
+        redis.decr(SSE_COUNTER_KEY).catch(() => undefined)
         clearInterval(heartbeat)
         clearInterval(queueCount)
         subscriber.unsubscribe().catch(() => undefined)

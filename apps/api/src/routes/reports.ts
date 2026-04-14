@@ -55,7 +55,7 @@ export async function reportRoutes(
     { preHandler: [verifyAuth, bannedCheck] },
     async (request, reply) => {
       const auth = request.auth!
-      const userId = await resolveUserId(prisma, auth.clerkId)
+      const userId = await resolveUserId(prisma, redis, auth.clerkId)
 
       const parsed = CreateReportSchema.safeParse(request.body)
       if (!parsed.success) {
