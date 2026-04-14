@@ -7,27 +7,42 @@ import { ApiError } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { useAdminStore } from '@/stores/admin-store'
 
+const AVAILABLE_SCOPES = ['reports:write', 'status:write'] as const
+
 export function ApiKeysSection() {
   const t = useTranslations('admin')
   const { getToken } = useAuth()
-  const [description, setDescription] = useState('')
+  const [userId, setUserId] = useState('')
+  const [scopes, setScopes] = useState<string[]>([])
   const [copied, setCopied] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const { keyLoading, keyError, createdKey, createApiKey, clearCreatedKey } = useAdminStore()
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!userId.trim() || scopes.length === 0) return
     const token = await getToken()
-    const ok = await createApiKey(token ?? '', description, {
-      error: (err) =>
-        err instanceof ApiError
-          ? t('errorWithCode', { status: err.status, code: err.code })
-          : t('createKeyError'),
-    })
+    const ok = await createApiKey(
+      token ?? '',
+      { userId: userId.trim(), scopes },
+      {
+        error: (err) =>
+          err instanceof ApiError
+            ? t('errorWithCode', { status: err.status, code: err.code })
+            : t('createKeyError'),
+      },
+    )
     if (ok) {
-      setDescription('')
+      setUserId('')
+      setScopes([])
       setShowForm(false)
     }
+  }
+
+  const toggleScope = (scope: string) => {
+    setScopes((prev) =>
+      prev.includes(scope) ? prev.filter((s) => s !== scope) : [...prev, scope],
+    )
   }
 
   const handleCopy = async () => {
@@ -67,21 +82,40 @@ export function ApiKeysSection() {
       {showForm && (
         <form data-testid="create-api-key-form" onSubmit={(e) => void handleCreate(e)} className="space-y-3">
           <div>
-            <label htmlFor="key-description" className="mb-1 block text-sm font-medium">
-              {t('keyDescriptionLabel')}
+            <label htmlFor="key-user-id" className="mb-1 block text-sm font-medium">
+              {t('clerkIdLabel')}
             </label>
             <input
-              id="key-description"
+              id="key-user-id"
               type="text"
               className="w-full rounded-md border px-3 py-2 text-sm"
-              placeholder={t('keyDescriptionPlaceholder')}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              placeholder="user_..."
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
             />
+          </div>
+          <div>
+            <p className="mb-1 text-sm font-medium">Scopes</p>
+            <div className="flex flex-wrap gap-2">
+              {AVAILABLE_SCOPES.map((scope) => (
+                <button
+                  key={scope}
+                  type="button"
+                  onClick={() => toggleScope(scope)}
+                  className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                    scopes.includes(scope)
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-border bg-background hover:bg-accent'
+                  }`}
+                >
+                  {scope}
+                </button>
+              ))}
+            </div>
           </div>
           {keyError && <p className="text-sm text-destructive">{keyError}</p>}
           <div className="flex gap-2">
-            <Button type="submit" disabled={keyLoading}>
+            <Button type="submit" disabled={keyLoading || !userId.trim() || scopes.length === 0}>
               {keyLoading ? t('creating') : t('create')}
             </Button>
             <Button

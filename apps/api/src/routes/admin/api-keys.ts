@@ -62,7 +62,7 @@ export async function adminApiKeyRoutes(
       })
 
       // Return plaintext once — never retrievable again
-      return reply.code(201).send({ key: plaintext })
+      return reply.code(201).send({ key: plaintext, prefix })
     },
   )
 }
