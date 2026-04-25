@@ -44,7 +44,7 @@ export default async function ProfilePage({
   return (
     <div className="space-y-8">
       <Link
-        href="/"
+        href="/map"
         className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
       >
         {tReport('backToMap')}

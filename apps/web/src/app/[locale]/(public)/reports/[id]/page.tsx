@@ -43,7 +43,7 @@ export default function ReportDetailPage() {
     return (
       <div className="flex flex-col items-center gap-4 p-16">
         <p className="text-destructive">{reportPageError ?? t('errors.reportNotFound')}</p>
-        <Link href="/" className="text-sm text-primary underline">
+        <Link href="/map" className="text-sm text-primary underline">
           {t('report.backToMap')}
         </Link>
       </div>
@@ -62,7 +62,7 @@ export default function ReportDetailPage() {
     <div className="mx-auto max-w-2xl px-4 py-6">
       {/* Back link */}
       <Link
-        href="/"
+        href="/map"
         className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
       >
         {t('report.backToMap')}
