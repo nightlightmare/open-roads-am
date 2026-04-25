@@ -11,7 +11,7 @@ export function AudienceTabs() {
 
   return (
     <>
-      <div className="mb-8 flex gap-0 overflow-x-auto border-b border-border" role="tablist" aria-label={t('title')}>
+      <div className="mb-8 flex gap-0 border-b border-border" role="tablist" aria-label={t('title')}>
         {TABS.map((tab, i) => (
           <button
             key={tab}
