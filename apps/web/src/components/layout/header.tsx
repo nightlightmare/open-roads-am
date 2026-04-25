@@ -150,7 +150,7 @@ export function Header() {
 
           {/* Auth */}
           {isSignedIn ? (
-            <div className="hidden md:block">
+            <div className="grid h-[34px] w-[34px] place-items-center rounded-sm border border-border [&_.cl-userButtonTrigger]:!h-6 [&_.cl-userButtonTrigger]:!w-6 [&_.cl-avatarBox]:!h-6 [&_.cl-avatarBox]:!w-6">
               <UserButton />
             </div>
           ) : (
