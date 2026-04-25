@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { MapSidebar } from '@/components/map/map-sidebar'
+import { MapOverlays } from '@/components/map/map-overlays'
 import { useMapStore } from '@/stores/map-store'
 
 const MapView = dynamic(
@@ -22,6 +23,7 @@ export default function MapPage() {
       {/* Map */}
       <main className="relative overflow-hidden">
         <MapView />
+        <MapOverlays />
       </main>
     </div>
   )
