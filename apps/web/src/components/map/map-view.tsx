@@ -6,7 +6,6 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import { useTranslations } from 'next-intl'
 import { useMapStore } from '@/stores/map-store'
 import { apiFetch } from '@/lib/api'
-import { ReportSidePanel } from './report-side-panel'
 import { createClusterMarker, createReportMarker } from './markers'
 
 const MAP_STYLE = process.env.NEXT_PUBLIC_MAP_STYLE ?? 'https://tiles.openfreemap.org/styles/liberty'
@@ -46,7 +45,6 @@ export function MapView() {
   const initialZoom = useRef(zoom)
   // Always-current ref so the init effect closure doesn't capture a stale loadReports
   const loadReportsRef = useRef<() => Promise<void>>(async () => undefined)
-  const [selectedReport, setSelectedReport] = useState<ReportItem | null>(null)
   const [loading, setLoading] = useState(false)
   const tMap = useTranslations('map')
 
@@ -88,7 +86,7 @@ export function MapView() {
           }).setLngLat([item.longitude, item.latitude]).addTo(map.current!)
           markersRef.current.push(marker)
         } else {
-          const marker = createReportMarker(item.problem_type, () => setSelectedReport(item))
+          const marker = createReportMarker(item.problem_type, () => { /* TODO: popover */ })
             .setLngLat([item.longitude, item.latitude])
             .addTo(map.current!)
           markersRef.current.push(marker)
@@ -114,14 +112,7 @@ export function MapView() {
       zoom: initialZoom.current,
     })
 
-    map.current.addControl(new maplibregl.NavigationControl(), 'top-right')
-    map.current.addControl(
-      new maplibregl.GeolocateControl({
-        positionOptions: { enableHighAccuracy: true },
-        trackUserLocation: false,
-      }),
-      'top-right',
-    )
+    // No default controls — custom toolbar will be added
 
     const onMoveEnd = () => {
       if (!map.current) return
@@ -152,15 +143,9 @@ export function MapView() {
     <div className="relative h-full w-full">
       <div ref={mapContainer} className="h-full w-full" />
       {loading && (
-        <div className="absolute left-4 top-4 rounded-md bg-white px-3 py-1.5 text-sm shadow">
+        <div className="absolute left-4 top-4 z-10 rounded border border-border bg-background px-3 py-1.5 font-mono text-xs text-muted-foreground shadow-sm">
           {tMap('loading')}
         </div>
-      )}
-      {selectedReport && (
-        <ReportSidePanel
-          report={selectedReport}
-          onClose={() => setSelectedReport(null)}
-        />
       )}
     </div>
   )
