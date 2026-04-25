@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import { useAuth, UserButton } from '@clerk/nextjs'
-import { ArrowRight, Menu, Moon, Plus, Sun } from 'lucide-react'
+import { ArrowRight, LogIn, Menu, Moon, Plus, Sun } from 'lucide-react'
 import { Link, usePathname, useRouter } from '@/i18n/navigation'
 import { buttonVariants } from '@/components/ui/button'
 import {
@@ -150,23 +150,16 @@ export function Header() {
 
           {/* Auth */}
           {isSignedIn ? (
-            <>
-              <Link
-                href="/profile"
-                className="hidden text-sm text-muted-foreground hover:text-foreground md:inline-flex"
-              >
-                {t('profile')}
-              </Link>
-              <div className="hidden md:block">
-                <UserButton />
-              </div>
-            </>
+            <div className="hidden md:block">
+              <UserButton />
+            </div>
           ) : (
             <Link
               href="/sign-in"
-              className="hidden text-sm text-muted-foreground hover:text-foreground md:inline-flex"
+              className="grid h-[34px] w-[34px] place-items-center rounded-sm border border-border text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+              aria-label={t('signIn')}
             >
-              {t('signIn')}
+              <LogIn className="h-[18px] w-[18px]" />
             </Link>
           )}
 
