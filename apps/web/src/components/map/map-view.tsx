@@ -39,7 +39,7 @@ export function MapView() {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<maplibregl.Map | null>(null)
   const markersRef = useRef<maplibregl.Marker[]>([])
-  const { zoom, center, filters, setViewport, setReports } = useMapStore()
+  const { zoom, center, filters, setViewport, setReports, selectReport } = useMapStore()
   // Capture initial values — map is created once; subsequent changes handled separately
   const initialCenter = useRef(center)
   const initialZoom = useRef(zoom)
@@ -89,7 +89,11 @@ export function MapView() {
           }).setLngLat([item.longitude, item.latitude]).addTo(map.current!)
           markersRef.current.push(marker)
         } else {
-          const marker = createReportMarker(item.problem_type, () => { /* TODO: popover */ })
+          const marker = createReportMarker(item.problem_type, () => {
+              if (!map.current) return
+              const point = map.current.project([item.longitude, item.latitude])
+              selectReport(item, { x: point.x, y: point.y })
+            })
             .setLngLat([item.longitude, item.latitude])
             .addTo(map.current!)
           markersRef.current.push(marker)
@@ -100,7 +104,7 @@ export function MapView() {
     } finally {
       setLoading(false)
     }
-  }, [filters, clearMarkers, setReports])
+  }, [filters, clearMarkers, setReports, selectReport])
 
   // Keep the ref current so the map init closure always calls the latest version
   useEffect(() => { loadReportsRef.current = loadReports }, [loadReports])

@@ -17,6 +17,11 @@ interface ReportListItem {
   longitude: number
 }
 
+interface SelectedReport {
+  report: ReportListItem
+  screenPosition: { x: number; y: number }
+}
+
 interface MapState {
   zoom: number
   center: [number, number]
@@ -24,12 +29,15 @@ interface MapState {
   filters: MapFilters
   reports: ReportListItem[]
   totalInArea: number
+  selected: SelectedReport | null
   setViewport: (zoom: number, center: [number, number], bbox: [number, number, number, number]) => void
   setFilters: (filters: Partial<MapFilters>) => void
   setReports: (reports: ReportListItem[], totalInArea: number) => void
+  selectReport: (report: ReportListItem, screenPosition: { x: number; y: number }) => void
+  clearSelection: () => void
 }
 
-export type { ReportListItem }
+export type { ReportListItem, SelectedReport }
 
 export const useMapStore = create<MapState>((set) => ({
   zoom: 12,
@@ -41,8 +49,11 @@ export const useMapStore = create<MapState>((set) => ({
   },
   reports: [],
   totalInArea: 0,
+  selected: null,
   setViewport: (zoom, center, bbox) => set({ zoom, center, bbox }),
   setFilters: (filters) =>
     set((state) => ({ filters: { ...state.filters, ...filters } })),
   setReports: (reports, totalInArea) => set({ reports, totalInArea }),
+  selectReport: (report, screenPosition) => set({ selected: { report, screenPosition } }),
+  clearSelection: () => set({ selected: null }),
 }))
