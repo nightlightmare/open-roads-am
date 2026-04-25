@@ -157,17 +157,21 @@ export default function LandingPage() {
             </ul>
 
             <div className="flex flex-wrap gap-3">
-              <span
-                className="inline-flex cursor-default items-center gap-2 rounded-sm border-[1.5px] border-foreground bg-foreground px-4 py-2.5 text-sm font-medium text-background opacity-60"
+              <Link
+                href="/docs/api"
+                className="inline-flex items-center gap-2 rounded-sm border-[1.5px] border-foreground bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-colors hover:border-primary hover:bg-primary"
               >
                 {t('api.docsBtn')}
                 <ArrowUpRight className="h-4 w-4" />
-              </span>
-              <span
-                className="inline-flex cursor-default items-center gap-2 rounded-sm border-[1.5px] border-border px-4 py-2.5 text-sm font-medium text-muted-foreground opacity-60"
+              </Link>
+              <a
+                href="https://github.com/nightlightmare/open-roads-am"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-sm border-[1.5px] border-border px-4 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
               >
                 {t('api.githubBtn')}
-              </span>
+              </a>
             </div>
           </div>
 
@@ -259,8 +263,8 @@ export default function LandingPage() {
               <h4 className="mb-1 font-mono text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
                 {t('footer.devTitle')}
               </h4>
-              <span className="text-sm text-muted-foreground">REST API</span>
-              <span className="text-sm text-muted-foreground">GitHub (MIT)</span>
+              <Link href="/docs/api" className="text-sm text-muted-foreground hover:text-foreground">REST API</Link>
+              <a href="https://github.com/nightlightmare/open-roads-am" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-foreground">GitHub (MIT)</a>
             </nav>
 
             <nav className="flex flex-col gap-2" aria-label={t('footer.projectTitle')}>
