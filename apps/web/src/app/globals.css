@@ -1,35 +1,33 @@
 @import 'tailwindcss';
 
 @theme inline {
-  --color-background: oklch(0.985 0.005 80);
-  --color-foreground: oklch(0.18 0.01 80);
+  /* Warm off-white paper + near-black ink + openroad orange accent */
+  --color-background: hsl(40 20% 97%);
+  --color-foreground: hsl(30 10% 10%);
   --color-card: hsl(0 0% 100%);
-  --color-card-foreground: oklch(0.18 0.01 80);
+  --color-card-foreground: hsl(30 10% 10%);
   --color-popover: hsl(0 0% 100%);
-  --color-popover-foreground: oklch(0.18 0.01 80);
-  --color-primary: oklch(0.55 0.20 50);
+  --color-popover-foreground: hsl(30 10% 10%);
+  --color-primary: hsl(25 85% 42%);
   --color-primary-foreground: hsl(0 0% 100%);
-  --color-secondary: oklch(0.965 0.008 80);
-  --color-secondary-foreground: oklch(0.18 0.01 80);
-  --color-muted: oklch(0.965 0.008 80);
-  --color-muted-foreground: oklch(0.55 0.01 80);
-  --color-accent: oklch(0.965 0.008 80);
-  --color-accent-foreground: oklch(0.18 0.01 80);
-  --color-destructive: hsl(0 84.2% 60.2%);
+  --color-secondary: hsl(40 12% 93%);
+  --color-secondary-foreground: hsl(30 10% 10%);
+  --color-muted: hsl(40 12% 93%);
+  --color-muted-foreground: hsl(30 5% 45%);
+  --color-accent: hsl(40 12% 93%);
+  --color-accent-foreground: hsl(30 10% 10%);
+  --color-destructive: hsl(0 84% 60%);
   --color-destructive-foreground: hsl(0 0% 98%);
-  --color-border: oklch(0.18 0.01 80 / 0.18);
-  --color-input: oklch(0.18 0.01 80 / 0.18);
-  --color-ring: oklch(0.55 0.20 50);
+  --color-border: hsl(30 8% 82%);
+  --color-input: hsl(30 8% 82%);
+  --color-ring: hsl(25 85% 42%);
   --color-info: hsl(210 80% 50%);
   --color-info-foreground: hsl(0 0% 100%);
-  --color-success: oklch(0.52 0.13 150);
+  --color-success: hsl(145 50% 32%);
   --color-success-foreground: hsl(0 0% 100%);
-  --color-or-accent: oklch(0.68 0.18 50);
-  --color-or-accent-hover: oklch(0.62 0.20 50);
-  --color-or-accent-soft: oklch(0.68 0.18 50 / 0.10);
-  --color-status-new: oklch(0.55 0.20 25);
-  --color-status-work: oklch(0.62 0.16 70);
-  --color-status-done: oklch(0.52 0.13 150);
+  --color-status-new: hsl(8 75% 45%);
+  --color-status-work: hsl(35 70% 48%);
+  --color-status-done: hsl(145 50% 32%);
   --radius: 0.5rem;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 }
@@ -42,4 +40,36 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
+  html {
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+/* Dark theme */
+.dark {
+  --color-background: hsl(30 8% 8%);
+  --color-foreground: hsl(40 10% 92%);
+  --color-card: hsl(30 8% 12%);
+  --color-card-foreground: hsl(40 10% 92%);
+  --color-popover: hsl(30 8% 12%);
+  --color-popover-foreground: hsl(40 10% 92%);
+  --color-primary: hsl(28 80% 58%);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-secondary: hsl(30 6% 16%);
+  --color-secondary-foreground: hsl(40 10% 92%);
+  --color-muted: hsl(30 6% 16%);
+  --color-muted-foreground: hsl(30 5% 52%);
+  --color-accent: hsl(30 6% 16%);
+  --color-accent-foreground: hsl(40 10% 92%);
+  --color-border: hsl(40 5% 22%);
+  --color-input: hsl(40 5% 22%);
+  --color-ring: hsl(28 80% 58%);
+  --color-status-new: hsl(8 70% 58%);
+  --color-status-work: hsl(38 65% 58%);
+  --color-status-done: hsl(145 45% 50%);
 }
