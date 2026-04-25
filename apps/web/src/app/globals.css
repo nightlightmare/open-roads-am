@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 
-@theme inline {
+@theme {
   /* Warm off-white paper + near-black ink + openroad orange accent */
   --color-background: hsl(40 20% 97%);
   --color-foreground: hsl(30 10% 10%);
