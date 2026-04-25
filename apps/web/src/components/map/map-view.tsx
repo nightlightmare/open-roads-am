@@ -39,7 +39,7 @@ export function MapView() {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<maplibregl.Map | null>(null)
   const markersRef = useRef<maplibregl.Marker[]>([])
-  const { zoom, center, filters, setViewport } = useMapStore()
+  const { zoom, center, filters, setViewport, setReports } = useMapStore()
   // Capture initial values — map is created once; subsequent changes handled separately
   const initialCenter = useRef(center)
   const initialZoom = useRef(zoom)
@@ -79,6 +79,9 @@ export function MapView() {
       const data = await apiFetch<ApiResponse>('/api/v1/public/reports', { params })
       clearMarkers()
 
+      const reportItems = data.items.filter((item): item is ReportItem => item.type === 'report')
+      setReports(reportItems, data.total_in_area)
+
       for (const item of data.items) {
         if (item.type === 'cluster') {
           const marker = createClusterMarker(item.count, () => {
@@ -97,7 +100,7 @@ export function MapView() {
     } finally {
       setLoading(false)
     }
-  }, [filters, clearMarkers])
+  }, [filters, clearMarkers, setReports])
 
   // Keep the ref current so the map init closure always calls the latest version
   useEffect(() => { loadReportsRef.current = loadReports }, [loadReports])

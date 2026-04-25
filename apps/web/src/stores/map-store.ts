@@ -5,14 +5,31 @@ interface MapFilters {
   includeResolved: boolean
 }
 
+interface ReportListItem {
+  id: string
+  status: string
+  problem_type: string | null
+  address_raw: string | null
+  confirmation_count: number
+  photo_url: string | null
+  created_at: string
+  latitude: number
+  longitude: number
+}
+
 interface MapState {
   zoom: number
   center: [number, number]
   bbox: [number, number, number, number] | null
   filters: MapFilters
+  reports: ReportListItem[]
+  totalInArea: number
   setViewport: (zoom: number, center: [number, number], bbox: [number, number, number, number]) => void
   setFilters: (filters: Partial<MapFilters>) => void
+  setReports: (reports: ReportListItem[], totalInArea: number) => void
 }
+
+export type { ReportListItem }
 
 export const useMapStore = create<MapState>((set) => ({
   zoom: 12,
@@ -22,7 +39,10 @@ export const useMapStore = create<MapState>((set) => ({
     problemTypes: [],
     includeResolved: false,
   },
+  reports: [],
+  totalInArea: 0,
   setViewport: (zoom, center, bbox) => set({ zoom, center, bbox }),
   setFilters: (filters) =>
     set((state) => ({ filters: { ...state.filters, ...filters } })),
+  setReports: (reports, totalInArea) => set({ reports, totalInArea }),
 }))
