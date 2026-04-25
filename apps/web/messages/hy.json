@@ -5,7 +5,9 @@
     "profile": "Անձնական էջ",
     "signIn": "Մուտք",
     "signOut": "Ելք",
-    "reportProblem": "Հայտնել խնդրի մասին"
+    "reportProblem": "Հայտնել խնդրի մասին",
+    "openMap": "Բացել քարտեզը",
+    "map": "Քարտեզ"
   },
   "map": {
     "loading": "Բեռնվում է...",

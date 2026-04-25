@@ -1,30 +1,37 @@
 @import 'tailwindcss';
 
 @theme inline {
-  --color-background: hsl(0 0% 100%);
-  --color-foreground: hsl(240 10% 3.9%);
+  --color-background: oklch(0.985 0.005 80);
+  --color-foreground: oklch(0.18 0.01 80);
   --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(240 10% 3.9%);
+  --color-card-foreground: oklch(0.18 0.01 80);
   --color-popover: hsl(0 0% 100%);
-  --color-popover-foreground: hsl(240 10% 3.9%);
-  --color-primary: hsl(142 76% 36%);
-  --color-primary-foreground: hsl(355 100% 97%);
-  --color-secondary: hsl(240 4.8% 95.9%);
-  --color-secondary-foreground: hsl(240 5.9% 10%);
-  --color-muted: hsl(240 4.8% 95.9%);
-  --color-muted-foreground: hsl(240 3.8% 46.1%);
-  --color-accent: hsl(240 4.8% 95.9%);
-  --color-accent-foreground: hsl(240 5.9% 10%);
+  --color-popover-foreground: oklch(0.18 0.01 80);
+  --color-primary: oklch(0.55 0.20 50);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-secondary: oklch(0.965 0.008 80);
+  --color-secondary-foreground: oklch(0.18 0.01 80);
+  --color-muted: oklch(0.965 0.008 80);
+  --color-muted-foreground: oklch(0.55 0.01 80);
+  --color-accent: oklch(0.965 0.008 80);
+  --color-accent-foreground: oklch(0.18 0.01 80);
   --color-destructive: hsl(0 84.2% 60.2%);
   --color-destructive-foreground: hsl(0 0% 98%);
-  --color-border: hsl(240 5.9% 90%);
-  --color-input: hsl(240 5.9% 90%);
-  --color-ring: hsl(142 76% 36%);
+  --color-border: oklch(0.18 0.01 80 / 0.18);
+  --color-input: oklch(0.18 0.01 80 / 0.18);
+  --color-ring: oklch(0.55 0.20 50);
   --color-info: hsl(210 80% 50%);
   --color-info-foreground: hsl(0 0% 100%);
-  --color-success: hsl(142 76% 36%);
+  --color-success: oklch(0.52 0.13 150);
   --color-success-foreground: hsl(0 0% 100%);
+  --color-or-accent: oklch(0.68 0.18 50);
+  --color-or-accent-hover: oklch(0.62 0.20 50);
+  --color-or-accent-soft: oklch(0.68 0.18 50 / 0.10);
+  --color-status-new: oklch(0.55 0.20 25);
+  --color-status-work: oklch(0.62 0.16 70);
+  --color-status-done: oklch(0.52 0.13 150);
   --radius: 0.5rem;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 }
 
 @layer base {

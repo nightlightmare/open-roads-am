@@ -5,7 +5,9 @@
     "profile": "Profile",
     "signIn": "Sign in",
     "signOut": "Sign out",
-    "reportProblem": "Report a problem"
+    "reportProblem": "Report a problem",
+    "openMap": "Open map",
+    "map": "Map"
   },
   "map": {
     "loading": "Loading...",
