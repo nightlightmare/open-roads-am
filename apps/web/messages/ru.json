@@ -7,7 +7,12 @@
     "signOut": "Выйти",
     "reportProblem": "Сообщить о проблеме",
     "openMap": "Открыть карту",
-    "map": "Карта"
+    "map": "Карта",
+    "toggleTheme": "Сменить тему",
+    "navTypes": "Типы проблем",
+    "navAudience": "Для кого",
+    "navApi": "API · OSS",
+    "navStart": "Начать"
   },
   "map": {
     "loading": "Загрузка...",

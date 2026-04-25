@@ -7,7 +7,12 @@
     "signOut": "Ելք",
     "reportProblem": "Հայտնել խնդրի մասին",
     "openMap": "Բացել քարտեզը",
-    "map": "Քարտեզ"
+    "map": "Քարտեզ",
+    "toggleTheme": "Փոխել թեման",
+    "navTypes": "Խնդիրների տեսակներ",
+    "navAudience": "Ում համար",
+    "navApi": "API · OSS",
+    "navStart": "Սկսել"
   },
   "map": {
     "loading": "Բեռնվում է...",

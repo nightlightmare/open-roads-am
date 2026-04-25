@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import { useAuth, UserButton } from '@clerk/nextjs'
-import { ArrowRight, Menu, Plus } from 'lucide-react'
+import { ArrowRight, Menu, Moon, Plus, Sun } from 'lucide-react'
 import { Link, usePathname, useRouter } from '@/i18n/navigation'
 import { buttonVariants } from '@/components/ui/button'
 import {
@@ -29,69 +29,24 @@ export function Header() {
   const params = useParams()
   const currentLocale = (params.locale as string | undefined) ?? routing.defaultLocale
   const [open, setOpen] = useState(false)
+  const [theme, setTheme] = useState<'light' | 'dark'>('light')
 
-  const mobileLinks = (
-    <>
-      <Link
-        href="/map"
-        className="w-full rounded-sm px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
-        onClick={() => setOpen(false)}
-      >
-        {t('map')}
-      </Link>
-      {isSignedIn && (
-        <Link
-          href="/submit"
-          className={buttonVariants({ size: 'sm', className: 'cursor-pointer gap-1.5 w-full' })}
-          onClick={() => setOpen(false)}
-        >
-          <Plus className="h-4 w-4" />
-          {t('reportProblem')}
-        </Link>
-      )}
-      {(role === 'moderator' || role === 'admin') && (
-        <Link
-          href="/moderation"
-          className="w-full rounded-sm px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
-          onClick={() => setOpen(false)}
-        >
-          {t('moderation')}
-        </Link>
-      )}
-      {role === 'admin' && (
-        <Link
-          href="/admin"
-          className="w-full rounded-sm px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
-          onClick={() => setOpen(false)}
-        >
-          {t('admin')}
-        </Link>
-      )}
-      {isSignedIn && (
-        <Link
-          href="/profile"
-          className="w-full rounded-sm px-3 py-2 text-sm text-muted-foreground hover:text-foreground"
-          onClick={() => setOpen(false)}
-        >
-          {t('profile')}
-        </Link>
-      )}
-      {!isSignedIn && (
-        <Link
-          href="/sign-in"
-          className={buttonVariants({ size: 'sm', className: 'cursor-pointer w-full mt-2' })}
-          onClick={() => setOpen(false)}
-        >
-          {t('signIn')}
-        </Link>
-      )}
-      {isSignedIn && (
-        <div className="mt-4 flex items-center gap-3 border-t border-border pt-4">
-          <UserButton />
-        </div>
-      )}
-    </>
-  )
+  const isLanding = pathname === '/'
+
+  useEffect(() => {
+    const saved = localStorage.getItem('or-theme')
+    if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      setTheme('dark')
+      document.documentElement.classList.add('dark')
+    }
+  }, [])
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark'
+    setTheme(next)
+    document.documentElement.classList.toggle('dark', next === 'dark')
+    localStorage.setItem('or-theme', next)
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/88 backdrop-blur-[10px] backdrop-saturate-[140%]">
@@ -115,29 +70,50 @@ export function Header() {
           </span>
         </Link>
 
-        {/* Desktop nav — section anchors on landing, functional links elsewhere */}
+        {/* Desktop nav */}
         <nav className="ml-auto hidden items-center gap-6 md:flex" aria-label="Navigation">
-          {(role === 'moderator' || role === 'admin') && (
-            <Link
-              href="/moderation"
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              {t('moderation')}
-            </Link>
-          )}
-          {role === 'admin' && (
-            <Link
-              href="/admin"
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              {t('admin')}
-            </Link>
+          {isLanding ? (
+            <>
+              <a href="#types" className="relative text-sm text-muted-foreground hover:text-foreground">
+                {t('navTypes')}
+              </a>
+              <a href="#audience" className="relative text-sm text-muted-foreground hover:text-foreground">
+                {t('navAudience')}
+              </a>
+              <a href="#api" className="relative text-sm text-muted-foreground hover:text-foreground">
+                {t('navApi')}
+              </a>
+              <a href="#start" className="relative text-sm text-muted-foreground hover:text-foreground">
+                {t('navStart')}
+              </a>
+            </>
+          ) : (
+            <>
+              {(role === 'moderator' || role === 'admin') && (
+                <Link href="/moderation" className="text-sm text-muted-foreground hover:text-foreground">
+                  {t('moderation')}
+                </Link>
+              )}
+              {role === 'admin' && (
+                <Link href="/admin" className="text-sm text-muted-foreground hover:text-foreground">
+                  {t('admin')}
+                </Link>
+              )}
+              {isSignedIn && (
+                <Link href="/submit" className="text-sm text-muted-foreground hover:text-foreground">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Plus className="h-3.5 w-3.5" />
+                    {t('reportProblem')}
+                  </span>
+                </Link>
+              )}
+            </>
           )}
         </nav>
 
         {/* Tools */}
-        <div className="flex items-center gap-3 md:ml-0 ml-auto">
-          {/* Language switch — compact inline */}
+        <div className={`flex items-center gap-3 ${isLanding ? '' : 'ml-auto md:ml-0'}`}>
+          {/* Language switch */}
           <div className="hidden items-center overflow-hidden rounded-sm border border-border sm:inline-flex" role="group" aria-label="Language">
             {routing.locales.map((locale, i) => (
               <button
@@ -158,7 +134,21 @@ export function Header() {
             ))}
           </div>
 
-          {/* Auth: sign in or user button */}
+          {/* Theme toggle */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="grid h-[34px] w-[34px] cursor-pointer place-items-center rounded-sm border border-border text-muted-foreground transition-colors hover:border-foreground hover:text-foreground"
+            aria-label={t('toggleTheme')}
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-[18px] w-[18px]" />
+            ) : (
+              <Moon className="h-[18px] w-[18px]" />
+            )}
+          </button>
+
+          {/* Auth */}
           {isSignedIn ? (
             <>
               <Link
@@ -198,7 +188,65 @@ export function Header() {
             </SheetTrigger>
             <SheetContent side="left" className="w-64 p-0">
               <div className="flex flex-col gap-1 p-4 pt-12">
-                {mobileLinks}
+                {isLanding && (
+                  <>
+                    <a href="#types" className="w-full rounded-sm px-3 py-2 text-sm text-muted-foreground hover:text-foreground" onClick={() => setOpen(false)}>
+                      {t('navTypes')}
+                    </a>
+                    <a href="#audience" className="w-full rounded-sm px-3 py-2 text-sm text-muted-foreground hover:text-foreground" onClick={() => setOpen(false)}>
+                      {t('navAudience')}
+                    </a>
+                    <a href="#api" className="w-full rounded-sm px-3 py-2 text-sm text-muted-foreground hover:text-foreground" onClick={() => setOpen(false)}>
+                      {t('navApi')}
+                    </a>
+                    <a href="#start" className="w-full rounded-sm px-3 py-2 text-sm text-muted-foreground hover:text-foreground" onClick={() => setOpen(false)}>
+                      {t('navStart')}
+                    </a>
+                    <div className="my-2 border-t border-border" />
+                  </>
+                )}
+                <Link href="/map" className="w-full rounded-sm px-3 py-2 text-sm text-muted-foreground hover:text-foreground" onClick={() => setOpen(false)}>
+                  {t('map')}
+                </Link>
+                {isSignedIn && (
+                  <Link
+                    href="/submit"
+                    className={buttonVariants({ size: 'sm', className: 'cursor-pointer gap-1.5 w-full' })}
+                    onClick={() => setOpen(false)}
+                  >
+                    <Plus className="h-4 w-4" />
+                    {t('reportProblem')}
+                  </Link>
+                )}
+                {(role === 'moderator' || role === 'admin') && (
+                  <Link href="/moderation" className="w-full rounded-sm px-3 py-2 text-sm text-muted-foreground hover:text-foreground" onClick={() => setOpen(false)}>
+                    {t('moderation')}
+                  </Link>
+                )}
+                {role === 'admin' && (
+                  <Link href="/admin" className="w-full rounded-sm px-3 py-2 text-sm text-muted-foreground hover:text-foreground" onClick={() => setOpen(false)}>
+                    {t('admin')}
+                  </Link>
+                )}
+                {isSignedIn && (
+                  <Link href="/profile" className="w-full rounded-sm px-3 py-2 text-sm text-muted-foreground hover:text-foreground" onClick={() => setOpen(false)}>
+                    {t('profile')}
+                  </Link>
+                )}
+                {!isSignedIn && (
+                  <Link
+                    href="/sign-in"
+                    className={buttonVariants({ size: 'sm', className: 'cursor-pointer w-full mt-2' })}
+                    onClick={() => setOpen(false)}
+                  >
+                    {t('signIn')}
+                  </Link>
+                )}
+                {isSignedIn && (
+                  <div className="mt-4 flex items-center gap-3 border-t border-border pt-4">
+                    <UserButton />
+                  </div>
+                )}
               </div>
             </SheetContent>
           </Sheet>

@@ -7,7 +7,12 @@
     "signOut": "Sign out",
     "reportProblem": "Report a problem",
     "openMap": "Open map",
-    "map": "Map"
+    "map": "Map",
+    "toggleTheme": "Toggle theme",
+    "navTypes": "Problem types",
+    "navAudience": "For whom",
+    "navApi": "API · OSS",
+    "navStart": "Get started"
   },
   "map": {
     "loading": "Loading...",
