@@ -5,7 +5,14 @@
     "profile": "Profile",
     "signIn": "Sign in",
     "signOut": "Sign out",
-    "reportProblem": "Report a problem"
+    "reportProblem": "Report a problem",
+    "openMap": "Open map",
+    "map": "Map",
+    "toggleTheme": "Toggle theme",
+    "navTypes": "Problem types",
+    "navAudience": "For whom",
+    "navApi": "API · OSS",
+    "navStart": "Get started"
   },
   "map": {
     "loading": "Loading...",
@@ -172,6 +179,183 @@
     "failedToApprove": "Failed to approve report",
     "failedToReject": "Failed to reject report",
     "errorWithCode": "Error {status}: {code}"
+  },
+  "landing": {
+    "hero": {
+      "kicker": "Road problem map · Armenia",
+      "title": "Report road problems. Deliver data to those who fix them.",
+      "lede": "Open platform: a photo, AI damage classification and a map pin — in 30 seconds. Data available via open API to everyone — citizens, journalists, government.",
+      "cta": "Report a problem",
+      "ctaSecondary": "View map",
+      "contextLabel": "Context",
+      "contextValue": "Road traffic accidents are one of the leading causes of premature death in Armenia.",
+      "stageLabel": "Stage",
+      "stageValue": "MVP, April 2026. Open source under MIT license, data via API.",
+      "feedLabel": "Latest reports feed — demo data",
+      "feed": {
+        "title": "Latest reports",
+        "demoLabel": "demo data",
+        "allReports": "All reports on map",
+        "items": {
+          "0": {
+            "headline": "Deep pothole · Mashtots Ave, 47",
+            "status": "new",
+            "statusLabel": "new",
+            "time": "12 minutes ago",
+            "confirms": "3 confirms"
+          },
+          "1": {
+            "headline": "Faded crosswalk markings · Tigran Mets Ave",
+            "status": "work",
+            "statusLabel": "in progress",
+            "time": "38 minutes ago",
+            "confirms": "7 confirms"
+          },
+          "2": {
+            "headline": "Broken yield sign · Nalbandyan St, 24",
+            "status": "work",
+            "statusLabel": "in progress",
+            "time": "2 hours ago",
+            "confirms": "11 confirms"
+          },
+          "3": {
+            "headline": "Open manhole near sidewalk · Northern Ave",
+            "status": "done",
+            "statusLabel": "resolved",
+            "time": "yesterday",
+            "confirms": "confirmed by municipality"
+          }
+        }
+      }
+    },
+    "types": {
+      "eyebrow": "What you can report",
+      "title": "Problem types",
+      "lede": "AI recognizes the category from a photo in 1–2 seconds. If wrong — correct it manually.",
+      "items": {
+        "pothole": {
+          "name": "Potholes & cracks",
+          "desc": "Surface damage, pits, bumps. AI estimates approximate size from the photo.",
+          "meta": "most common report type"
+        },
+        "marking": {
+          "name": "Faded markings",
+          "desc": "Crosswalks, lanes, stop lines. Especially critical near schools and junctions.",
+          "meta": "priority in low-light conditions"
+        },
+        "sign": {
+          "name": "Signs & poles",
+          "desc": "Knocked down, rotated, missing. Including traffic lights and priority signs.",
+          "meta": "routed to MTAI for highways"
+        },
+        "hazard": {
+          "name": "Hazardous areas",
+          "desc": "Open manholes, drop-offs, missing barriers, poor visibility on turns.",
+          "meta": "requires confirmation from two users"
+        },
+        "lighting": {
+          "name": "Street lighting",
+          "desc": "Non-working lamps, dark intersections, accident-prone areas at night.",
+          "meta": "district-level for municipalities"
+        },
+        "other": {
+          "name": "Other",
+          "desc": "Doesn't fit categories? Describe it — moderation will add a new type if recurring.",
+          "meta": "helps improve the classifier"
+        }
+      }
+    },
+    "audience": {
+      "eyebrow": "Who needs this",
+      "title": "One data source — three audiences",
+      "lede": "The platform is not about criticism, but about speed and accuracy of repairs. Each audience gets what it needs.",
+      "whatYouGet": "What you get",
+      "tabs": {
+        "drivers": "Drivers & residents",
+        "journalists": "Journalists, activists",
+        "gov": "Municipalities, MTAI"
+      },
+      "panels": {
+        "drivers": {
+          "quote": "Snap a pothole near home — see it on the map — get notified when it's fixed.",
+          "points": {
+            "0": "Minimal effort: upload photo — AI detects type — submit.",
+            "1": "Automatic geolocation, can move pin manually.",
+            "2": "Every report gets a status: accepted — in progress — resolved.",
+            "3": "Notifications about repairs on your route."
+          },
+          "benefits": {
+            "0": "Process transparency — see if your report reached its destination",
+            "1": "Your report history in your profile",
+            "2": "Confirmations from other users",
+            "3": "Free, no registration required to view"
+          }
+        },
+        "journalists": {
+          "quote": "Open API — a foundation for investigations and data journalism about infrastructure.",
+          "points": {
+            "0": "All reports available via REST API and CSV export.",
+            "1": "Analytics by district, problem type, trends over time.",
+            "2": "Geodata in standard formats: GeoJSON, KML.",
+            "3": "No restrictions on commercial use (CC-BY)."
+          },
+          "benefits": {
+            "0": "Compare districts, track dynamics",
+            "1": "Embeddable map widgets for articles and posts",
+            "2": "Attribution when using data",
+            "3": "Open source clients in Python and JavaScript"
+          }
+        },
+        "gov": {
+          "quote": "Verified road condition data directly from citizens. No spam, ready to use.",
+          "points": {
+            "0": "Dashboard with prioritization: report frequency x severity.",
+            "1": "Automatic duplicate and obvious error filtering.",
+            "2": "Routing by responsible agency: MTAI — highways, municipality — streets.",
+            "3": "Status changes are returned to users, closing the trust loop."
+          },
+          "benefits": {
+            "0": "Structured data without building your own channel",
+            "1": "SLA by status — measurable performance metric",
+            "2": "Integration with internal systems via API",
+            "3": "MoU and official partnership possible"
+          }
+        }
+      }
+    },
+    "api": {
+      "eyebrow": "Openness",
+      "title": "Open API. Open source.",
+      "lede": "No private data contracts. Any developer, media or government agency can access — no negotiations needed.",
+      "snippetLabel": "API request example",
+      "docsBtn": "API Documentation",
+      "githubBtn": "GitHub Repository",
+      "points": {
+        "rest": { "label": "REST API", "value": "reports, statuses, aggregates — JSON, GeoJSON" },
+        "codeLicense": { "label": "Code license", "value": "MIT — fork it, deploy it" },
+        "dataLicense": { "label": "Data license", "value": "CC BY 4.0 — attribute \"OpenRoad.am\"" },
+        "mcp": { "label": "MCP", "value": "data available to AI assistants via MCP protocol" }
+      }
+    },
+    "cta": {
+      "title": "Make the first road visible.",
+      "lede": "30 seconds from photo to submission. No registration, no ads.",
+      "openMap": "Open map",
+      "report": "Report a problem"
+    },
+    "footer": {
+      "bio": "Open platform for reporting road problems in Armenia. Civic initiative, launched April 2026.",
+      "platformTitle": "Platform",
+      "map": "Map",
+      "report": "Report a problem",
+      "devTitle": "Developers",
+      "projectTitle": "Project",
+      "about": "About",
+      "privacy": "Privacy",
+      "sourcesTitle": "Sources",
+      "sourceWho": "Mortality data: WHO, Global Status Report on Road Safety.",
+      "sourceOsm": "Street map: OpenStreetMap, ODbL."
+    }
   },
   "meta": {
     "description": "Report road problems in Armenia"

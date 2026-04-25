@@ -43,7 +43,7 @@ export default function ProfileConfirmationsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href="/" className="cursor-pointer hover:text-foreground transition-colors">←</Link>
+        <Link href="/map" className="cursor-pointer hover:text-foreground transition-colors">←</Link>
         <span>/</span>
         <Link href="/profile" className="cursor-pointer hover:text-foreground transition-colors">{t('title')}</Link>
         <span>/</span>

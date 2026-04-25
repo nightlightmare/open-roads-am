@@ -1,30 +1,35 @@
 @import 'tailwindcss';
 
-@theme inline {
-  --color-background: hsl(0 0% 100%);
-  --color-foreground: hsl(240 10% 3.9%);
+@theme {
+  /* Warm off-white paper + near-black ink + openroad orange accent */
+  --color-background: hsl(40 20% 97%);
+  --color-foreground: hsl(30 10% 10%);
   --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(240 10% 3.9%);
+  --color-card-foreground: hsl(30 10% 10%);
   --color-popover: hsl(0 0% 100%);
-  --color-popover-foreground: hsl(240 10% 3.9%);
-  --color-primary: hsl(142 76% 36%);
-  --color-primary-foreground: hsl(355 100% 97%);
-  --color-secondary: hsl(240 4.8% 95.9%);
-  --color-secondary-foreground: hsl(240 5.9% 10%);
-  --color-muted: hsl(240 4.8% 95.9%);
-  --color-muted-foreground: hsl(240 3.8% 46.1%);
-  --color-accent: hsl(240 4.8% 95.9%);
-  --color-accent-foreground: hsl(240 5.9% 10%);
-  --color-destructive: hsl(0 84.2% 60.2%);
+  --color-popover-foreground: hsl(30 10% 10%);
+  --color-primary: hsl(25 85% 42%);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-secondary: hsl(40 12% 93%);
+  --color-secondary-foreground: hsl(30 10% 10%);
+  --color-muted: hsl(40 12% 93%);
+  --color-muted-foreground: hsl(30 5% 45%);
+  --color-accent: hsl(40 12% 93%);
+  --color-accent-foreground: hsl(30 10% 10%);
+  --color-destructive: hsl(0 84% 60%);
   --color-destructive-foreground: hsl(0 0% 98%);
-  --color-border: hsl(240 5.9% 90%);
-  --color-input: hsl(240 5.9% 90%);
-  --color-ring: hsl(142 76% 36%);
+  --color-border: hsl(30 8% 82%);
+  --color-input: hsl(30 8% 82%);
+  --color-ring: hsl(25 85% 42%);
   --color-info: hsl(210 80% 50%);
   --color-info-foreground: hsl(0 0% 100%);
-  --color-success: hsl(142 76% 36%);
+  --color-success: hsl(145 50% 32%);
   --color-success-foreground: hsl(0 0% 100%);
+  --color-status-new: hsl(8 75% 45%);
+  --color-status-work: hsl(35 70% 48%);
+  --color-status-done: hsl(145 50% 32%);
   --radius: 0.5rem;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 }
 
 @layer base {
@@ -35,4 +40,36 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
+  html {
+    scroll-behavior: smooth;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+/* Dark theme */
+.dark {
+  --color-background: hsl(30 8% 8%);
+  --color-foreground: hsl(40 10% 92%);
+  --color-card: hsl(30 8% 12%);
+  --color-card-foreground: hsl(40 10% 92%);
+  --color-popover: hsl(30 8% 12%);
+  --color-popover-foreground: hsl(40 10% 92%);
+  --color-primary: hsl(28 80% 58%);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-secondary: hsl(30 6% 16%);
+  --color-secondary-foreground: hsl(40 10% 92%);
+  --color-muted: hsl(30 6% 16%);
+  --color-muted-foreground: hsl(30 5% 52%);
+  --color-accent: hsl(30 6% 16%);
+  --color-accent-foreground: hsl(40 10% 92%);
+  --color-border: hsl(40 5% 22%);
+  --color-input: hsl(40 5% 22%);
+  --color-ring: hsl(28 80% 58%);
+  --color-status-new: hsl(8 70% 58%);
+  --color-status-work: hsl(38 65% 58%);
+  --color-status-done: hsl(145 45% 50%);
 }
