@@ -31,20 +31,11 @@ function toolBtn(label: string, onClick: () => void, iconChildren: React.ReactNo
 }
 
 export function MapOverlays() {
-  const { totalInArea, zoom } = useMapStore()
+  const { zoom } = useMapStore()
   const [legendOpen, setLegendOpen] = useState(true)
 
   return (
     <>
-      {/* Status bar — top left */}
-      <div className="absolute left-4 top-4 z-10 flex items-center gap-3 rounded border border-border bg-background px-3 py-2 font-mono text-xs text-muted-foreground shadow-sm">
-        <span className="flex items-center">
-          <span className="mr-1.5 inline-block h-[7px] w-[7px] animate-pulse rounded-full bg-primary" />
-          обновлено
-        </span>
-        <span className="h-3.5 w-px bg-border" />
-        <span>{totalInArea} репортов</span>
-      </div>
 
       {/* Toolbar — top right */}
       <div className="absolute right-4 top-4 z-10 flex flex-col gap-2" role="toolbar" aria-label="Инструменты карты">
