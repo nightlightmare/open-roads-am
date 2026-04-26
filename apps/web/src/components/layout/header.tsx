@@ -99,14 +99,6 @@ export function Header() {
                   {t('admin')}
                 </Link>
               )}
-              {isSignedIn && (
-                <Link href="/submit" className="text-sm text-muted-foreground hover:text-foreground">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Plus className="h-3.5 w-3.5" />
-                    {t('reportProblem')}
-                  </span>
-                </Link>
-              )}
             </>
           )}
         </nav>
@@ -164,13 +156,23 @@ export function Header() {
           )}
 
           {/* CTA */}
-          <Link
-            href="/map"
-            className="inline-flex items-center gap-2 rounded-sm border-[1.5px] border-foreground bg-foreground px-3.5 py-2 text-[13px] font-medium text-background transition-colors hover:border-primary hover:bg-primary"
-          >
-            <span className="hidden sm:inline">{t('openMap')}</span>
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+          {pathname === '/map' ? (
+            <Link
+              href="/submit"
+              className="inline-flex items-center gap-2 rounded-sm border-[1.5px] border-primary bg-primary px-3.5 py-2 text-[13px] font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">{t('reportProblem')}</span>
+            </Link>
+          ) : (
+            <Link
+              href="/map"
+              className="inline-flex items-center gap-2 rounded-sm border-[1.5px] border-foreground bg-foreground px-3.5 py-2 text-[13px] font-medium text-background transition-colors hover:border-primary hover:bg-primary"
+            >
+              <span className="hidden sm:inline">{t('openMap')}</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
 
           {/* Mobile menu */}
           <Sheet open={open} onOpenChange={setOpen}>

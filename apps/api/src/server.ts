@@ -61,7 +61,7 @@ export async function buildServer(env: Env) {
   await fastify.register(fastifyHelmet)
   await fastify.register(fastifyCors, {
     origin: env.NODE_ENV === 'production'
-      ? [env.WEB_URL]
+      ? [env.WEB_URL, 'http://localhost:3000']
       : true,
     credentials: true,
   })
