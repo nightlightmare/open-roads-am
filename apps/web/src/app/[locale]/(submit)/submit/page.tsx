@@ -144,13 +144,13 @@ export default function SubmitPage() {
           data-testid="photo-dropzone"
           onClick={() => fileInputRef.current?.click()}
           className={cn(
-            'flex flex-col items-center justify-center rounded-sm border-2 border-dashed p-8 text-muted-foreground transition-colors hover:border-primary hover:text-primary',
+            'flex flex-col items-center justify-center overflow-hidden rounded-sm border-2 border-dashed p-8 text-muted-foreground transition-colors hover:border-primary hover:text-primary',
             preview ? 'border-solid border-border' : 'border-muted-foreground/30',
             preview ? 'min-h-[200px]' : 'min-h-[300px]',
           )}
         >
           {preview ? (
-            <Image src={preview} alt="Preview" width={0} height={0} sizes="100vw" className="max-h-72 w-auto rounded object-contain" />
+            <Image src={preview} alt="Preview" width={0} height={0} sizes="100vw" className="max-h-72 max-w-full rounded object-contain" />
           ) : (
             <div className="flex flex-col items-center gap-3">
               <Upload className="h-8 w-8 opacity-40" />
