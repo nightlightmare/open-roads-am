@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { Search, X, Crosshair, MapPin } from 'lucide-react'
 import { useMapStore } from '@/stores/map-store'
 
@@ -14,6 +14,7 @@ interface NominatimResult {
 
 export function MapSearch() {
   const t = useTranslations('map')
+  const locale = useLocale()
   const { flyTo, setUserLocation } = useMapStore()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<NominatimResult[]>([])
@@ -28,7 +29,7 @@ export function MapSearch() {
     }
     try {
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=am&limit=5&accept-language=ru`,
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}&countrycodes=am&limit=5&accept-language=${locale}`,
       )
       const data: NominatimResult[] = await res.json()
       setResults(data)
@@ -36,7 +37,7 @@ export function MapSearch() {
     } catch {
       setResults([])
     }
-  }, [])
+  }, [locale])
 
   const handleInput = (value: string) => {
     setQuery(value)
