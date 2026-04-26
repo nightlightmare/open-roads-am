@@ -53,22 +53,15 @@ export function MapOverlays() {
         </div>
       </div>
 
-      {/* Legend — bottom left */}
-      {legendOpen && (
-        <div className="absolute bottom-4 left-4 z-10 max-w-[280px] rounded border border-border bg-background shadow-sm">
-          <div className="flex items-center justify-between border-b border-border px-3 py-2">
-            <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-              Легенда
-            </span>
-            <button
-              type="button"
-              onClick={() => setLegendOpen(false)}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 p-3">
+      {/* Legend — top left */}
+      <div className="absolute left-4 top-4 z-10 rounded border border-border bg-background shadow-sm">
+        <div className="px-3 py-2">
+          <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+            Легенда
+          </span>
+        </div>
+        {legendOpen && (
+          <div className="flex flex-col gap-1.5 border-t border-border px-3 py-2.5">
             {LEGEND_ITEMS.map((item) => (
               <div key={item.key} className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span className="grid h-[18px] w-[18px] shrink-0 place-items-center rounded-[50%_50%_50%_0] bg-foreground text-background" style={{ transform: 'rotate(-45deg)' }}>
@@ -81,8 +74,8 @@ export function MapOverlays() {
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </>
   )
 }
