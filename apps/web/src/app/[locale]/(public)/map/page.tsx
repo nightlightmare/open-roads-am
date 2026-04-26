@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useTranslations } from 'next-intl'
-import { Plus } from 'lucide-react'
+import { Plus, ChevronDown } from 'lucide-react'
 import { Link } from '@/i18n/navigation'
 import { MapSidebar } from '@/components/map/map-sidebar'
 import { MapOverlays } from '@/components/map/map-overlays'
@@ -65,19 +65,9 @@ export default function MapPage() {
                 {t('pullFilters')}
               </div>
             </div>
-            <svg
-              viewBox="0 0 24 24"
-              width="18"
-              height="18"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className={`text-muted-foreground transition-transform ${sheetOpen ? 'rotate-180' : ''}`}
-            >
-              <path d="M6 9l6 6 6-6" />
-            </svg>
+            <ChevronDown
+              className={`h-[18px] w-[18px] text-muted-foreground transition-transform ${sheetOpen ? 'rotate-180' : ''}`}
+            />
           </button>
 
           {/* Sheet content = same sidebar */}

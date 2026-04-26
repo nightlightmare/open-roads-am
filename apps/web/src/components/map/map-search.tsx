@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
+import { Search, X, Crosshair, MapPin } from 'lucide-react'
 import { useMapStore } from '@/stores/map-store'
 
 interface NominatimResult {
@@ -80,10 +81,7 @@ export function MapSearch() {
       {/* Search row: input + geolocate button */}
       <div className="flex overflow-hidden rounded border border-border bg-background shadow-sm">
         <label className="flex flex-1 items-center gap-2 px-2.5 py-2 transition-colors focus-within:border-foreground">
-          <svg className="h-4 w-4 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="7" />
-            <path d="M21 21l-4.35-4.35" />
-          </svg>
+          <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
           <input
             type="text"
             value={query}
@@ -98,9 +96,7 @@ export function MapSearch() {
               onClick={() => { setQuery(''); setResults([]); setOpen(false) }}
               className="text-muted-foreground hover:text-foreground"
             >
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
+              <X className="h-3.5 w-3.5" />
             </button>
           )}
         </label>
@@ -112,10 +108,7 @@ export function MapSearch() {
           aria-label={t('myLocation')}
           className="grid w-[38px] shrink-0 place-items-center border-l border-border text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
         >
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
-          </svg>
+          <Crosshair className="h-4 w-4" />
         </button>
       </div>
 
@@ -129,10 +122,7 @@ export function MapSearch() {
               onClick={() => selectResult(r)}
               className="flex w-full items-start gap-2 px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted/50"
             >
-              <svg className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
+              <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
               <span className="line-clamp-2">{r.display_name}</span>
             </button>
           ))}

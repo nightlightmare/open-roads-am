@@ -2,12 +2,13 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { Plus, Minus, PanelLeft, List } from 'lucide-react'
 import { useMapStore } from '@/stores/map-store'
 import { PROBLEM_TYPES } from '@/lib/constants'
 import { ProblemTypeIcon } from '@/lib/problem-type-icons'
 import { MapSearch } from './map-search'
 
-function toolBtn(label: string, onClick: () => void, iconChildren: React.ReactNode, pressed?: boolean) {
+function toolBtn(label: string, onClick: () => void, icon: React.ReactNode, pressed?: boolean) {
   return (
     <button
       type="button"
@@ -18,9 +19,7 @@ function toolBtn(label: string, onClick: () => void, iconChildren: React.ReactNo
         pressed ? 'bg-primary/10 text-primary' : ''
       }`}
     >
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        {iconChildren}
-      </svg>
+      {icon}
     </button>
   )
 }
@@ -39,13 +38,13 @@ export function MapOverlays() {
       {/* Toolbar — top right */}
       <div className="absolute right-4 top-4 z-10 flex flex-col gap-2" role="toolbar" aria-label={tMap('mapTools')}>
         <div className="flex flex-col overflow-hidden rounded border border-border bg-background shadow-sm">
-          {toolBtn(tMap('zoomIn'), () => {}, <path d="M12 5v14M5 12h14" />)}
-          {toolBtn(tMap('zoomOut'), () => {}, <path d="M5 12h14" />)}
+          {toolBtn(tMap('zoomIn'), () => {}, <Plus className="h-4 w-4" />)}
+          {toolBtn(tMap('zoomOut'), () => {}, <Minus className="h-4 w-4" />)}
         </div>
 
         <div className="flex flex-col overflow-hidden rounded border border-border bg-background shadow-sm">
-          {toolBtn(tMap('sidebar'), () => toggleSidebar(), <path d="M3 3h7v18H3zM14 3h7v18h-7" />, sidebarOpen)}
-          {toolBtn(tMap('legend'), () => setLegendOpen(!legendOpen), <path d="M3 6h18M3 12h18M3 18h12" />, legendOpen)}
+          {toolBtn(tMap('sidebar'), () => toggleSidebar(), <PanelLeft className="h-4 w-4" />, sidebarOpen)}
+          {toolBtn(tMap('legend'), () => setLegendOpen(!legendOpen), <List className="h-4 w-4" />, legendOpen)}
         </div>
       </div>
 

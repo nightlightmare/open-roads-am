@@ -1,6 +1,7 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
+import { ImageIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { useMapStore } from '@/stores/map-store'
 import { PROBLEM_TYPES } from '@/lib/constants'
@@ -138,11 +139,7 @@ export function MapSidebar({ reports = [] }: MapSidebarProps) {
                 className="grid cursor-pointer grid-cols-[56px_1fr] gap-3 border-b border-border/50 px-5 py-3 transition-colors hover:bg-muted/50"
               >
                 <div className="flex h-[42px] w-[56px] items-center justify-center rounded bg-muted/50 text-muted-foreground">
-                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="5" width="18" height="14" rx="1" />
-                    <circle cx="9" cy="11" r="2" />
-                    <path d="M3 17l5-4 4 3 3-2 6 5" />
-                  </svg>
+                  <ImageIcon className="h-[18px] w-[18px]" strokeWidth={1.4} />
                 </div>
                 <div className="min-w-0">
                   <h3 className="mb-0.5 line-clamp-2 text-[13px] font-medium leading-snug">
