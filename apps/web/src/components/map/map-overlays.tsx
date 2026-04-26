@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { useMapStore } from '@/stores/map-store'
 import { PROBLEM_TYPES } from '@/lib/constants'
 import { ProblemTypeIcon } from '@/lib/problem-type-icons'
 
@@ -25,7 +24,6 @@ function toolBtn(label: string, onClick: () => void, iconChildren: React.ReactNo
 }
 
 export function MapOverlays() {
-  const { zoom } = useMapStore()
   const tType = useTranslations('report.problemType')
   const [legendOpen, setLegendOpen] = useState(true)
 
@@ -35,9 +33,6 @@ export function MapOverlays() {
       <div className="absolute right-4 top-4 z-10 flex flex-col gap-2" role="toolbar" aria-label="Инструменты карты">
         <div className="flex flex-col overflow-hidden rounded border border-border bg-background shadow-sm">
           {toolBtn('Увеличить', () => {}, <path d="M12 5v14M5 12h14" />)}
-          <div className="border-b border-t border-border bg-muted/50 px-0 py-1 text-center font-mono text-[10px] text-muted-foreground">
-            {Math.round(zoom)}
-          </div>
           {toolBtn('Уменьшить', () => {}, <path d="M5 12h14" />)}
         </div>
 
