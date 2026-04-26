@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { useMapStore } from '@/stores/map-store'
 import { PROBLEM_TYPES } from '@/lib/constants'
 import { ProblemTypeIcon } from '@/lib/problem-type-icons'
 import { MapSearch } from './map-search'
@@ -28,7 +27,6 @@ function toolBtn(label: string, onClick: () => void, iconChildren: React.ReactNo
 export function MapOverlays() {
   const tMap = useTranslations('map')
   const tType = useTranslations('report.problemType')
-  const { flyTo } = useMapStore()
   const [legendOpen, setLegendOpen] = useState(false)
 
   return (
@@ -44,15 +42,6 @@ export function MapOverlays() {
         </div>
 
         <div className="flex flex-col overflow-hidden rounded border border-border bg-background shadow-sm">
-          {toolBtn(tMap('myLocation'), () => {
-            if (!navigator.geolocation) return
-            navigator.geolocation.getCurrentPosition(
-              (pos) => {
-                flyTo?.(pos.coords.longitude, pos.coords.latitude, 15)
-              },
-              () => {},
-            )
-          }, <><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></>)}
           {toolBtn(tMap('legend'), () => setLegendOpen(!legendOpen), <path d="M3 6h18M3 12h18M3 18h12" />, legendOpen)}
         </div>
       </div>

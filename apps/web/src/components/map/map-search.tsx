@@ -13,7 +13,7 @@ interface NominatimResult {
 
 export function MapSearch() {
   const t = useTranslations('map')
-  const { flyTo } = useMapStore()
+  const { flyTo, setUserLocation } = useMapStore()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<NominatimResult[]>([])
   const [open, setOpen] = useState(false)
@@ -50,7 +50,21 @@ export function MapSearch() {
     flyTo?.(parseFloat(result.lon), parseFloat(result.lat), 16)
   }
 
-  // Close dropdown on click outside
+  const handleGeolocate = () => {
+    if (!navigator.geolocation) return
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { longitude, latitude } = pos.coords
+        setQuery(t('myLocation'))
+        setResults([])
+        setOpen(false)
+        setUserLocation([longitude, latitude])
+        flyTo?.(longitude, latitude, 15)
+      },
+      () => {},
+    )
+  }
+
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -62,33 +76,48 @@ export function MapSearch() {
   }, [])
 
   return (
-    <div ref={containerRef} className="absolute left-4 top-4 z-10 w-72">
-      {/* Search input */}
-      <label className="flex items-center gap-2 rounded border border-border bg-background px-2.5 py-2 shadow-sm transition-colors focus-within:border-foreground">
-        <svg className="h-4 w-4 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="11" cy="11" r="7" />
-          <path d="M21 21l-4.35-4.35" />
-        </svg>
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => handleInput(e.target.value)}
-          onFocus={() => results.length > 0 && setOpen(true)}
-          placeholder={t('search')}
-          className="flex-1 border-0 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
-        />
-        {query && (
-          <button
-            type="button"
-            onClick={() => { setQuery(''); setResults([]); setOpen(false) }}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
-          </button>
-        )}
-      </label>
+    <div ref={containerRef} className="absolute left-4 right-[60px] top-4 z-10">
+      {/* Search row: input + geolocate button */}
+      <div className="flex gap-2">
+        <label className="flex flex-1 items-center gap-2 rounded border border-border bg-background px-2.5 py-2 shadow-sm transition-colors focus-within:border-foreground">
+          <svg className="h-4 w-4 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="7" />
+            <path d="M21 21l-4.35-4.35" />
+          </svg>
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => handleInput(e.target.value)}
+            onFocus={() => results.length > 0 && setOpen(true)}
+            placeholder={t('search')}
+            className="flex-1 border-0 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => { setQuery(''); setResults([]); setOpen(false) }}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+        </label>
+
+        {/* Geolocate button */}
+        <button
+          type="button"
+          onClick={handleGeolocate}
+          aria-label={t('myLocation')}
+          className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded border border-border bg-background text-muted-foreground shadow-sm transition-colors hover:border-foreground hover:text-foreground"
+        >
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+          </svg>
+        </button>
+      </div>
 
       {/* Dropdown results */}
       {open && results.length > 0 && (

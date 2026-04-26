@@ -45,7 +45,8 @@ export function MapView() {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<maplibregl.Map | null>(null)
   const markersRef = useRef<maplibregl.Marker[]>([])
-  const { zoom, center, filters, setViewport, setReports, selectReport, setFlyTo } = useMapStore()
+  const userMarkerRef = useRef<maplibregl.Marker | null>(null)
+  const { zoom, center, filters, setViewport, setReports, selectReport, setFlyTo, userLocation } = useMapStore()
   // Capture initial values — map is created once; subsequent changes handled separately
   const initialCenter = useRef(center)
   const initialZoom = useRef(zoom)
@@ -166,7 +167,7 @@ export function MapView() {
       map.current?.remove()
       map.current = null
     }
-  }, [setViewport])
+  }, [setViewport, setFlyTo])
 
   // Reload when filters change
   useEffect(() => {
@@ -174,6 +175,20 @@ export function MapView() {
       void loadReports()
     }
   }, [filters, loadReports])
+
+  // Show user location marker
+  useEffect(() => {
+    if (!map.current || !userLocation) return
+    if (userMarkerRef.current) {
+      userMarkerRef.current.setLngLat(userLocation)
+    } else {
+      const el = document.createElement('div')
+      el.style.cssText = 'width:16px;height:16px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 0 2px #3b82f6,0 2px 6px rgba(0,0,0,0.3);'
+      userMarkerRef.current = new maplibregl.Marker({ element: el })
+        .setLngLat(userLocation)
+        .addTo(map.current)
+    }
+  }, [userLocation])
 
   return (
     <div className="relative h-full w-full">

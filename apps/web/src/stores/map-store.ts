@@ -30,8 +30,10 @@ interface MapState {
   reports: ReportListItem[]
   totalInArea: number
   selected: SelectedReport | null
+  userLocation: [number, number] | null
   flyTo: ((lng: number, lat: number, zoom?: number) => void) | null
   setFlyTo: (fn: (lng: number, lat: number, zoom?: number) => void) => void
+  setUserLocation: (coords: [number, number]) => void
   setViewport: (zoom: number, center: [number, number], bbox: [number, number, number, number]) => void
   setFilters: (filters: Partial<MapFilters>) => void
   setReports: (reports: ReportListItem[], totalInArea: number) => void
@@ -52,8 +54,10 @@ export const useMapStore = create<MapState>((set) => ({
   reports: [],
   totalInArea: 0,
   selected: null,
+  userLocation: null,
   flyTo: null,
   setFlyTo: (fn) => set({ flyTo: fn }),
+  setUserLocation: (coords) => set({ userLocation: coords }),
   setViewport: (zoom, center, bbox) => set({ zoom, center, bbox }),
   setFilters: (filters) =>
     set((state) => ({ filters: { ...state.filters, ...filters } })),
