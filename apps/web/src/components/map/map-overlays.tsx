@@ -43,13 +43,13 @@ export function MapOverlays() {
       </div>
 
       {/* Legend — top left */}
-      <div className="absolute left-4 top-4 z-10 rounded border border-border bg-background shadow-sm">
-        <div className="px-3 py-2">
-          <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-            Легенда
-          </span>
-        </div>
-        {legendOpen && (
+      {legendOpen && (
+        <div className="absolute left-4 top-4 z-10 rounded border border-border bg-background shadow-sm">
+          <div className="px-3 py-2">
+            <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+              Легенда
+            </span>
+          </div>
           <div className="flex flex-col gap-1.5 border-t border-border px-3 py-2.5">
             {PROBLEM_TYPES.map((key) => (
               <div key={key} className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -62,8 +62,8 @@ export function MapOverlays() {
               </div>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </>
   )
 }
