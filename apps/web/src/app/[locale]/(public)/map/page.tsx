@@ -17,7 +17,7 @@ const MapView = dynamic(
 
 export default function MapPage() {
   const t = useTranslations('map')
-  const { reports, totalInArea, selected, clearSelection } = useMapStore()
+  const { reports, selected, clearSelection } = useMapStore()
   const mapAreaRef = useRef<HTMLElement>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
 
@@ -25,7 +25,7 @@ export default function MapPage() {
     <div className="grid h-[calc(100vh-64px)] grid-cols-1 md:grid-cols-[380px_1fr]">
       {/* Desktop sidebar */}
       <aside className="hidden overflow-y-auto overflow-x-hidden border-r border-border bg-background md:block">
-        <MapSidebar reports={reports} totalInArea={totalInArea} />
+        <MapSidebar reports={reports} />
       </aside>
 
       {/* Map */}
@@ -58,7 +58,7 @@ export default function MapPage() {
             className="flex w-full items-center justify-between px-4 pb-2.5 pt-5"
           >
             <div className="text-left">
-              <div className="text-[15px] font-semibold">{t('reports', { count: totalInArea })}</div>
+              <div className="text-[15px] font-semibold">{t('reports', { count: reports.length })}</div>
               <div className="font-mono text-xs text-muted-foreground">
                 {t('pullFilters')}
               </div>
@@ -79,7 +79,7 @@ export default function MapPage() {
           </button>
 
           {/* Sheet content = same sidebar */}
-          <MapSidebar reports={reports} totalInArea={totalInArea} />
+          <MapSidebar reports={reports} />
         </div>
 
         {/* Mobile FAB */}

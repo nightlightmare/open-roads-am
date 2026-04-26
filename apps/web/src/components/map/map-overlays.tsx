@@ -2,8 +2,10 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { useMapStore } from '@/stores/map-store'
 import { PROBLEM_TYPES } from '@/lib/constants'
 import { ProblemTypeIcon } from '@/lib/problem-type-icons'
+import { MapSearch } from './map-search'
 
 function toolBtn(label: string, onClick: () => void, iconChildren: React.ReactNode, pressed?: boolean) {
   return (
@@ -26,10 +28,14 @@ function toolBtn(label: string, onClick: () => void, iconChildren: React.ReactNo
 export function MapOverlays() {
   const tMap = useTranslations('map')
   const tType = useTranslations('report.problemType')
-  const [legendOpen, setLegendOpen] = useState(true)
+  const { flyTo } = useMapStore()
+  const [legendOpen, setLegendOpen] = useState(false)
 
   return (
     <>
+      {/* Search — top left */}
+      <MapSearch />
+
       {/* Toolbar — top right */}
       <div className="absolute right-4 top-4 z-10 flex flex-col gap-2" role="toolbar" aria-label={tMap('mapTools')}>
         <div className="flex flex-col overflow-hidden rounded border border-border bg-background shadow-sm">
@@ -38,14 +44,22 @@ export function MapOverlays() {
         </div>
 
         <div className="flex flex-col overflow-hidden rounded border border-border bg-background shadow-sm">
-          {toolBtn(tMap('myLocation'), () => {}, <><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></>)}
+          {toolBtn(tMap('myLocation'), () => {
+            if (!navigator.geolocation) return
+            navigator.geolocation.getCurrentPosition(
+              (pos) => {
+                flyTo?.(pos.coords.longitude, pos.coords.latitude, 15)
+              },
+              () => {},
+            )
+          }, <><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></>)}
           {toolBtn(tMap('legend'), () => setLegendOpen(!legendOpen), <path d="M3 6h18M3 12h18M3 18h12" />, legendOpen)}
         </div>
       </div>
 
-      {/* Legend — top left */}
+      {/* Legend — top left, below search */}
       {legendOpen && (
-        <div className="absolute left-4 top-4 z-10 rounded border border-border bg-background shadow-sm">
+        <div className="absolute left-4 top-[60px] z-10 rounded border border-border bg-background shadow-sm">
           <div className="px-3 py-2">
             <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
               {tMap('legend')}

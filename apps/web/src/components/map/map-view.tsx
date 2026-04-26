@@ -45,7 +45,7 @@ export function MapView() {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<maplibregl.Map | null>(null)
   const markersRef = useRef<maplibregl.Marker[]>([])
-  const { zoom, center, filters, setViewport, setReports, selectReport } = useMapStore()
+  const { zoom, center, filters, setViewport, setReports, selectReport, setFlyTo } = useMapStore()
   // Capture initial values — map is created once; subsequent changes handled separately
   const initialCenter = useRef(center)
   const initialZoom = useRef(zoom)
@@ -132,6 +132,11 @@ export function MapView() {
       style: getMapStyle(),
       center: initialCenter.current,
       zoom: initialZoom.current,
+    })
+
+    // Expose flyTo to store so overlays can move the map
+    setFlyTo((lng: number, lat: number, z?: number) => {
+      map.current?.flyTo({ center: [lng, lat], zoom: z ?? map.current.getZoom() })
     })
 
     // Watch for dark mode toggle and switch map style
