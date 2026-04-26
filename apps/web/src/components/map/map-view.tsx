@@ -73,10 +73,11 @@ export function MapView() {
 
     setLoading(true)
     try {
+      const includeResolved = filters.activeStatuses.includes('resolved')
       const params: Record<string, string | number | boolean | undefined> = {
         bbox: `${west},${south},${east},${north}`,
         zoom: Math.round(currentZoom),
-        include_resolved: filters.includeResolved,
+        include_resolved: includeResolved,
       }
       if (filters.problemTypes.length > 0) {
         params.problem_type = filters.problemTypes.join(',')
@@ -85,10 +86,18 @@ export function MapView() {
       const data = await apiFetch<ApiResponse>('/api/v1/public/reports', { params })
       clearMarkers()
 
-      const reportItems = data.items.filter((item): item is ReportItem => item.type === 'report')
+      // Client-side status filter — API only supports include_resolved toggle,
+      // but user can also toggle approved / in_progress individually
+      const activeSet = new Set(filters.activeStatuses)
+      const allItems = data.items
+      const filteredItems = allItems.filter((item) =>
+        item.type === 'cluster' || activeSet.has(item.status),
+      )
+
+      const reportItems = filteredItems.filter((item): item is ReportItem => item.type === 'report')
       setReports(reportItems, data.total_in_area)
 
-      for (const item of data.items) {
+      for (const item of filteredItems) {
         if (item.type === 'cluster') {
           const marker = createClusterMarker(item.count, () => {
             map.current?.flyTo({ center: [item.longitude, item.latitude], zoom: currentZoom + 2 })

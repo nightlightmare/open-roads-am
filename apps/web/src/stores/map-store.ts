@@ -2,7 +2,7 @@ import { create } from 'zustand'
 
 interface MapFilters {
   problemTypes: string[]
-  includeResolved: boolean
+  activeStatuses: string[]
 }
 
 interface ReportListItem {
@@ -45,7 +45,7 @@ export const useMapStore = create<MapState>((set) => ({
   bbox: null,
   filters: {
     problemTypes: [],
-    includeResolved: false,
+    activeStatuses: ['approved', 'in_progress'],
   },
   reports: [],
   totalInArea: 0,

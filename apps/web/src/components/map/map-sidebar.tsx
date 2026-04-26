@@ -6,11 +6,10 @@ import { useMapStore } from '@/stores/map-store'
 import { PROBLEM_TYPES } from '@/lib/constants'
 import { ProblemTypeIcon } from '@/lib/problem-type-icons'
 
-// Public API statuses: approved + in_progress always shown, resolved toggleable
 const STATUS_CHIPS = [
-  { status: 'approved', colorClass: 'bg-status-new border-status-new text-white', alwaysOn: true },
-  { status: 'in_progress', colorClass: 'bg-status-work border-status-work text-white', alwaysOn: true },
-  { status: 'resolved', colorClass: 'bg-status-done border-status-done text-white', alwaysOn: false },
+  { status: 'approved', activeClass: 'bg-status-new border-status-new text-white' },
+  { status: 'in_progress', activeClass: 'bg-status-work border-status-work text-white' },
+  { status: 'resolved', activeClass: 'bg-status-done border-status-done text-white' },
 ] as const
 
 interface ReportListItem {
@@ -106,7 +105,7 @@ export function MapSidebar({ reports = [], totalInArea = 0 }: MapSidebarProps) {
             </span>
             <button
               type="button"
-              onClick={() => setFilters({ includeResolved: false, problemTypes: [] })}
+              onClick={() => setFilters({ activeStatuses: ['approved', 'in_progress'], problemTypes: [] })}
               className="border-b border-dotted border-muted-foreground font-mono text-[10px] text-muted-foreground hover:border-foreground hover:text-foreground"
             >
               сбросить
@@ -114,22 +113,24 @@ export function MapSidebar({ reports = [], totalInArea = 0 }: MapSidebarProps) {
           </div>
           <div className="flex flex-wrap gap-1.5">
             {STATUS_CHIPS.map((chip) => {
-              const isActive = chip.alwaysOn || filters.includeResolved
+              const isActive = filters.activeStatuses.includes(chip.status)
               return (
                 <button
                   key={chip.status}
                   type="button"
                   aria-pressed={isActive}
                   onClick={() => {
-                    if (!chip.alwaysOn) {
-                      setFilters({ includeResolved: !filters.includeResolved })
-                    }
+                    const current = filters.activeStatuses
+                    const next = isActive
+                      ? current.filter((s) => s !== chip.status)
+                      : [...current, chip.status]
+                    setFilters({ activeStatuses: next })
                   }}
                   className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors ${
                     isActive
-                      ? chip.colorClass
+                      ? chip.activeClass
                       : 'border-border bg-background text-muted-foreground hover:border-foreground hover:text-foreground'
-                  } ${chip.alwaysOn ? 'cursor-default' : ''}`}
+                  }`}
                 >
                   {tStatus(chip.status)}
                 </button>
