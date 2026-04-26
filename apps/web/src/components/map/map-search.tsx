@@ -78,8 +78,8 @@ export function MapSearch() {
   return (
     <div ref={containerRef} className="absolute left-4 right-[60px] top-4 z-10">
       {/* Search row: input + geolocate button */}
-      <div className="flex gap-2">
-        <label className="flex flex-1 items-center gap-2 rounded border border-border bg-background px-2.5 py-2 shadow-sm transition-colors focus-within:border-foreground">
+      <div className="flex overflow-hidden rounded border border-border bg-background shadow-sm">
+        <label className="flex flex-1 items-center gap-2 px-2.5 py-2 transition-colors focus-within:border-foreground">
           <svg className="h-4 w-4 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="7" />
             <path d="M21 21l-4.35-4.35" />
@@ -105,12 +105,12 @@ export function MapSearch() {
           )}
         </label>
 
-        {/* Geolocate button */}
+        {/* Geolocate button — attached to search */}
         <button
           type="button"
           onClick={handleGeolocate}
           aria-label={t('myLocation')}
-          className="grid h-[38px] w-[38px] shrink-0 place-items-center rounded border border-border bg-background text-muted-foreground shadow-sm transition-colors hover:border-foreground hover:text-foreground"
+          className="grid w-[38px] shrink-0 place-items-center border-l border-border text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
         >
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="3" />
