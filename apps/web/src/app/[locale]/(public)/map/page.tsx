@@ -22,14 +22,16 @@ export default function MapPage() {
   const [sheetOpen, setSheetOpen] = useState(false)
 
   return (
-    <div className="relative h-[calc(100vh-64px)]">
-      {/* Desktop sidebar — slides over the map */}
-      <aside className={`absolute left-0 top-0 z-20 hidden h-full w-[380px] overflow-y-auto overflow-x-hidden border-r border-border bg-background shadow-lg transition-transform duration-300 ease-in-out md:block ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <MapSidebar reports={reports} />
-      </aside>
+    <div className={`flex h-[calc(100vh-64px)]`}>
+      {/* Desktop sidebar */}
+      {sidebarOpen && (
+        <aside className="hidden w-[380px] shrink-0 overflow-y-auto overflow-x-hidden border-r border-border bg-background md:block">
+          <MapSidebar reports={reports} />
+        </aside>
+      )}
 
-      {/* Map — full width, sidebar overlays on top */}
-      <main ref={mapAreaRef} className="relative h-full overflow-hidden">
+      {/* Map */}
+      <main ref={mapAreaRef} className="relative flex-1 overflow-hidden">
         <MapView />
         <MapOverlays />
 
