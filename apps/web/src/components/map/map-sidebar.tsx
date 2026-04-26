@@ -3,19 +3,13 @@
 import { useTranslations } from 'next-intl'
 import { Badge } from '@/components/ui/badge'
 import { useMapStore } from '@/stores/map-store'
+import { PROBLEM_TYPES } from '@/lib/constants'
+import { ProblemTypeIcon } from '@/lib/problem-type-icons'
 
 const STATUS_CHIPS = [
   { key: 'new', colorClass: 'bg-status-new', activeClass: 'bg-status-new border-status-new text-white' },
   { key: 'work', colorClass: 'bg-status-work', activeClass: 'bg-status-work border-status-work text-white' },
   { key: 'done', colorClass: 'bg-status-done', activeClass: 'bg-status-done border-status-done text-white' },
-] as const
-
-const TYPE_CHIPS = [
-  { key: 'pothole', icon: <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="14" rx="3" ry="1.5" /><path d="M3 17c2-1 4-1 6 0s4 1 6 0 4-1 6 0" /></svg> },
-  { key: 'missing_marking', icon: <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h2M7 12h2M11 12h2M15 12h2M19 12h2" /></svg> },
-  { key: 'damaged_sign', icon: <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3 L20 9 L17 19 L7 19 L4 9 Z" /></svg> },
-  { key: 'hazard', icon: <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3 L21 20 L3 20 Z" /><path d="M12 10v5" /></svg> },
-  { key: 'broken_light', icon: <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg> },
 ] as const
 
 interface ReportListItem {
@@ -152,20 +146,20 @@ export function MapSidebar({ reports = [], totalInArea = 0 }: MapSidebarProps) {
             </span>
           </div>
           <div className="flex flex-wrap gap-1.5">
-            {TYPE_CHIPS.map((chip) => (
+            {PROBLEM_TYPES.map((key) => (
               <button
-                key={chip.key}
+                key={key}
                 type="button"
-                aria-pressed={isTypeActive(chip.key)}
-                onClick={() => toggleType(chip.key)}
+                aria-pressed={isTypeActive(key)}
+                onClick={() => toggleType(key)}
                 className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors ${
-                  isTypeActive(chip.key)
+                  isTypeActive(key)
                     ? 'border-foreground bg-foreground text-background'
                     : 'border-border bg-background text-muted-foreground hover:border-foreground hover:text-foreground'
                 }`}
               >
-                {chip.icon}
-                {tType(chip.key)}
+                <ProblemTypeIcon type={key} size={12} />
+                {tType(key)}
               </button>
             ))}
           </div>
