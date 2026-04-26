@@ -119,9 +119,9 @@ export default function SubmitPage() {
   const canSubmit = !!selectedType && !submitting && !!photoFile
 
   return (
-    <div className="flex h-[calc(100vh-64px)]">
+    <div className="flex h-[calc(100vh-64px)] flex-col md:flex-row">
       {/* LEFT: Photo + AI */}
-      <div className="flex flex-1 flex-col gap-4 overflow-y-auto border-r border-border p-6 md:p-8">
+      <div className="flex flex-1 flex-col gap-4 overflow-y-auto border-b border-border p-6 md:border-b-0 md:border-r md:p-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2">
           <Link href="/map" className="text-muted-foreground hover:text-foreground">
@@ -213,7 +213,7 @@ export default function SubmitPage() {
       </div>
 
       {/* RIGHT: Location + Description + Submit */}
-      <div className="hidden flex-[0.9] flex-col gap-5 overflow-y-auto p-6 md:flex md:p-8">
+      <div className="flex flex-[0.9] flex-col gap-5 overflow-y-auto p-6 md:p-8">
         {/* Location */}
         <div>
           <span className="mb-2 block font-mono text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
@@ -261,12 +261,6 @@ export default function SubmitPage() {
         </div>
       </div>
 
-      {/* MOBILE: Submit button fixed at bottom */}
-      <div className="fixed inset-x-0 bottom-0 border-t border-border bg-background p-4 md:hidden">
-        <Button className="w-full" disabled={!canSubmit} onClick={() => void handleSubmit()}>
-          {submitting ? tSubmit('step2.submitting') : tSubmit('step2.submit')}
-        </Button>
-      </div>
     </div>
   )
 }
