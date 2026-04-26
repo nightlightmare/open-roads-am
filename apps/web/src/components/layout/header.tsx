@@ -163,14 +163,16 @@ export function Header() {
             </Link>
           )}
 
-          {/* CTA */}
-          <Link
-            href="/map"
-            className="inline-flex items-center gap-2 rounded-sm border-[1.5px] border-foreground bg-foreground px-3.5 py-2 text-[13px] font-medium text-background transition-colors hover:border-primary hover:bg-primary"
-          >
-            <span className="hidden sm:inline">{t('openMap')}</span>
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+          {/* CTA — hide on map page */}
+          {pathname !== '/map' && (
+            <Link
+              href="/map"
+              className="inline-flex items-center gap-2 rounded-sm border-[1.5px] border-foreground bg-foreground px-3.5 py-2 text-[13px] font-medium text-background transition-colors hover:border-primary hover:bg-primary"
+            >
+              <span className="hidden sm:inline">{t('openMap')}</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
 
           {/* Mobile menu */}
           <Sheet open={open} onOpenChange={setOpen}>
