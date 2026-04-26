@@ -4,7 +4,6 @@ import { useRef, useState, useCallback, useEffect } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { useTranslations } from 'next-intl'
 import { ArrowLeft, Upload } from 'lucide-react'
-import Image from 'next/image'
 import dynamic from 'next/dynamic'
 import useSWR from 'swr'
 import { Link, useRouter } from '@/i18n/navigation'
@@ -150,7 +149,7 @@ export default function SubmitPage() {
           )}
         >
           {preview ? (
-            <Image src={preview} alt="Preview" width={0} height={0} sizes="100vw" className="max-h-72 max-w-full rounded object-contain" />
+            <img src={preview} alt="Preview" className="max-h-72 w-full rounded object-contain" />
           ) : (
             <div className="flex flex-col items-center gap-3">
               <Upload className="h-8 w-8 opacity-40" />
