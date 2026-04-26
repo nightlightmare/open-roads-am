@@ -6,10 +6,15 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import { useTranslations } from 'next-intl'
 import { useMapStore } from '@/stores/map-store'
 import { apiFetch } from '@/lib/api'
-import { ReportSidePanel } from './report-side-panel'
 import { createClusterMarker, createReportMarker } from './markers'
 
-const MAP_STYLE = process.env.NEXT_PUBLIC_MAP_STYLE ?? 'https://tiles.openfreemap.org/styles/liberty'
+const MAP_STYLE_LIGHT = process.env.NEXT_PUBLIC_MAP_STYLE ?? 'https://tiles.openfreemap.org/styles/liberty'
+const MAP_STYLE_DARK = process.env.NEXT_PUBLIC_MAP_STYLE_DARK ?? 'https://tiles.openfreemap.org/styles/dark'
+
+function getMapStyle() {
+  if (typeof document === 'undefined') return MAP_STYLE_LIGHT
+  return document.documentElement.classList.contains('dark') ? MAP_STYLE_DARK : MAP_STYLE_LIGHT
+}
 
 interface ReportItem {
   type: 'report'
@@ -40,13 +45,13 @@ export function MapView() {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<maplibregl.Map | null>(null)
   const markersRef = useRef<maplibregl.Marker[]>([])
-  const { zoom, center, filters, setViewport } = useMapStore()
+  const userMarkerRef = useRef<maplibregl.Marker | null>(null)
+  const { zoom, center, filters, setViewport, setReports, selectReport, setMapActions, userLocation } = useMapStore()
   // Capture initial values — map is created once; subsequent changes handled separately
   const initialCenter = useRef(center)
   const initialZoom = useRef(zoom)
   // Always-current ref so the init effect closure doesn't capture a stale loadReports
   const loadReportsRef = useRef<() => Promise<void>>(async () => undefined)
-  const [selectedReport, setSelectedReport] = useState<ReportItem | null>(null)
   const [loading, setLoading] = useState(false)
   const tMap = useTranslations('map')
 
@@ -69,10 +74,11 @@ export function MapView() {
 
     setLoading(true)
     try {
+      const includeResolved = filters.activeStatuses.includes('resolved')
       const params: Record<string, string | number | boolean | undefined> = {
         bbox: `${west},${south},${east},${north}`,
         zoom: Math.round(currentZoom),
-        include_resolved: filters.includeResolved,
+        include_resolved: includeResolved,
       }
       if (filters.problemTypes.length > 0) {
         params.problem_type = filters.problemTypes.join(',')
@@ -81,14 +87,29 @@ export function MapView() {
       const data = await apiFetch<ApiResponse>('/api/v1/public/reports', { params })
       clearMarkers()
 
-      for (const item of data.items) {
+      // Client-side status filter — API only supports include_resolved toggle,
+      // but user can also toggle approved / in_progress individually
+      const activeSet = new Set(filters.activeStatuses)
+      const allItems = data.items
+      const filteredItems = allItems.filter((item) =>
+        item.type === 'cluster' || activeSet.has(item.status),
+      )
+
+      const reportItems = filteredItems.filter((item): item is ReportItem => item.type === 'report')
+      setReports(reportItems, data.total_in_area)
+
+      for (const item of filteredItems) {
         if (item.type === 'cluster') {
           const marker = createClusterMarker(item.count, () => {
             map.current?.flyTo({ center: [item.longitude, item.latitude], zoom: currentZoom + 2 })
           }).setLngLat([item.longitude, item.latitude]).addTo(map.current!)
           markersRef.current.push(marker)
         } else {
-          const marker = createReportMarker(item.problem_type, () => setSelectedReport(item))
+          const marker = createReportMarker(item.problem_type, () => {
+              if (!map.current) return
+              const point = map.current.project([item.longitude, item.latitude])
+              selectReport(item, { x: point.x, y: point.y })
+            })
             .setLngLat([item.longitude, item.latitude])
             .addTo(map.current!)
           markersRef.current.push(marker)
@@ -99,7 +120,7 @@ export function MapView() {
     } finally {
       setLoading(false)
     }
-  }, [filters, clearMarkers])
+  }, [filters, clearMarkers, setReports, selectReport])
 
   // Keep the ref current so the map init closure always calls the latest version
   useEffect(() => { loadReportsRef.current = loadReports }, [loadReports])
@@ -109,37 +130,51 @@ export function MapView() {
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: MAP_STYLE,
+      style: getMapStyle(),
       center: initialCenter.current,
       zoom: initialZoom.current,
     })
 
-    map.current.addControl(new maplibregl.NavigationControl(), 'top-right')
-    map.current.addControl(
-      new maplibregl.GeolocateControl({
-        positionOptions: { enableHighAccuracy: true },
-        trackUserLocation: false,
-      }),
-      'top-right',
-    )
+    // Expose map actions to store so overlays can control the map
+    setMapActions({
+      flyTo: (lng: number, lat: number, z?: number) => {
+        map.current?.flyTo({ center: [lng, lat], zoom: z ?? map.current.getZoom() })
+      },
+      zoomIn: () => map.current?.zoomIn(),
+      zoomOut: () => map.current?.zoomOut(),
+    })
 
+    // Watch for dark mode toggle and switch map style
+    const observer = new MutationObserver(() => {
+      if (!map.current) return
+      const nextStyle = getMapStyle()
+      map.current.setStyle(nextStyle)
+      // setStyle clears markers — reload once style is applied
+      map.current.once('styledata', () => void loadReportsRef.current())
+    })
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+
+    let moveEndTimer: ReturnType<typeof setTimeout> | null = null
     const onMoveEnd = () => {
       if (!map.current) return
       const c = map.current.getCenter()
       const z = map.current.getZoom()
       const b = map.current.getBounds()
       setViewport(z, [c.lng, c.lat], [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()])
-      void loadReportsRef.current()
+      // Debounce API calls — prevents burst during sidebar animation
+      if (moveEndTimer) clearTimeout(moveEndTimer)
+      moveEndTimer = setTimeout(() => void loadReportsRef.current(), 300)
     }
 
     map.current.on('moveend', onMoveEnd)
     map.current.on('load', () => void loadReportsRef.current())
 
     return () => {
+      observer.disconnect()
       map.current?.remove()
       map.current = null
     }
-  }, [setViewport])
+  }, [setViewport, setMapActions])
 
   // Reload when filters change
   useEffect(() => {
@@ -148,19 +183,27 @@ export function MapView() {
     }
   }, [filters, loadReports])
 
+  // Show user location marker
+  useEffect(() => {
+    if (!map.current || !userLocation) return
+    if (userMarkerRef.current) {
+      userMarkerRef.current.setLngLat(userLocation)
+    } else {
+      const el = document.createElement('div')
+      el.style.cssText = 'width:16px;height:16px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 0 2px #3b82f6,0 2px 6px rgba(0,0,0,0.3);'
+      userMarkerRef.current = new maplibregl.Marker({ element: el })
+        .setLngLat(userLocation)
+        .addTo(map.current)
+    }
+  }, [userLocation])
+
   return (
     <div className="relative h-full w-full">
       <div ref={mapContainer} className="h-full w-full" />
       {loading && (
-        <div className="absolute left-4 top-4 rounded-md bg-white px-3 py-1.5 text-sm shadow">
+        <div className="absolute left-4 top-4 z-10 rounded border border-border bg-background px-3 py-1.5 font-mono text-xs text-muted-foreground shadow-sm">
           {tMap('loading')}
         </div>
-      )}
-      {selectedReport && (
-        <ReportSidePanel
-          report={selectedReport}
-          onClose={() => setSelectedReport(null)}
-        />
       )}
     </div>
   )

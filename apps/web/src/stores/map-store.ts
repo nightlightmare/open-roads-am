@@ -2,7 +2,24 @@ import { create } from 'zustand'
 
 interface MapFilters {
   problemTypes: string[]
-  includeResolved: boolean
+  activeStatuses: string[]
+}
+
+interface ReportListItem {
+  id: string
+  status: string
+  problem_type: string | null
+  address_raw: string | null
+  confirmation_count: number
+  photo_url: string | null
+  created_at: string
+  latitude: number
+  longitude: number
+}
+
+interface SelectedReport {
+  report: ReportListItem
+  screenPosition: { x: number; y: number }
 }
 
 interface MapState {
@@ -10,9 +27,25 @@ interface MapState {
   center: [number, number]
   bbox: [number, number, number, number] | null
   filters: MapFilters
+  reports: ReportListItem[]
+  totalInArea: number
+  selected: SelectedReport | null
+  userLocation: [number, number] | null
+  sidebarOpen: boolean
+  flyTo: ((lng: number, lat: number, zoom?: number) => void) | null
+  zoomIn: (() => void) | null
+  zoomOut: (() => void) | null
+  setMapActions: (actions: { flyTo: (lng: number, lat: number, zoom?: number) => void; zoomIn: () => void; zoomOut: () => void }) => void
+  setUserLocation: (coords: [number, number]) => void
+  toggleSidebar: () => void
   setViewport: (zoom: number, center: [number, number], bbox: [number, number, number, number]) => void
   setFilters: (filters: Partial<MapFilters>) => void
+  setReports: (reports: ReportListItem[], totalInArea: number) => void
+  selectReport: (report: ReportListItem, screenPosition: { x: number; y: number }) => void
+  clearSelection: () => void
 }
+
+export type { ReportListItem, SelectedReport }
 
 export const useMapStore = create<MapState>((set) => ({
   zoom: 12,
@@ -20,9 +53,23 @@ export const useMapStore = create<MapState>((set) => ({
   bbox: null,
   filters: {
     problemTypes: [],
-    includeResolved: false,
+    activeStatuses: ['approved', 'in_progress'],
   },
+  reports: [],
+  totalInArea: 0,
+  selected: null,
+  userLocation: null,
+  sidebarOpen: true,
+  flyTo: null,
+  zoomIn: null,
+  zoomOut: null,
+  setMapActions: ({ flyTo, zoomIn, zoomOut }) => set({ flyTo, zoomIn, zoomOut }),
+  setUserLocation: (coords) => set({ userLocation: coords }),
+  toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
   setViewport: (zoom, center, bbox) => set({ zoom, center, bbox }),
   setFilters: (filters) =>
     set((state) => ({ filters: { ...state.filters, ...filters } })),
+  setReports: (reports, totalInArea) => set({ reports, totalInArea }),
+  selectReport: (report, screenPosition) => set({ selected: { report, screenPosition } }),
+  clearSelection: () => set({ selected: null }),
 }))
