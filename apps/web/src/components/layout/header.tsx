@@ -146,9 +146,9 @@ export function Header() {
               <UserButton
                 appearance={{
                   elements: {
-                    userButtonTrigger: 'h-[34px] w-[34px] rounded-sm',
-                    avatarBox: 'h-[34px] w-[34px] rounded-sm',
-                    avatarImage: 'rounded-sm',
+                    userButtonTrigger: { height: '34px', width: '34px', borderRadius: '2px' },
+                    avatarBox: { height: '34px', width: '34px', borderRadius: '2px' },
+                    avatarImage: { borderRadius: '2px' },
                   },
                 }}
               />
