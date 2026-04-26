@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { useMapStore } from '@/stores/map-store'
 import { PROBLEM_TYPES } from '@/lib/constants'
 import { ProblemTypeIcon } from '@/lib/problem-type-icons'
 import { MapSearch } from './map-search'
@@ -27,6 +28,7 @@ function toolBtn(label: string, onClick: () => void, iconChildren: React.ReactNo
 export function MapOverlays() {
   const tMap = useTranslations('map')
   const tType = useTranslations('report.problemType')
+  const { sidebarOpen, toggleSidebar } = useMapStore()
   const [legendOpen, setLegendOpen] = useState(false)
 
   return (
@@ -42,6 +44,7 @@ export function MapOverlays() {
         </div>
 
         <div className="flex flex-col overflow-hidden rounded border border-border bg-background shadow-sm">
+          {toolBtn(tMap('sidebar'), () => toggleSidebar(), <path d="M3 3h7v18H3zM14 3h7v18h-7" />, sidebarOpen)}
           {toolBtn(tMap('legend'), () => setLegendOpen(!legendOpen), <path d="M3 6h18M3 12h18M3 18h12" />, legendOpen)}
         </div>
       </div>

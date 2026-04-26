@@ -17,16 +17,18 @@ const MapView = dynamic(
 
 export default function MapPage() {
   const t = useTranslations('map')
-  const { reports, selected, clearSelection } = useMapStore()
+  const { reports, selected, clearSelection, sidebarOpen } = useMapStore()
   const mapAreaRef = useRef<HTMLElement>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
 
   return (
-    <div className="grid h-[calc(100vh-64px)] grid-cols-1 md:grid-cols-[380px_1fr]">
+    <div className={`grid h-[calc(100vh-64px)] grid-cols-1 ${sidebarOpen ? 'md:grid-cols-[380px_1fr]' : 'md:grid-cols-1'}`}>
       {/* Desktop sidebar */}
-      <aside className="hidden overflow-y-auto overflow-x-hidden border-r border-border bg-background md:block">
-        <MapSidebar reports={reports} />
-      </aside>
+      {sidebarOpen && (
+        <aside className="hidden overflow-y-auto overflow-x-hidden border-r border-border bg-background md:block">
+          <MapSidebar reports={reports} />
+        </aside>
+      )}
 
       {/* Map */}
       <main ref={mapAreaRef} className="relative overflow-hidden">

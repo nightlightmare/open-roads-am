@@ -37,6 +37,7 @@
     "confirmations": "Conf.",
     "created": "Created",
     "close": "Close",
+    "sidebar": "Panel",
     "filters": {
       "title": "Filters",
       "problemType": "Problem type",

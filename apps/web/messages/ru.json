@@ -37,6 +37,7 @@
     "confirmations": "Подтв.",
     "created": "Создан",
     "close": "Закрыть",
+    "sidebar": "Панель",
     "filters": {
       "title": "Фильтры",
       "problemType": "Тип проблемы",
