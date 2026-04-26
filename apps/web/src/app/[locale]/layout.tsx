@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { ClerkProvider } from '@clerk/nextjs'
+import { ui } from '@clerk/ui'
 import { enUS, ruRU } from '@clerk/localizations'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, getTranslations } from 'next-intl/server'
@@ -49,7 +50,7 @@ export default async function LocaleLayout({
         <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="antialiased" style={{ fontFamily: '"IBM Plex Sans", system-ui, sans-serif' }}>
-        <ClerkProvider localization={clerkLocalization}>
+        <ClerkProvider localization={clerkLocalization} ui={ui}>
           <NextIntlClientProvider messages={messages}>
             {children}
           </NextIntlClientProvider>

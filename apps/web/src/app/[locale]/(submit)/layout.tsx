@@ -19,7 +19,7 @@ export default async function SubmitLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="mx-auto max-w-2xl px-4 py-8">{children}</main>
+      <main className="flex-1">{children}</main>
     </div>
   )
 }
