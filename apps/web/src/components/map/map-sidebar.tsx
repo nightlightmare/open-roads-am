@@ -6,10 +6,11 @@ import { useMapStore } from '@/stores/map-store'
 import { PROBLEM_TYPES } from '@/lib/constants'
 import { ProblemTypeIcon } from '@/lib/problem-type-icons'
 
+// Public API statuses: approved + in_progress always shown, resolved toggleable
 const STATUS_CHIPS = [
-  { key: 'new', colorClass: 'bg-status-new', activeClass: 'bg-status-new border-status-new text-white' },
-  { key: 'work', colorClass: 'bg-status-work', activeClass: 'bg-status-work border-status-work text-white' },
-  { key: 'done', colorClass: 'bg-status-done', activeClass: 'bg-status-done border-status-done text-white' },
+  { status: 'approved', colorClass: 'bg-status-new border-status-new text-white', alwaysOn: true },
+  { status: 'in_progress', colorClass: 'bg-status-work border-status-work text-white', alwaysOn: true },
+  { status: 'resolved', colorClass: 'bg-status-done border-status-done text-white', alwaysOn: false },
 ] as const
 
 interface ReportListItem {
@@ -113,25 +114,24 @@ export function MapSidebar({ reports = [], totalInArea = 0 }: MapSidebarProps) {
           </div>
           <div className="flex flex-wrap gap-1.5">
             {STATUS_CHIPS.map((chip) => {
-              const isResolved = chip.key === 'done'
-              const isActive = isResolved ? filters.includeResolved : true
+              const isActive = chip.alwaysOn || filters.includeResolved
               return (
                 <button
-                  key={chip.key}
+                  key={chip.status}
                   type="button"
                   aria-pressed={isActive}
                   onClick={() => {
-                    if (isResolved) {
+                    if (!chip.alwaysOn) {
                       setFilters({ includeResolved: !filters.includeResolved })
                     }
                   }}
                   className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors ${
                     isActive
-                      ? chip.activeClass
+                      ? chip.colorClass
                       : 'border-border bg-background text-muted-foreground hover:border-foreground hover:text-foreground'
-                  }`}
+                  } ${chip.alwaysOn ? 'cursor-default' : ''}`}
                 >
-                  {tStatus(chip.key === 'new' ? 'pending_review' : chip.key === 'work' ? 'in_progress' : 'resolved')}
+                  {tStatus(chip.status)}
                 </button>
               )
             })}
