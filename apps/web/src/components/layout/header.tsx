@@ -142,8 +142,16 @@ export function Header() {
 
           {/* Auth */}
           {isSignedIn ? (
-            <div className="flex items-center [&_.cl-userButtonTrigger]:!h-[34px] [&_.cl-userButtonTrigger]:!w-[34px] [&_.cl-userButtonTrigger]:!rounded-sm [&_.cl-avatarBox]:!h-[34px] [&_.cl-avatarBox]:!w-[34px] [&_.cl-avatarBox]:!rounded-sm [&_.cl-avatarImage]:!rounded-sm">
-              <UserButton />
+            <div className="flex items-center">
+              <UserButton
+                appearance={{
+                  elements: {
+                    userButtonTrigger: 'h-[34px] w-[34px] rounded-sm',
+                    avatarBox: 'h-[34px] w-[34px] rounded-sm',
+                    avatarImage: 'rounded-sm',
+                  },
+                }}
+              />
             </div>
           ) : (
             <Link
