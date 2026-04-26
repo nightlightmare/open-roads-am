@@ -46,7 +46,7 @@ export function MapView() {
   const map = useRef<maplibregl.Map | null>(null)
   const markersRef = useRef<maplibregl.Marker[]>([])
   const userMarkerRef = useRef<maplibregl.Marker | null>(null)
-  const { zoom, center, filters, setViewport, setReports, selectReport, setFlyTo, userLocation } = useMapStore()
+  const { zoom, center, filters, setViewport, setReports, selectReport, setMapActions, userLocation } = useMapStore()
   // Capture initial values — map is created once; subsequent changes handled separately
   const initialCenter = useRef(center)
   const initialZoom = useRef(zoom)
@@ -135,9 +135,13 @@ export function MapView() {
       zoom: initialZoom.current,
     })
 
-    // Expose flyTo to store so overlays can move the map
-    setFlyTo((lng: number, lat: number, z?: number) => {
-      map.current?.flyTo({ center: [lng, lat], zoom: z ?? map.current.getZoom() })
+    // Expose map actions to store so overlays can control the map
+    setMapActions({
+      flyTo: (lng: number, lat: number, z?: number) => {
+        map.current?.flyTo({ center: [lng, lat], zoom: z ?? map.current.getZoom() })
+      },
+      zoomIn: () => map.current?.zoomIn(),
+      zoomOut: () => map.current?.zoomOut(),
     })
 
     // Watch for dark mode toggle and switch map style
@@ -167,7 +171,7 @@ export function MapView() {
       map.current?.remove()
       map.current = null
     }
-  }, [setViewport, setFlyTo])
+  }, [setViewport, setMapActions])
 
   // Reload when filters change
   useEffect(() => {

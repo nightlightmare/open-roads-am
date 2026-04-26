@@ -33,7 +33,9 @@ interface MapState {
   userLocation: [number, number] | null
   sidebarOpen: boolean
   flyTo: ((lng: number, lat: number, zoom?: number) => void) | null
-  setFlyTo: (fn: (lng: number, lat: number, zoom?: number) => void) => void
+  zoomIn: (() => void) | null
+  zoomOut: (() => void) | null
+  setMapActions: (actions: { flyTo: (lng: number, lat: number, zoom?: number) => void; zoomIn: () => void; zoomOut: () => void }) => void
   setUserLocation: (coords: [number, number]) => void
   toggleSidebar: () => void
   setViewport: (zoom: number, center: [number, number], bbox: [number, number, number, number]) => void
@@ -59,7 +61,9 @@ export const useMapStore = create<MapState>((set) => ({
   userLocation: null,
   sidebarOpen: true,
   flyTo: null,
-  setFlyTo: (fn) => set({ flyTo: fn }),
+  zoomIn: null,
+  zoomOut: null,
+  setMapActions: ({ flyTo, zoomIn, zoomOut }) => set({ flyTo, zoomIn, zoomOut }),
   setUserLocation: (coords) => set({ userLocation: coords }),
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
   setViewport: (zoom, center, bbox) => set({ zoom, center, bbox }),

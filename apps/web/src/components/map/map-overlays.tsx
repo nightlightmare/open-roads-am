@@ -27,7 +27,7 @@ function toolBtn(label: string, onClick: () => void, icon: React.ReactNode, pres
 export function MapOverlays() {
   const tMap = useTranslations('map')
   const tType = useTranslations('report.problemType')
-  const { sidebarOpen, toggleSidebar } = useMapStore()
+  const { sidebarOpen, toggleSidebar, zoomIn, zoomOut } = useMapStore()
   const [legendOpen, setLegendOpen] = useState(false)
 
   return (
@@ -38,8 +38,8 @@ export function MapOverlays() {
       {/* Toolbar — top right */}
       <div className="absolute right-4 top-4 z-10 flex flex-col gap-2" role="toolbar" aria-label={tMap('mapTools')}>
         <div className="flex flex-col overflow-hidden rounded border border-border bg-background shadow-sm">
-          {toolBtn(tMap('zoomIn'), () => {}, <Plus className="h-4 w-4" />)}
-          {toolBtn(tMap('zoomOut'), () => {}, <Minus className="h-4 w-4" />)}
+          {toolBtn(tMap('zoomIn'), () => zoomIn?.(), <Plus className="h-4 w-4" />)}
+          {toolBtn(tMap('zoomOut'), () => zoomOut?.(), <Minus className="h-4 w-4" />)}
         </div>
 
         <div className="flex flex-col overflow-hidden rounded border border-border bg-background shadow-sm">
