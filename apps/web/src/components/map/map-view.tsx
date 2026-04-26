@@ -8,7 +8,13 @@ import { useMapStore } from '@/stores/map-store'
 import { apiFetch } from '@/lib/api'
 import { createClusterMarker, createReportMarker } from './markers'
 
-const MAP_STYLE = process.env.NEXT_PUBLIC_MAP_STYLE ?? 'https://tiles.openfreemap.org/styles/liberty'
+const MAP_STYLE_LIGHT = process.env.NEXT_PUBLIC_MAP_STYLE ?? 'https://tiles.openfreemap.org/styles/liberty'
+const MAP_STYLE_DARK = process.env.NEXT_PUBLIC_MAP_STYLE_DARK ?? 'https://tiles.openfreemap.org/styles/dark'
+
+function getMapStyle() {
+  if (typeof document === 'undefined') return MAP_STYLE_LIGHT
+  return document.documentElement.classList.contains('dark') ? MAP_STYLE_DARK : MAP_STYLE_LIGHT
+}
 
 interface ReportItem {
   type: 'report'
@@ -114,12 +120,20 @@ export function MapView() {
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: MAP_STYLE,
+      style: getMapStyle(),
       center: initialCenter.current,
       zoom: initialZoom.current,
     })
 
-    // No default controls — custom toolbar will be added
+    // Watch for dark mode toggle and switch map style
+    const observer = new MutationObserver(() => {
+      if (!map.current) return
+      const nextStyle = getMapStyle()
+      map.current.setStyle(nextStyle)
+      // setStyle clears markers — reload once style is applied
+      map.current.once('styledata', () => void loadReportsRef.current())
+    })
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
 
     const onMoveEnd = () => {
       if (!map.current) return
@@ -134,6 +148,7 @@ export function MapView() {
     map.current.on('load', () => void loadReportsRef.current())
 
     return () => {
+      observer.disconnect()
       map.current?.remove()
       map.current = null
     }
