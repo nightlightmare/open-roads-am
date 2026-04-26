@@ -154,13 +154,16 @@ export function MapView() {
     })
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
 
+    let moveEndTimer: ReturnType<typeof setTimeout> | null = null
     const onMoveEnd = () => {
       if (!map.current) return
       const c = map.current.getCenter()
       const z = map.current.getZoom()
       const b = map.current.getBounds()
       setViewport(z, [c.lng, c.lat], [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()])
-      void loadReportsRef.current()
+      // Debounce API calls — prevents burst during sidebar animation
+      if (moveEndTimer) clearTimeout(moveEndTimer)
+      moveEndTimer = setTimeout(() => void loadReportsRef.current(), 300)
     }
 
     map.current.on('moveend', onMoveEnd)

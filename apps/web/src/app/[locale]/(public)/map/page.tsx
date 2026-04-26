@@ -23,13 +23,13 @@ export default function MapPage() {
 
   return (
     <div className="relative h-[calc(100vh-64px)]">
-      {/* Desktop sidebar */}
-      <aside className={`absolute left-0 top-0 z-20 hidden h-full w-[380px] overflow-y-auto overflow-x-hidden border-r border-border bg-background transition-transform duration-300 md:block ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      {/* Desktop sidebar — slides over the map */}
+      <aside className={`absolute left-0 top-0 z-20 hidden h-full w-[380px] overflow-y-auto overflow-x-hidden border-r border-border bg-background shadow-lg transition-transform duration-300 ease-in-out md:block ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <MapSidebar reports={reports} />
       </aside>
 
-      {/* Map */}
-      <main ref={mapAreaRef} className={`relative h-full overflow-hidden transition-[margin] duration-300 ${sidebarOpen ? 'md:ml-[380px]' : 'md:ml-0'}`}>
+      {/* Map — full width, sidebar overlays on top */}
+      <main ref={mapAreaRef} className="relative h-full overflow-hidden">
         <MapView />
         <MapOverlays />
 
