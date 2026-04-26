@@ -52,7 +52,7 @@ export function MapSidebar({ reports = [], totalInArea = 0 }: MapSidebarProps) {
           <svg className="h-4 w-4 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.35-4.35" /></svg>
           <input
             type="text"
-            placeholder="Поиск адреса или улицы..."
+            placeholder={t('search')}
             className="flex-1 border-0 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
           />
           <span className="rounded border border-border px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">/</span>
@@ -61,11 +61,11 @@ export function MapSidebar({ reports = [], totalInArea = 0 }: MapSidebarProps) {
         <div className="mt-3 flex items-center gap-2">
           <button type="button" className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:border-foreground hover:text-foreground">
             <svg className="h-[13px] w-[13px] text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></svg>
-            Моя геолокация
+            {t('myLocation')}
           </button>
           <button type="button" className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2.5 py-1.5 text-xs text-muted-foreground transition-colors hover:border-foreground hover:text-foreground">
             <svg className="h-[13px] w-[13px] text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-            Ереван центр
+            {t('centerYerevan')}
           </button>
         </div>
 
@@ -75,21 +75,21 @@ export function MapSidebar({ reports = [], totalInArea = 0 }: MapSidebarProps) {
             <div className="text-xl font-semibold tabular-nums leading-tight tracking-tight">{totalInArea || '--'}</div>
             <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
               <span className="h-1.5 w-1.5 rounded-full bg-status-new" />
-              новые
+              {t('new')}
             </div>
           </div>
           <div className="border-r border-border px-3 py-2.5">
             <div className="text-xl font-semibold tabular-nums leading-tight tracking-tight">--</div>
             <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
               <span className="h-1.5 w-1.5 rounded-full bg-status-work" />
-              в работе
+              {t('inProgress')}
             </div>
           </div>
           <div className="px-3 py-2.5">
             <div className="text-xl font-semibold tabular-nums leading-tight tracking-tight">--</div>
             <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wide text-muted-foreground">
               <span className="h-1.5 w-1.5 rounded-full bg-status-done" />
-              решено
+              {t('resolved')}
             </div>
           </div>
         </div>
@@ -97,7 +97,6 @@ export function MapSidebar({ reports = [], totalInArea = 0 }: MapSidebarProps) {
 
       {/* Filters */}
       <div className="border-b border-border p-5">
-        {/* Status filter */}
         <div>
           <div className="mb-2.5 flex items-center justify-between">
             <span className="font-mono text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
@@ -108,7 +107,7 @@ export function MapSidebar({ reports = [], totalInArea = 0 }: MapSidebarProps) {
               onClick={() => setFilters({ activeStatuses: ['approved', 'in_progress'], problemTypes: [] })}
               className="border-b border-dotted border-muted-foreground font-mono text-[10px] text-muted-foreground hover:border-foreground hover:text-foreground"
             >
-              сбросить
+              {t('reset')}
             </button>
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -139,7 +138,6 @@ export function MapSidebar({ reports = [], totalInArea = 0 }: MapSidebarProps) {
           </div>
         </div>
 
-        {/* Type filter */}
         <div className="mt-4">
           <div className="mb-2.5">
             <span className="font-mono text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
@@ -171,10 +169,10 @@ export function MapSidebar({ reports = [], totalInArea = 0 }: MapSidebarProps) {
       <div>
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background px-5 py-3">
           <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-            Список · по близости
+            {t('listTitle')}
           </span>
           <span className="font-mono text-[10px] text-muted-foreground">
-            {reports.length} видно
+            {t('visible', { count: reports.length })}
           </span>
         </div>
         <div role="list">
@@ -205,7 +203,7 @@ export function MapSidebar({ reports = [], totalInArea = 0 }: MapSidebarProps) {
                       {tStatus(report.status)}
                     </Badge>
                     <span>·</span>
-                    <span>{report.confirmation_count} подтв.</span>
+                    <span>{t('confirms', { count: report.confirmation_count })}</span>
                   </div>
                 </div>
               </div>

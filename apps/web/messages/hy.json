@@ -22,7 +22,27 @@
       "problemType": "Խնդրի տեսակ",
       "includeResolved": "Ցուցադրել լուծվածները",
       "all": "Բոլորը"
-    }
+    },
+    "legend": "Լեգենդ",
+    "search": "Փնտրել հասցե կամ փողոց...",
+    "myLocation": "Իմ գտնվելու վայրը",
+    "centerYerevan": "Երևան կենտրոն",
+    "new": "նոր",
+    "inProgress": "ընթացքի մեջ",
+    "resolved": "լուծված",
+    "reset": "զրոյացնել",
+    "listTitle": "Ցանկ · ըստ մոտիկության",
+    "visible": "{count} տեսանելի",
+    "confirms": "{count} հաստ.",
+    "reports": "{count} հաղորդում",
+    "pullFilters": "քաշիր ֆիլտրերի համար",
+    "reportProblem": "Հայտնել խնդրի մասին",
+    "zoomIn": "Մեծացնել",
+    "zoomOut": "Փոքրացնել",
+    "mapTools": "Քարտեզի գործիքներ",
+    "confirmations": "Հաստ.",
+    "created": "Ստեղծված",
+    "close": "Փակել"
   },
   "report": {
     "status": {

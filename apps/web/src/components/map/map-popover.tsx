@@ -14,6 +14,7 @@ interface MapPopoverProps {
 }
 
 export function MapPopover({ report, position, containerRect, onClose }: MapPopoverProps) {
+  const tMap = useTranslations('map')
   const tStatus = useTranslations('report.status')
   const tType = useTranslations('report.problemType')
   const tReport = useTranslations('report')
@@ -81,11 +82,11 @@ export function MapPopover({ report, position, containerRect, onClose }: MapPopo
         {/* Meta */}
         <div className="mb-3 flex gap-3 border-b border-t border-border/50 py-2">
           <div className="flex-1">
-            <div className="font-mono text-[9px] uppercase tracking-wide text-muted-foreground">Подтв.</div>
+            <div className="font-mono text-[9px] uppercase tracking-wide text-muted-foreground">{tMap('confirmations')}</div>
             <div className="text-[13px] font-medium">{report.confirmation_count}</div>
           </div>
           <div className="flex-1">
-            <div className="font-mono text-[9px] uppercase tracking-wide text-muted-foreground">Создан</div>
+            <div className="font-mono text-[9px] uppercase tracking-wide text-muted-foreground">{tMap('created')}</div>
             <div className="text-[13px] font-medium">
               {new Date(report.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
             </div>

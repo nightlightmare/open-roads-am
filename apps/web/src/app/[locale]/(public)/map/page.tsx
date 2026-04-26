@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
+import { useTranslations } from 'next-intl'
 import { Plus } from 'lucide-react'
 import { Link } from '@/i18n/navigation'
 import { MapSidebar } from '@/components/map/map-sidebar'
@@ -15,6 +16,7 @@ const MapView = dynamic(
 )
 
 export default function MapPage() {
+  const t = useTranslations('map')
   const { reports, totalInArea, selected, clearSelection } = useMapStore()
   const mapAreaRef = useRef<HTMLElement>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -56,9 +58,9 @@ export default function MapPage() {
             className="flex w-full items-center justify-between px-4 pb-2.5 pt-5"
           >
             <div className="text-left">
-              <div className="text-[15px] font-semibold">{totalInArea} репортов</div>
+              <div className="text-[15px] font-semibold">{t('reports', { count: totalInArea })}</div>
               <div className="font-mono text-xs text-muted-foreground">
-                потяни для фильтров
+                {t('pullFilters')}
               </div>
             </div>
             <svg
@@ -84,7 +86,7 @@ export default function MapPage() {
         <Link
           href="/submit"
           className="absolute bottom-6 right-4 z-20 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-transform hover:-translate-y-0.5 hover:bg-primary/90 md:hidden"
-          aria-label="Сообщить о проблеме"
+          aria-label={t('reportProblem')}
         >
           <Plus className="h-6 w-6" strokeWidth={2.2} />
         </Link>

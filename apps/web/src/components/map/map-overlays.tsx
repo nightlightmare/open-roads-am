@@ -24,21 +24,22 @@ function toolBtn(label: string, onClick: () => void, iconChildren: React.ReactNo
 }
 
 export function MapOverlays() {
+  const tMap = useTranslations('map')
   const tType = useTranslations('report.problemType')
   const [legendOpen, setLegendOpen] = useState(true)
 
   return (
     <>
       {/* Toolbar — top right */}
-      <div className="absolute right-4 top-4 z-10 flex flex-col gap-2" role="toolbar" aria-label="Инструменты карты">
+      <div className="absolute right-4 top-4 z-10 flex flex-col gap-2" role="toolbar" aria-label={tMap('mapTools')}>
         <div className="flex flex-col overflow-hidden rounded border border-border bg-background shadow-sm">
-          {toolBtn('Увеличить', () => {}, <path d="M12 5v14M5 12h14" />)}
-          {toolBtn('Уменьшить', () => {}, <path d="M5 12h14" />)}
+          {toolBtn(tMap('zoomIn'), () => {}, <path d="M12 5v14M5 12h14" />)}
+          {toolBtn(tMap('zoomOut'), () => {}, <path d="M5 12h14" />)}
         </div>
 
         <div className="flex flex-col overflow-hidden rounded border border-border bg-background shadow-sm">
-          {toolBtn('Моя геолокация', () => {}, <><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></>)}
-          {toolBtn('Легенда', () => setLegendOpen(!legendOpen), <path d="M3 6h18M3 12h18M3 18h12" />, legendOpen)}
+          {toolBtn(tMap('myLocation'), () => {}, <><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></>)}
+          {toolBtn(tMap('legend'), () => setLegendOpen(!legendOpen), <path d="M3 6h18M3 12h18M3 18h12" />, legendOpen)}
         </div>
       </div>
 
@@ -47,7 +48,7 @@ export function MapOverlays() {
         <div className="absolute left-4 top-4 z-10 rounded border border-border bg-background shadow-sm">
           <div className="px-3 py-2">
             <span className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-              Легенда
+              {tMap('legend')}
             </span>
           </div>
           <div className="flex flex-col gap-1.5 border-t border-border px-3 py-2.5">
