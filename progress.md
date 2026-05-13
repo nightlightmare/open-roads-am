@@ -276,6 +276,44 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 
 ---
 
+### 🔄 Spec 12 — Push Notifications (v1.0, Telegram + infra)
+
+#### Backend (`apps/api`)
+
+- ✅ Prisma models: `NotificationPreference`, `TelegramLink`, `NotificationLog`
+- ✅ Migration SQL (`20260513000000_notifications`)
+- ✅ Repositories:
+  - ✅ `PrismaNotificationPreferenceRepository`
+  - ✅ `PrismaTelegramLinkRepository`
+  - ✅ `PrismaNotificationLogRepository`
+  - ✅ `PrismaNotificationContextRepository` (moderators + report context)
+- ✅ BullMQ `notifications` queue with default retry policy (3 attempts, exponential backoff, 7-day retention for completed jobs, 30-day for failed)
+- ✅ Telegram HTTP client (`lib/telegram.ts`) — MarkdownV2 escaping, `sendMessage`, `sendPhoto`; logging stub when `TELEGRAM_BOT_TOKEN` is unset
+- ✅ Sliding-window rate limiter (`notifications:rate:<userId>`, 10/min via Redis pipeline)
+- ✅ Notification dispatcher — Redis pub/sub listener for `events:moderation`, `events:report-approved`, `events:report-status-changed`, `events:report-rejected`, `events:report-confirmed`
+- ✅ Notification worker — channel router, logs every delivery to `notification_log`
+- ✅ Default preference resolution at dispatch time (no pre-populated rows)
+- ✅ Endpoints:
+  - ✅ `GET /api/v1/me/notifications/preferences` — merges stored prefs with defaults, hides moderator-only events from non-moderators
+  - ✅ `PUT /api/v1/me/notifications/preferences` — upsert, blocks enabling Telegram without link / web_push without subscription
+  - ✅ `POST /api/v1/me/notifications/telegram/link` — UUID token, 10-min TTL Redis
+  - ✅ `DELETE /api/v1/me/notifications/telegram/unlink` — clears row, disables all Telegram prefs
+  - ✅ `GET /api/v1/me/notifications/telegram/status`
+  - ✅ `POST /api/v1/webhooks/telegram` — secret-header verification, `/start`, `/stop`, `/status`, `/help`
+- ✅ Event publishers wired:
+  - ✅ `events:moderation` — already published from `reports.ts` (verbatim shape preserved for SSE feed)
+  - ✅ `events:report-approved` — already published from `moderation/actions.ts`
+  - ✅ `events:report-rejected` — added to reject handler
+  - ✅ `events:report-status-changed` — added to gov-agency status endpoint
+  - ✅ `events:report-confirmed` — added to confirmation handler; dispatcher filters non-milestone counts (5/10/25)
+- ✅ Security: webhook 403s on bad secret, rejection notification omits free-text reason (uses generic copy)
+- ✅ Tests: MarkdownV2 escaping, preference defaults, rate-limit window, webhook (commands + secret) — **120 total passing**
+- ⬜ Email channel (Resend) — out of scope for v1
+- ⬜ Web Push (VAPID + service worker) — out of scope for v1
+- ⬜ Mobile Push (Expo) — deferred until mobile app ships
+
+---
+
 ### ✅ Spec 09 — Problem Types Table (v1.0)
 
 - ✅ Prisma schema: removed `enum ProblemType`, added `ProblemType` model (`problem_types` table)
@@ -352,4 +390,5 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 9. ✅ **Spec 10** — Web frontend
 10. ✅ **Spec 11** — E2E tests (51/51 passing)
 11. ✅ **Spec 09** — Problem Types Table
-12. ⬜ **Mobile frontend**
+12. 🔄 **Spec 12** — Push Notifications (Telegram + infra; email & web push deferred)
+13. ⬜ **Mobile frontend**
