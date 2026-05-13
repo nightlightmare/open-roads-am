@@ -18,6 +18,11 @@ const EnvSchema = z.object({
   CF_IMAGES_BASE_URL: z.string().url(),
   CF_ACCOUNT_ID: z.string().min(1),
   CF_IMAGES_API_TOKEN: z.string().min(1),
+  // Spec 12 — Notifications (optional in v1: missing token disables sending,
+  // queue and dispatcher still run so the rest of the system stays exercised).
+  TELEGRAM_BOT_TOKEN: z.string().optional(),
+  TELEGRAM_BOT_USERNAME: z.string().default('OpenRoadAmBot'),
+  TELEGRAM_WEBHOOK_SECRET: z.string().optional(),
 })
 
 export type Env = z.infer<typeof EnvSchema>
