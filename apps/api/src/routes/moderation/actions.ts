@@ -174,6 +174,7 @@ export async function moderationActionsRoutes(
       })
 
       await redis.del(leaseKey(id))
+      await redis.publish('events:report-rejected', JSON.stringify({ reportId: id }))
 
       return reply.send({ id, status: 'rejected' })
     },
@@ -271,6 +272,10 @@ export async function moderationActionsRoutes(
       }
 
       await redis.del(`report:${id}`)
+      await redis.publish(
+        'events:report-status-changed',
+        JSON.stringify({ reportId: id, newStatus: parsed.data.status }),
+      )
 
       return reply.send({ id, status: parsed.data.status })
     },

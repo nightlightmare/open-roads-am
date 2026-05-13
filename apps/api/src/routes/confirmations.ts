@@ -52,6 +52,16 @@ export async function confirmationRoutes(
         return reply.code(400).send({ code: result.code })
       }
 
+      // Notification dispatcher filters non-milestone counts; publishing every
+      // tick keeps the publisher dumb.
+      await redis.publish(
+        'events:report-confirmed',
+        JSON.stringify({
+          reportId: paramParsed.data.id,
+          confirmationCount: result.count,
+        }),
+      )
+
       return reply.send({ report_id: paramParsed.data.id, confirmation_count: result.count })
     },
   )

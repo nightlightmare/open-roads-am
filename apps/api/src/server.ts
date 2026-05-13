@@ -16,6 +16,10 @@ import { PrismaPublicReportRepository } from './repositories/public-report.repos
 import { PrismaModerationRepository } from './repositories/moderation.repository.js'
 import { PrismaUserProfileRepository } from './repositories/user-profile.repository.js'
 import { PrismaProblemTypeRepository } from './repositories/problem-type.repository.js'
+import { PrismaNotificationPreferenceRepository } from './repositories/notification-preference.repository.js'
+import { PrismaTelegramLinkRepository } from './repositories/telegram-link.repository.js'
+import { PrismaNotificationLogRepository } from './repositories/notification-log.repository.js'
+import { PrismaNotificationContextRepository } from './repositories/notification-context.repository.js'
 import { clerkWebhookRoutes } from './routes/internal/clerk-webhook.js'
 import { adminApiKeyRoutes } from './routes/admin/api-keys.js'
 import { adminRoleRoutes } from './routes/admin/roles.js'
@@ -28,10 +32,17 @@ import { moderationQueueRoutes } from './routes/moderation/queue.js'
 import { moderationActionsRoutes } from './routes/moderation/actions.js'
 import { moderationFeedRoutes } from './routes/moderation/feed.js'
 import { meRoutes } from './routes/me.js'
+import { meTelegramRoutes } from './routes/me/telegram.js'
+import { notificationsPreferencesRoutes } from './routes/me/notifications-preferences.js'
+import { telegramWebhookRoutes } from './routes/webhooks/telegram.js'
 import { confirmationRoutes } from './routes/confirmations.js'
 import { startCleanupCron, startArchiveCron } from './workers/cleanup.js'
 import { startClassifyWorker } from './workers/classify.js'
 import { startLeaseExpiryWorker } from './workers/lease-expiry.js'
+import { startNotificationWorker } from './workers/notification-worker.js'
+import { startNotificationDispatcher } from './workers/notification-dispatcher.js'
+import { getNotificationQueue } from './lib/notification-queue.js'
+import { createTelegramClient } from './lib/telegram.js'
 
 export async function buildServer(env: Env) {
   const fastify = Fastify({
@@ -56,6 +67,11 @@ export async function buildServer(env: Env) {
   const moderationRepo = new PrismaModerationRepository(db)
   const userProfileRepo = new PrismaUserProfileRepository(db)
   const problemTypeRepo = new PrismaProblemTypeRepository(db)
+  const notificationPreferenceRepo = new PrismaNotificationPreferenceRepository(db)
+  const telegramLinkRepo = new PrismaTelegramLinkRepository(db)
+  const notificationLogRepo = new PrismaNotificationLogRepository(db)
+  const notificationContextRepo = new PrismaNotificationContextRepository(db)
+  const telegramClient = createTelegramClient(env.TELEGRAM_BOT_TOKEN ?? null)
 
   // Plugins
   await fastify.register(fastifyHelmet)
@@ -128,6 +144,27 @@ export async function buildServer(env: Env) {
     redis,
     cfImagesBaseUrl: env.CF_IMAGES_BASE_URL,
   })
+  await fastify.register(meTelegramRoutes, {
+    prisma: db,
+    redis,
+    linkRepo: telegramLinkRepo,
+    preferenceRepo: notificationPreferenceRepo,
+    botUsername: env.TELEGRAM_BOT_USERNAME,
+  })
+  await fastify.register(notificationsPreferencesRoutes, {
+    prisma: db,
+    redis,
+    preferenceRepo: notificationPreferenceRepo,
+    linkRepo: telegramLinkRepo,
+  })
+  if (env.TELEGRAM_WEBHOOK_SECRET) {
+    await fastify.register(telegramWebhookRoutes, {
+      redis,
+      linkRepo: telegramLinkRepo,
+      telegram: telegramClient,
+      webhookSecret: env.TELEGRAM_WEBHOOK_SECRET,
+    })
+  }
   await fastify.register(confirmationRoutes, {
     db: userProfileRepo,
     banDb: userRepo,
@@ -146,6 +183,24 @@ export async function buildServer(env: Env) {
       r2Bucket: env.R2_BUCKET,
       claudeApiKey: env.CLAUDE_API_KEY,
       classificationRepo,
+    })
+
+    // Notification stack (Spec 12)
+    const notificationQueue = getNotificationQueue(redis)
+    startNotificationWorker({
+      workerRedis: getBullMQRedis(env.REDIS_URL),
+      telegram: telegramClient,
+      logRepo: notificationLogRepo,
+    })
+    startNotificationDispatcher({
+      subscriber: getBullMQRedis(env.REDIS_URL),
+      redis,
+      notificationQueue,
+      preferenceRepo: notificationPreferenceRepo,
+      telegramLinkRepo,
+      contextRepo: notificationContextRepo,
+      webUrl: env.WEB_URL,
+      cfImagesBaseUrl: env.CF_IMAGES_BASE_URL,
     })
   }
 
