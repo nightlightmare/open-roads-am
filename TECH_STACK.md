@@ -7,11 +7,11 @@
 ```
 apps/
   web/          # Next.js 16 — веб-платформа
-  mobile/       # React Native + Expo — мобильное приложение
+  mobile/       # PLANNED: React Native + Expo (empty stub, not built or deployed yet)
   api/          # Fastify — основной бэкенд
   mcp-server/   # MCP-сервер для внешних AI-интеграций
 packages/
-  ui/           # Shared компоненты (web + mobile)
+  ui/           # PLACEHOLDER: shared components (empty; nothing imports it yet)
   types/        # Общие TypeScript типы
   config/       # Shared конфиги (oxlint, tsconfig)
 ```
@@ -36,7 +36,11 @@ packages/
 
 ---
 
-## Mobile
+## Mobile (planned)
+
+> **Status: planned, not implemented.** `apps/mobile` is an empty Expo Router stub kept as a placeholder
+> in the monorepo. The mobile app has no spec yet; the web app is the
+> only client today (offline/PWA support is drafted in Spec 19). The stack below is the intended one.
 
 | Технология | Назначение |
 |---|---|
@@ -137,7 +141,7 @@ update_status   — обновить статус репорта (для гос�
 ```
 [Cloudflare — WAF / DDoS / Rate Limit]
          ↓
-[Vercel — Next.js 16]    [Expo — Mobile App]
+[Vercel — Next.js 16]    [Expo — Mobile App (planned)]
          ↓                        ↓
     [Fastify API + PostGIS]
          ↓              ↓
