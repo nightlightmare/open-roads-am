@@ -70,12 +70,15 @@ model User {
   updated_at   DateTime @updatedAt @db.Timestamptz(6)
 
   // Relations
-  reports                Report[]              @relation("AuthorReports")
-  moderated_reports      Report[]              @relation("ModeratorReports")
-  report_confirmations   ReportConfirmation[]
-  report_status_changes  ReportStatusHistory[]
-  api_keys               ApiKey[]
-  photo_classifications  PhotoClassification[]
+  reports                  Report[]                 @relation("AuthorReports")
+  moderated_reports        Report[]                 @relation("ModeratorReports")
+  report_confirmations     ReportConfirmation[]
+  report_status_changes    ReportStatusHistory[]
+  api_keys                 ApiKey[]
+  photo_classifications    PhotoClassification[]
+  notification_preferences NotificationPreference[]
+  telegram_link            TelegramLink?
+  notification_logs        NotificationLog[]
 
   @@map("users")
 }
@@ -128,6 +131,7 @@ model Report {
   region        Region?               @relation(fields: [region_id], references: [id])
   status_history ReportStatusHistory[]
   confirmations  ReportConfirmation[]
+  notification_logs NotificationLog[]
 
   @@index([user_id])
   @@index([region_id])
@@ -211,4 +215,54 @@ model ProblemType {
   sort_order Int     @default(0)
 
   @@map("problem_types")
+}
+
+// ---------------------------------------------------------------------------
+// Spec 12 — Notifications
+// ---------------------------------------------------------------------------
+
+model NotificationPreference {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String   @db.Uuid
+  channel    String   // telegram | email | web_push | mobile_push
+  event_type String
+  enabled    Boolean  @default(true)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @updatedAt @db.Timestamptz(6)
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, channel, event_type])
+  @@index([user_id])
+  @@map("notification_preferences")
+}
+
+model TelegramLink {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id   String   @unique @db.Uuid
+  chat_id   BigInt   @unique
+  username  String?
+  linked_at DateTime @default(now()) @db.Timestamptz(6)
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("telegram_links")
+}
+
+model NotificationLog {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String   @db.Uuid
+  channel    String
+  event_type String
+  status     String   // delivered | failed | rate_limited | skipped
+  error      String?
+  report_id  String?  @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+
+  user   User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  report Report? @relation(fields: [report_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id, created_at(sort: Desc)])
+  @@index([status])
+  @@map("notification_log")
 }
