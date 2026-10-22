@@ -332,7 +332,9 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 - ✅ Global setup: Clerk auth + test data reset
 - ✅ CI workflow (`.github/workflows/e2e.yml`, nightly + manual; needs E2E secrets)
 
-## Frontend — Mobile (`apps/mobile`)
+## Frontend — Mobile (`apps/mobile`) — planned
+
+`apps/mobile` is an empty Expo Router stub (`app/index.tsx` returns `null`); no spec yet. `packages/ui` is an empty placeholder: `apps/web` lists it as a dependency but imports nothing from it.
 
 - ⬜ Clerk Expo integration
 - ⬜ Sign-in screen
