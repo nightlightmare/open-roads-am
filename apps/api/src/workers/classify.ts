@@ -1,5 +1,6 @@
 import { Worker } from 'bullmq'
 import Anthropic from '@anthropic-ai/sdk'
+import type { ContentBlock, MessageCreateParamsNonStreaming } from '@anthropic-ai/sdk/resources/messages'
 import { z } from 'zod'
 import sharp from 'sharp'
 import type { Redis } from 'ioredis'
@@ -11,6 +12,9 @@ import { QUEUE_REPORT_PHOTO, JOB_CLASSIFY, type ClassifyJobData } from '../lib/q
 const CONFIDENCE_THRESHOLD = 0.6
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024 // 5 MB
 const MAX_IMAGE_DIMENSION = 1600
+// Current Haiku models think adaptively by default and thinking counts toward
+// max_tokens, so leave room for it on top of the ~100-token JSON answer.
+const MAX_OUTPUT_TOKENS = 2048
 
 const ClassificationSchema = z.object({
   problem_type: z.string().min(1),
@@ -85,6 +89,34 @@ export function parseClassificationResponse(text: string): ClassificationResult 
   return ClassificationSchema.parse(parsed)
 }
 
+// No temperature/top_p/top_k: current models reject non-default sampling
+// parameters, so output consistency comes from the prompt and Zod validation.
+export function buildClassifyRequest(
+  model: string,
+  image: { data: string; mediaType: 'image/jpeg' | 'image/png' },
+): MessageCreateParamsNonStreaming {
+  return {
+    model,
+    max_tokens: MAX_OUTPUT_TOKENS,
+    system: SYSTEM_PROMPT,
+    messages: [
+      {
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: image.mediaType, data: image.data } },
+          { type: 'text', text: USER_PROMPT },
+        ],
+      },
+    ],
+  }
+}
+
+// The response may start with thinking blocks; the answer is the text block.
+export function extractResponseText(content: ContentBlock[]): string {
+  const textBlock = content.find((block) => block.type === 'text')
+  return textBlock?.type === 'text' ? textBlock.text : ''
+}
+
 export function applyConfidenceThreshold(result: ClassificationResult): string | null {
   if (result.confidence < CONFIDENCE_THRESHOLD) return null
   if (result.problem_type === 'not_a_road_problem') return null
@@ -97,9 +129,10 @@ export function startClassifyWorker(opts: {
   s3: S3Client
   r2Bucket: string
   claudeApiKey: string
+  classifyModel: string
   classificationRepo: ClassificationRepository
 }): Worker<ClassifyJobData> {
-  const { redis, workerRedis, s3, r2Bucket, claudeApiKey, classificationRepo } = opts
+  const { redis, workerRedis, s3, r2Bucket, claudeApiKey, classifyModel, classificationRepo } = opts
   const anthropic = new Anthropic({ apiKey: claudeApiKey })
 
   const worker = new Worker<ClassifyJobData>(
@@ -116,23 +149,9 @@ export function startClassifyWorker(opts: {
       const { data, mediaType } = await fetchAndPrepareImage(s3, r2Bucket, photoTempKey)
 
       // Call Claude API
-      const message = await anthropic.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 256,
-        temperature: 0,
-        system: SYSTEM_PROMPT,
-        messages: [
-          {
-            role: 'user',
-            content: [
-              { type: 'image', source: { type: 'base64', media_type: mediaType, data } },
-              { type: 'text', text: USER_PROMPT },
-            ],
-          },
-        ],
-      })
+      const message = await anthropic.messages.create(buildClassifyRequest(classifyModel, { data, mediaType }))
 
-      const responseText = message.content[0]?.type === 'text' ? message.content[0].text : ''
+      const responseText = extractResponseText(message.content)
       const result = parseClassificationResponse(responseText)
       const problemTypeAi = applyConfidenceThreshold(result)
 
@@ -156,6 +175,7 @@ export function startClassifyWorker(opts: {
           classificationId,
           status: 'completed',
           durationMs: Date.now() - startedAt,
+          model: classifyModel,
           problemType: problemTypeAi,
           confidence: result.confidence,
           attempt: job.attemptsMade + 1,

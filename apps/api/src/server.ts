@@ -145,6 +145,7 @@ export async function buildServer(env: Env) {
       s3,
       r2Bucket: env.R2_BUCKET,
       claudeApiKey: env.CLAUDE_API_KEY,
+      classifyModel: env.CLASSIFY_MODEL,
       classificationRepo,
     })
   }

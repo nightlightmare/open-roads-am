@@ -15,6 +15,7 @@ const EnvSchema = z.object({
   R2_SECRET_ACCESS_KEY: z.string().min(1),
   R2_ENDPOINT: z.string().url(),
   CLAUDE_API_KEY: z.string().min(1),
+  CLASSIFY_MODEL: z.string().min(1).default('claude-haiku-5-5'),
   CF_IMAGES_BASE_URL: z.string().url(),
   CF_ACCOUNT_ID: z.string().min(1),
   CF_IMAGES_API_TOKEN: z.string().min(1),
