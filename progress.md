@@ -124,13 +124,13 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 
 ---
 
-### ✅ Spec 03 — AI Classification (v1.1)
+### ✅ Spec 03 — AI Classification (v1.2)
 
 - ✅ BullMQ worker: queue `report-photo-processing`, job `classify-report-photo`
   - ✅ Job options: 3 attempts, exponential backoff (1min → 5min → 15min)
   - ✅ Fetch signed R2 URL for photo (TTL 5min)
   - ✅ Resize photo if > 5 MB (max 1600px via sharp)
-  - ✅ Call Claude API (`claude-haiku-4-5-20251001`, vision, `temperature: 0`, `max_tokens: 256`)
+  - ✅ Call Claude API (model from `CLASSIFY_MODEL`, default `claude-haiku-5-5`; vision, `max_tokens: 2048`, no sampling parameters; answer read from the first `text` block)
   - ✅ Parse and validate response with Zod (`ClassificationSchema`)
   - ✅ Confidence threshold: if < 0.6 → `problem_type_ai = null`
   - ✅ `not_a_road_problem` → `problem_type_ai = null` (no auto-reject)
@@ -141,7 +141,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 - ✅ Observability:
   - ✅ Structured JSON logs per job (no PII)
   - ✅ Redis daily counters: `metrics:ai:total`, `metrics:ai:failed`, `metrics:ai:low_confidence`
-- ✅ Unit tests: response parsing, Zod validation, confidence threshold logic (11 tests, 37 total)
+- ✅ Unit tests: response parsing, Zod validation, confidence threshold logic, request builder (no sampling params, configured model), text-block extraction (17 tests)
 
 ---
 

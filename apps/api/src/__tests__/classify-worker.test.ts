@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { parseClassificationResponse, applyConfidenceThreshold } from '../workers/classify.js'
+import {
+  parseClassificationResponse,
+  applyConfidenceThreshold,
+  buildClassifyRequest,
+  extractResponseText,
+} from '../workers/classify.js'
 
 describe('parseClassificationResponse', () => {
   it('parses valid JSON response', () => {
@@ -65,5 +70,48 @@ describe('applyConfidenceThreshold', () => {
   it('returns null for not_a_road_problem with low confidence', () => {
     const result = applyConfidenceThreshold({ problem_type: 'not_a_road_problem', confidence: 0.3, reasoning: 'test' })
     expect(result).toBeNull()
+  })
+})
+
+describe('buildClassifyRequest', () => {
+  const image = { data: 'aGVsbG8=', mediaType: 'image/jpeg' as const }
+
+  it('uses the configured model', () => {
+    expect(buildClassifyRequest('claude-haiku-5-5', image).model).toBe('claude-haiku-5-5')
+    expect(buildClassifyRequest('claude-sonnet-5-5', image).model).toBe('claude-sonnet-5-5')
+  })
+
+  it('sends no sampling parameters (rejected by current models)', () => {
+    const request = buildClassifyRequest('claude-haiku-5-5', image)
+    expect(request).not.toHaveProperty('temperature')
+    expect(request).not.toHaveProperty('top_p')
+    expect(request).not.toHaveProperty('top_k')
+  })
+
+  it('leaves room for adaptive thinking in max_tokens', () => {
+    expect(buildClassifyRequest('claude-haiku-5-5', image).max_tokens).toBeGreaterThanOrEqual(1024)
+  })
+
+  it('sends the image before the text prompt', () => {
+    const request = buildClassifyRequest('claude-haiku-5-5', image)
+    const content = request.messages[0]?.content
+    expect(Array.isArray(content)).toBe(true)
+    if (!Array.isArray(content)) return
+    expect(content[0]).toEqual({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: 'aGVsbG8=' } })
+    expect(content[1]?.type).toBe('text')
+  })
+})
+
+describe('extractResponseText', () => {
+  it('returns the text block when the response starts with a thinking block', () => {
+    const text = extractResponseText([
+      { type: 'thinking', thinking: '', signature: 'sig' },
+      { type: 'text', text: '{"problem_type":"pothole"}', citations: null },
+    ] as Parameters<typeof extractResponseText>[0])
+    expect(text).toBe('{"problem_type":"pothole"}')
+  })
+
+  it('returns an empty string when there is no text block', () => {
+    expect(extractResponseText([])).toBe('')
   })
 })
