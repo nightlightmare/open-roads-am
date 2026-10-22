@@ -14,6 +14,8 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 - ✅ Husky hooks: pre-commit (lint-staged), pre-push (typecheck + test)
 - ✅ Vitest configured in all apps
 - ✅ `.gitignore`, `.nvmrc` (Node 22), `.npmrc`
+- ✅ GitHub Actions CI (`.github/workflows/ci.yml`): lint + typecheck + unit tests on every PR and push to `main`; Prisma migrations applied to a fresh PostGIS container
+- ✅ Nightly / manual Playwright E2E workflow (`.github/workflows/e2e.yml`), skipped until E2E secrets are configured
 
 ---
 
