@@ -1,7 +1,7 @@
 # Spec 03 — AI Classification
 
 **Status:** Draft
-**Version:** 1.1 (updated: classification runs before report creation)
+**Version:** 1.2 (updated: model is configurable via `CLASSIFY_MODEL`, default `claude-haiku-5-5`; no sampling parameters)
 **Date:** April 2026
 
 ---
@@ -64,7 +64,7 @@ Classification operates on the `photo_classifications` table (see Spec 01). The 
 
 ## Claude API Request
 
-**Model:** `claude-haiku-4-5-20251001`
+**Model:** `CLASSIFY_MODEL` env variable, default `claude-haiku-5-5`. Changing the model needs no code change, only an env change and a restart.
 **Method:** Messages API with vision (base64 image)
 
 ### Image preparation
@@ -117,9 +117,11 @@ Rules:
 
 ```typescript
 {
-  model: 'claude-haiku-4-5-20251001',
-  max_tokens: 256,
-  temperature: 0,       // deterministic output for classification tasks
+  model: env.CLASSIFY_MODEL,   // default 'claude-haiku-5-5'
+  max_tokens: 2048,            // room for adaptive thinking + the ~100-token JSON answer
+  // No temperature / top_p / top_k: current models (Haiku 5.5 and later) reject
+  // non-default sampling parameters with a 400. Consistency comes from the
+  // prompt and the Zod validation below.
   messages: [
     {
       role: 'user',
@@ -136,7 +138,7 @@ Rules:
 
 ## Response Parsing
 
-1. Extract `content[0].text` from Claude response
+1. Take the first block with `type === 'text'` from the Claude response (current models think adaptively, so the response may start with `thinking` blocks; never read `content[0]` blindly)
 2. Parse as JSON (wrap in try/catch)
 3. Validate with Zod schema:
 

@@ -105,6 +105,7 @@
    CF_ACCOUNT_ID
    CF_IMAGES_TOKEN
    CLAUDE_API_KEY
+   CLASSIFY_MODEL   # optional, default claude-haiku-5-5
    ```
 4. После первого деплоя: вернись в **Clerk → Webhooks** → добавь endpoint:
    ```
