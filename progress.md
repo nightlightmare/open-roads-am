@@ -14,6 +14,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 - ✅ Husky hooks: pre-commit (lint-staged), pre-push (typecheck + test)
 - ✅ Vitest configured in all apps
 - ✅ `.gitignore`, `.nvmrc` (Node 22), `.npmrc`
+- ✅ README: overview, architecture diagram, layout, local setup, tests, links to specs/docs; screenshots in `docs/screenshots/`
 
 ---
 
