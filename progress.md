@@ -14,6 +14,8 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 - ✅ Husky hooks: pre-commit (lint-staged), pre-push (typecheck + test)
 - ✅ Vitest configured in all apps
 - ✅ `.gitignore`, `.nvmrc` (Node 22), `.npmrc`
+- ✅ GitHub Actions CI (`.github/workflows/ci.yml`): lint + typecheck + unit tests on every PR and push to `main`; Prisma migrations applied to a fresh PostGIS container
+- ✅ Nightly / manual Playwright E2E workflow (`.github/workflows/e2e.yml`), skipped until E2E secrets are configured
 
 ---
 
@@ -327,7 +329,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 - ✅ Seed script (`apps/api/scripts/seed-e2e.ts`)
 - ✅ `data-testid` attributes on 16 components
 - ✅ Global setup: Clerk auth + test data reset
-- ⬜ CI workflow (not needed per decision)
+- ✅ CI workflow (`.github/workflows/e2e.yml`, nightly + manual; needs E2E secrets)
 
 ## Frontend — Mobile (`apps/mobile`)
 
