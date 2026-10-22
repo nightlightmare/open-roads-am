@@ -329,7 +329,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 - ✅ Seed script (`apps/api/scripts/seed-e2e.ts`)
 - ✅ `data-testid` attributes on 16 components
 - ✅ Global setup: Clerk auth + test data reset
-- ⬜ CI workflow (not needed per decision)
+- ✅ CI workflow (`.github/workflows/e2e.yml`, nightly + manual; needs E2E secrets)
 
 ## Frontend — Mobile (`apps/mobile`)
 
